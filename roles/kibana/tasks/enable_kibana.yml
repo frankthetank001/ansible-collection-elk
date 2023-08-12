@@ -2,6 +2,13 @@
 - set_fact:
     kibana_virtual_proto: "{{ 'https' if kibana_https_enabled else 'http' }}"
 
+- name: reload kibana from config change
+  ansible.builtin.systemd:
+    name: kibana
+    state: restarted
+    enabled: yes
+  when: kibana_config.changed
+
 - name: enable and start kibana
   ansible.builtin.systemd:
     name: kibana 
@@ -10,7 +17,7 @@
 
 - name: wait kibana to be ready
   ansible.builtin.uri:
-    url: "{{ kibana_virtual_proto }}://localhost:5601"
+    url: "{{ kibana_virtual_proto }}://localhost:{{ kibana_port }}"
     status_code: 200
     follow_redirects: safe
   register: result

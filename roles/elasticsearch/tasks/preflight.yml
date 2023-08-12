@@ -33,13 +33,13 @@
     - ansible_os_family == 'Debian'
     - disable_firewall
 
-- name: Install utils
-  ansible.builtin.package:
-    name: 
-      - jq
-      - unzip
-    state: present
-    update_cache: yes    
+      #- name: Install utils
+      #  ansible.builtin.package:
+      #    name: 
+      #      - jq
+      #      - unzip
+      #    state: present
+      #    update_cache: yes    
 
 - set_fact:
     virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"

@@ -40,7 +40,7 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
     recurse: yes
-    mode: u=rwX,g=rX,o-rwx
+    mode: u=rwX,g=rX,o=r
   loop:
     - "{{ metricbeat_conf_dir }}"
     - "{{ metricbeat_data_dir }}"
@@ -85,23 +85,45 @@
   ansible.builtin.template:
     src: metricbeat/metricbeat.yml.j2
     dest: "{{ metricbeat_conf_dir }}/metricbeat.yml"
+      #owner: "{{ beats_user }}"
+      #group: "{{ beats_group }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload metricbeat
+
+- name: Update metricbeat.yml with encryption key
+  ansible.builtin.lineinfile:
+    path: /path/to/metricbeat.yml
+    regexp: '^xpack.security.encryptionKey:'
+    line: "xpack.security.encryptionKey: {{ metricbeat_encryption_key }}"
+    create: yes
+
+- name: Enable the Elasticsearch module in Metricbeat
+  ansible.builtin.command:
+    cmd: /opt/metricbeat/metricbeat -c /etc/metricbeat/metricbeat.yml modules enable elasticsearch
+    creates: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch-xpack.yml"  # This prevents the command from running if the file already exists
+  notify:
+    - reload metricbeat
+  when: elasticsearch_monitoring_enabled
+
+- name: Cleanup deprecated elasticsearch.yml module.d file
+  file:
+    path: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch.yml"
+    state: absent
+  when: elasticsearch_monitoring_enabled
+
+- name: Render metricbeat elasticsearch module file
+  ansible.builtin.template:
+    src: metricbeat/elasticsearch_module.yml.j2
+    dest: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch-xpack.yml"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
     mode: 0640
   notify:
     - reload metricbeat
-
-#TODO
-# - name: Render metricbeat elasticsearch module file
-#   ansible.builtin.template:
-#     src: metricbeat/elasticsearch_module.yml.j2
-#     dest: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch.yml"
-#     owner: "{{ beats_user }}"
-#     group: "{{ beats_group }}"
-#     mode: 0640
-#   notify:
-#     - reload metricbeat
-#   when: elasticsearch_monitoring_enabled
+  when: elasticsearch_monitoring_enabled
 
 - name: Render metricbeat service file
   ansible.builtin.template:

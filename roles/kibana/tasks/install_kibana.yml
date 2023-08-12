@@ -115,6 +115,7 @@
     owner: "{{ kibana_user }}"
     group: "{{ kibana_group }}"
     mode: 0644
+  register: kibana_config
 
 - name: Render node.options file
   ansible.builtin.template:

@@ -108,10 +108,12 @@ xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.client_authentication: required
 xpack.security.transport.ssl.keystore.path: {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}
 xpack.security.transport.ssl.truststore.path: {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}
+xpack.security.authc.api_key.enabled: true
 {% else %}
 xpack.security.enabled: false
 xpack.security.transport.ssl.enabled: false
 {% endif %}
+
 
 {% if elasticsearch_https_enabled %}
 xpack.security.http.ssl.enabled: true

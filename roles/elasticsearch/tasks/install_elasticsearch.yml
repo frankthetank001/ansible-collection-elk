@@ -151,6 +151,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
+  register: elastic_config
 
 - name: Render elasticsearch JVM configuration file
   ansible.builtin.template:

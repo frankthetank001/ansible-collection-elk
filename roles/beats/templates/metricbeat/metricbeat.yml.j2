@@ -183,6 +183,10 @@ processors:
 
 # Set to true to enable the monitoring reporter.
 #monitoring.enabled: false
+{% if elasticsearch_security_enabled %}
+xpack.security.enabled: true
+xpack.security.encryptionKey: 32lenstring
+{% endif %}
 
 # Sets the UUID of the Elasticsearch cluster under which monitoring data for this
 # Metricbeat instance will appear in the Stack Monitoring UI. If output.elasticsearch
@@ -236,6 +240,7 @@ http.host: localhost
 
 # Port on which the HTTP endpoint will bind. Default is 5066.
 http.port: {{ metricbeat_monitoring_port }}
+
 
 # Define which user should be owning the named pipe.
 #http.named_pipe.user:
