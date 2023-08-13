@@ -14,10 +14,21 @@
   when: ansible_os_family == 'RedHat'
   become: true
 
-- name: Request HTTPS certificate for each elasticsearch host
-  ansible.builtin.command:
-    cmd: "certbot certonly --standalone -d {{ item }} --register-unsafely-without-email --agree-tos"
+- name: Check if certificate exists
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
   loop: "{{ elasticsearch_hosts }}"
+  register: cert_exists
+
+- name: Request HTTPS certificate if not present
+  ansible.builtin.command:
+    cmd: "certbot certonly --standalone -d {{ item.item }} --register-unsafely-without-email --agree-tos"
+  loop: "{{ elasticsearch_hosts }}"
+  when: not item.stat.exists
+  loop_control:
+    label: "{{ item.item }}"
+    index_var: idx
+  with_items: "{{ cert_exists.results }}"
   become: true
 
 - name: Create PKCS12 file for each elasticsearch host
@@ -46,4 +57,37 @@
     path: "/tmp/{{ item }}.p12"
     state: absent
   loop: "{{ elasticsearch_hosts }}"
+  become: true
+
+- name: Create certbot post renewal hook
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      DOMAIN=$1
+
+      # Create PKCS12 file
+      openssl pkcs12 -export \
+        -in /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
+        -inkey /etc/letsencrypt/live/$DOMAIN/privkey.pem \
+        -out /tmp/$DOMAIN.p12 \
+        -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
+
+      # Copy the PKCS12 file to Elasticsearch certs directory
+      cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/$DOMAIN.p12
+
+      # Cleanup
+      rm -f /tmp/$DOMAIN.p12
+
+      # Restart Elasticsearch service
+      systemctl restart elasticsearch
+    dest: "/etc/letsencrypt/renewal-hooks/post/elasticsearch-renewal.sh"
+    mode: '0755'
+  become: true
+
+# Ensure certbot timer is active and running
+- name: Ensure certbot timer is active and running
+  ansible.builtin.systemd:
+    name: certbot.timer
+    state: started
+    enabled: true
   become: true

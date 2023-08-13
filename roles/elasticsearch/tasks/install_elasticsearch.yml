@@ -102,12 +102,6 @@
       when:
         - elasticsearch_https_enabled
         - generateca is defined
-    
-    - include_tasks:
-        file: request_https_cert.yml
-      when:
-        - elasticsearch_https_enabled
-        - generateca is not defined
 
     - include_tasks: 
         file: keystore_setup.yml
@@ -117,6 +111,12 @@
     - not elasticsearch_dir.stat.exists
     - elk_http_result.status is defined 
     - elk_http_result.status != 401
+
+- include_tasks:
+    file: request_https_cert.yml
+  when:
+    - elasticsearch_https_enabled
+    - generateca is not defined
 
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:
