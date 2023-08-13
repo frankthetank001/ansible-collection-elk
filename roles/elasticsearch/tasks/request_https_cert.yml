@@ -107,6 +107,13 @@
       cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}.p12
       cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/http.p12
 
+      if [[ -f "/etc/logstash/certs" ]]; then
+        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/logstash/certs/{{ elasticsearch_ca_name }}
+      fi
+      if [[ -f "/etc/kibana/certs" ]]; then
+        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/kibana/certs/{{ elasticsearch_ca_name }}
+      fi
+
       # Cleanup
       rm -f /tmp/$DOMAIN.p12
 

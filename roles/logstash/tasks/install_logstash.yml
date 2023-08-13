@@ -106,11 +106,14 @@
     mode: 0644
   when: 
     - elasticsearch_https_enabled
-    - not elastic_ca_file.stat.exists
+    - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_name) | hash('sha256'))
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - set_fact:
     elastic_virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
-
 
 - name: Render logstash yml configuration file
   ansible.builtin.template:
@@ -119,6 +122,10 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - name: Render logstash configuration file
   ansible.builtin.template:
@@ -127,6 +134,10 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - name: Render logstash JVM configuration file
   ansible.builtin.template:
@@ -135,6 +146,10 @@
     owner: "{{logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - name: Copy logstash log4j configuration file
   ansible.builtin.copy:
@@ -143,6 +158,10 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - name: Copy logstash pipelines configuration file
   ansible.builtin.copy:
@@ -151,6 +170,10 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+    - wait logstash to be ready
 
 - name: enable and start logstash
   ansible.builtin.systemd:
