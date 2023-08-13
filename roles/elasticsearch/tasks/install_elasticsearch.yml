@@ -103,15 +103,15 @@
         - elasticsearch_https_enabled
         - generateca is defined
 
-    - include_tasks: 
-        file: keystore_setup.yml
-      when: elasticsearch_security_enabled
-
   when: 
     - not elasticsearch_dir.stat.exists
     - elk_http_result.status is defined 
     - elk_http_result.status != 401
 
+- include_tasks: 
+    file: keystore_setup.yml
+  when: elasticsearch_security_enabled
+  
 - include_tasks:
     file: request_https_cert.yml
   when:
