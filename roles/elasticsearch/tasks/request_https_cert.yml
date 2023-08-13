@@ -22,13 +22,14 @@
 
 - name: Request HTTPS certificate if not present
   ansible.builtin.command:
-    cmd: "certbot certonly --standalone -d {{ item.item }} --register-unsafely-without-email --agree-tos"
-  loop: "{{ elasticsearch_hosts }}"
-  when: not cert_exists.results[item.idx].stat.exists
+    cmd: "certbot certonly --standalone -d {{ item.host }} --register-unsafely-without-email --agree-tos"
+  loop: "{{ elasticsearch_hosts | zip(cert_exists.results) | list }}"
+  when: not item[1].stat.exists
   loop_control:
-    label: "{{ item }}"
-    index_var: idx
+    label: "{{ item.host }}"
   become: true
+  vars:
+    host: "{{ item[0] }}"
 
 - name: Create PKCS12 file for each elasticsearch host
   ansible.builtin.command:
