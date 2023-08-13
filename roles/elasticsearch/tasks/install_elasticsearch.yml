@@ -93,11 +93,21 @@
 
     - include_tasks: 
         file: generate_node_cert.yml
-      when: elasticsearch_security_enabled
+      when:
+        - elasticsearch_security_enabled
+        - generateca is defined
 
     - include_tasks: 
         file: generate_https_cert.yml
-      when: elasticsearch_https_enabled
+      when:
+        - elasticsearch_https_enabled
+        - generateca is defined
+    
+    - include_tasks:
+        file: request_https_cert.yml
+      when:
+        - elasticsearch_https_enabled
+        - generateca is not defined
 
     - include_tasks: 
         file: keystore_setup.yml
