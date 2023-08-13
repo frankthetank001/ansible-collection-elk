@@ -28,64 +28,48 @@
   loop_control:
     label: "{{ item[0] }}"
   become: true
+  register: cert_requested
 
-- name: Create PKCS12 file for each elasticsearch host
+- name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
     cmd: > 
       openssl pkcs12 -export 
-      -in /etc/letsencrypt/live/{{ item }}/fullchain.pem
-      -inkey /etc/letsencrypt/live/{{ item }}/privkey.pem
-      -out /tmp/{{ item }}.p12
+      -in /etc/letsencrypt/live/{{ item[0] }}/fullchain.pem
+      -inkey /etc/letsencrypt/live/{{ item[0] }}/privkey.pem
+      -out /tmp/{{ item[0] }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
-  loop: "{{ elasticsearch_hosts }}"
+  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
+  when: item[1].changed
   become: true
-
-- name: Check if destination PKCS12 exists (client https)
-  ansible.builtin.stat:
-    path: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
-  register: dest_pkcs12_http
-
-- name: Check if destination PKCS12 exists (node https)
-  ansible.builtin.stat:
-    path: "{{ elasticsearch_certs_dir }}/http.p12"
-  register: dest_pkcs12_node
-
-- name: Copy the PKCS12 file to Elasticsearch certs directory (client https)
+- name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ elasticsearch_hosts[index] }}.p12"
+    src: "/tmp/{{ item[0] }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: >
-    not dest_pkcs12_http.stat.exists or dest_pkcs12_http.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_hosts[index] + ".p12") | hash('sha256'))
-  loop: "{{ cert_exists.results }}"
-  loop_control:
-    index_var: index
+  when: item[1].changed
+  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
 
-- name: Copy the PKCS12 file to Elasticsearch certs directory (node https)
+- name: Copy new PKCS12 files to Elasticsearch certs directory (node https)
   ansible.builtin.copy:
-    src: "/tmp/{{ elasticsearch_hosts[index] }}.p12"
+    src: "/tmp/{{ item[0] }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: >
-    not dest_pkcs12_node.stat.exists or dest_pkcs12_node.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_hosts[index] + ".p12") | hash('sha256'))
-  loop: "{{ cert_exists.results }}"
-  loop_control:
-    index_var: index
+  when: item[1].changed
+  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
-
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:
     path: "/tmp/{{ item }}.p12"
