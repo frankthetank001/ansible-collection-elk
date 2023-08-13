@@ -28,7 +28,7 @@
   loop_control:
     label: "{{ item[0] }}"
   become: true
-
+  
 - name: Create PKCS12 file for each elasticsearch host
   ansible.builtin.command:
     cmd: > 
@@ -40,23 +40,15 @@
   loop: "{{ elasticsearch_hosts }}"
   become: true
 
-- name: Slurp the local PKCS12 file
-  ansible.builtin.slurp:
-    src: "/tmp/{{ item }}.p12"
-  register: local_pkcs12
-  loop: "{{ elasticsearch_hosts }}"
-  become: true
-
 - name: Copy the PKCS12 file to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item }}.p12"
+    src: "/tmp/{{ elasticsearch_hosts[index] }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
   when: >
-    not item.stat.exists or 
-    item.stat.checksum != local_pkcs12.results[item.index].content|b64decode|hash('sha256')
+    not item.stat.exists
   loop: "{{ cert_exists.results }}"
   loop_control:
     index_var: index
@@ -65,15 +57,13 @@
 
 - name: Copy the PKCS12 file to Elasticsearch certs directory (node https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item }}.p12"
+    src: "/tmp/{{ elasticsearch_hosts[index] }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-    checksum: "{{ item.stat.checksum | default(omit) }}"
   when: >
-    not item.stat.exists or 
-    item.stat.checksum != local_pkcs12.results[item.index].content|b64decode|hash('sha256')
+    not item.stat.exists
   loop: "{{ cert_exists.results }}"
   loop_control:
     index_var: index
