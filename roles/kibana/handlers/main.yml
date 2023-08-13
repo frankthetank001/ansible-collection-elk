@@ -2,16 +2,14 @@
   ansible.builtin.systemd:
     daemon_reload: yes
 
-- name: restart kibana
-  block:
-    - name: Check if Kibana is active
-      command: systemctl is-active kibana
-      register: kibana_check
-      changed_when: false
-      ignore_errors: true
+- name: check if kibana is active
+  command: systemctl is-active kibana
+  register: kibana_check
+  changed_when: false
+  ignore_errors: true
 
-    - name: Actually restart Kibana
-      ansible.builtin.systemd:
-        name: kibana
-        state: restarted
-      when: kibana_check.rc == 0  # rc (return code) is 0 when the service is active
+- name: restart kibana
+  ansible.builtin.systemd:
+    name: kibana
+    state: restarted
+  when: kibana_check.rc == 0  # rc (return code) is 0 when the service is active

@@ -134,7 +134,9 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  notify: restart elasticsearch
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
 
 - name: Render elasticsearch service file
   ansible.builtin.template:
@@ -145,6 +147,7 @@
     mode: 0644
   notify:
     - reload systemd
+    - check if elasticsearch is active
     - restart elasticsearch
 
 - set_fact:
@@ -165,7 +168,9 @@
     group: "{{ elasticsearch_group }}"
     mode: 0644
   register: elastic_config
-  notify: restart elasticsearch
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
 
 - name: Render elasticsearch JVM configuration file
   ansible.builtin.template:
@@ -174,7 +179,9 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  notify: restart elasticsearch
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
 
 - name: Copy elasticsearch log4j configuration file
   ansible.builtin.copy:
@@ -183,4 +190,6 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  notify: restart elasticsearch
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
