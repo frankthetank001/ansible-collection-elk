@@ -28,7 +28,7 @@
   loop_control:
     label: "{{ item[0] }}"
   become: true
-  
+
 - name: Create PKCS12 file for each elasticsearch host
   ansible.builtin.command:
     cmd: > 
@@ -47,8 +47,8 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: >
-    not item.stat.exists
+  # when: >
+  #   not item.stat.exists
   loop: "{{ cert_exists.results }}"
   loop_control:
     index_var: index
@@ -62,8 +62,8 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: >
-    not item.stat.exists
+  # when: >
+  #   not item.stat.exists
   loop: "{{ cert_exists.results }}"
   loop_control:
     index_var: index
