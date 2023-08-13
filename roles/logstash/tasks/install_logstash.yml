@@ -168,7 +168,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - name: enable and start logstash
   ansible.builtin.systemd:
