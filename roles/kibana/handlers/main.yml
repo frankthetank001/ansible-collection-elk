@@ -13,3 +13,13 @@
     name: kibana
     state: restarted
   when: kibana_check.rc == 0  # rc (return code) is 0 when the service is active
+  
+- name: wait kibana to be ready
+  ansible.builtin.uri:
+    url: "{{ kibana_virtual_proto }}://localhost:{{ kibana_port }}"
+    status_code: 200
+    follow_redirects: safe
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 20

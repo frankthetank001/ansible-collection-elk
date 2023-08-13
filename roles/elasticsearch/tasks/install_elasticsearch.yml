@@ -149,6 +149,7 @@
     - reload systemd
     - check if elasticsearch is active
     - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - set_fact:
     elastic_ip_address: "{{ item }}"
@@ -171,6 +172,7 @@
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Render elasticsearch JVM configuration file
   ansible.builtin.template:
@@ -182,6 +184,7 @@
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Copy elasticsearch log4j configuration file
   ansible.builtin.copy:
@@ -193,3 +196,4 @@
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
+    - wait elasticsearch to be ready

@@ -13,3 +13,17 @@
     name: elasticsearch
     state: restarted
   when: elasticsearch_check.rc == 0  # rc (return code) is 0 when the service is active
+
+- name: wait elasticsearch to be ready
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200"
+    status_code: 200
+    user: elastic
+    password: "{{ elasticsearch_bootstrap_password }}"
+    method: GET
+    force_basic_auth: yes
+    validate_certs: no
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 20
