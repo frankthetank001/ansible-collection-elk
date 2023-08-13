@@ -111,6 +111,7 @@ xpack.security.transport.ssl.truststore.path: {{ elasticsearch_certs_dir }}/{{ e
 xpack.security.transport.ssl.certificate_authorities:
 {% for ca in elasticsearch_certificate_authorities %}
   - {{ elasticsearch_certs_dir }}/{{ ca }}
+{% endfor %}
 xpack.security.authc.api_key.enabled: true
 {% else %}
 xpack.security.enabled: false
