@@ -24,11 +24,10 @@
   ansible.builtin.command:
     cmd: "certbot certonly --standalone -d {{ item.item }} --register-unsafely-without-email --agree-tos"
   loop: "{{ elasticsearch_hosts }}"
-  when: not item.stat.exists
+  when: not cert_exists.results[item.idx].stat.exists
   loop_control:
-    label: "{{ item.item }}"
+    label: "{{ item }}"
     index_var: idx
-  with_items: "{{ cert_exists.results }}"
   become: true
 
 - name: Create PKCS12 file for each elasticsearch host
