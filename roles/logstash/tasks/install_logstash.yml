@@ -110,7 +110,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - set_fact:
     elastic_virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
@@ -125,7 +124,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - name: Render logstash configuration file
   ansible.builtin.template:
@@ -137,7 +135,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - name: Render logstash JVM configuration file
   ansible.builtin.template:
@@ -149,7 +146,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - name: Copy logstash log4j configuration file
   ansible.builtin.copy:
@@ -161,7 +157,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
 
 - name: Copy logstash pipelines configuration file
   ansible.builtin.copy:
