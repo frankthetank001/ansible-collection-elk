@@ -96,10 +96,6 @@
       when: elasticsearch_security_enabled
 
     - include_tasks: 
-        file: generate_https_cert.yml
-      when: elasticsearch_https_enabled
-
-    - include_tasks: 
         file: keystore_setup.yml
       when: elasticsearch_security_enabled
 
@@ -107,6 +103,12 @@
     - not elasticsearch_dir.stat.exists
     - elk_http_result.status is defined 
     - elk_http_result.status != 401
+
+- include_tasks: 
+    file: generate_https_cert.yml
+  when:
+    - elasticsearch_https_enabled
+    - elasticsearch_dir.stat.exists
 
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:
@@ -151,7 +153,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  register: elastic_config
+  notify: restart elasticsearch
 
 - name: Render elasticsearch JVM configuration file
   ansible.builtin.template:

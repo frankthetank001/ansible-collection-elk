@@ -1,9 +1,26 @@
 ---
 
-- name: cert HTTPS exists
+- name: cert HTTPS exists (on source machine)
   stat:
-    path: "{{ elasticsearch_certs_dir}}/http.p12"
+    path: "{{ elasticsearch_local_certs_dir }}/http.p12"
+  register: https_file_local
+
+- name: Get checksum of source file
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_local_certs_dir }}/http.p12"
+  register: source_https_file_stat
+  when: https_file_local.stat.exists
+
+- name: cert HTTPS exists (on target machine)
+  stat:
+    path: "{{ elasticsearch_certs_dir }}/http.p12"
   register: https_file
+
+- name: Get checksum of destination https file
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_certs_dir }}/http.p12"
+  register: dest_https_file_stat
+  when: https_file.stat.exists
 
 - name: generate HTTPS answer file
   ansible.builtin.template:
@@ -52,19 +69,21 @@
 
 - name: Copy http.p12 file in cert dir
   ansible.builtin.copy:
-    src: /tmp/elasticsearch/http.p12
+    src: "{{ elasticsearch_local_certs_dir }}/http.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
-    remote_src: yes
-  when: not https_file.stat.exists
+    #remote_src: yes
+  when: https_file_local.stat.exists and (source_https_file_stat.stat.checksum != dest_https_file_stat.stat.checksum or not dest_https_file_stat.stat.exists)
+  notify: restart elasticsearch
 
 - ansible.builtin.fetch:
-    src:  /tmp/kibana/elasticsearch-ca.pem
+    src: /tmp/kibana/elasticsearch-ca.pem
     dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch-ca.pem"
     flat: true
   run_once: true
-  when: not https_file.stat.exists
+  when: https_file_local.stat.exists and (source_https_file_stat.stat.checksum != dest_https_file_stat.stat.checksum or not dest_https_file_stat.stat.exists)
+  notify: restart elasticsearch
 
 - name: Remove HTTPS zip file
   ansible.builtin.file:

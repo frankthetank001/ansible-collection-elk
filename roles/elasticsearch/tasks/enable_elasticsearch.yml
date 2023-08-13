@@ -3,12 +3,6 @@
 - set_fact:
     virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
 
-- name: reload elasticsearch config after change
-  ansible.builtin.systemd:
-    name: elasticsearch
-    state: restarted
-  when: elastic_config.changed
-
 - name: enable and start elasticsearch
   ansible.builtin.systemd:
     name: elasticsearch 
