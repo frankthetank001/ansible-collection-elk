@@ -40,25 +40,45 @@
   loop: "{{ elasticsearch_hosts }}"
   become: true
 
+- name: Get checksum of destination client certificate
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
+  register: client_cert_dest
+  loop: "{{ elasticsearch_hosts }}"
+  become: true
+
 - name: Copy the PKCS12 file to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item }}.p12"
+    src: "/tmp/{{ item.item }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
+    checksum: "{{ item.stat.checksum | default(omit) }}"
+  loop: "{{ client_cert_dest.results }}"
+  when: not item.stat.exists or item.stat.checksum != ansible.builtin.slurp(src="/tmp/{{ item.item }}.p12")["content"]|b64decode|hash('sha256')
+  become: true
+  notify: restart elasticsearch
+
+- name: Get checksum of destination node certificate
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_certs_dir }}/http.p12"
+  register: node_cert_dest
   loop: "{{ elasticsearch_hosts }}"
   become: true
 
 - name: Copy the PKCS12 file to Elasticsearch certs directory (node https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item }}.p12"
+    src: "/tmp/{{ item.item }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  loop: "{{ elasticsearch_hosts }}"
+    checksum: "{{ item.stat.checksum | default(omit) }}"
+  loop: "{{ node_cert_dest.results }}"
+  when: not item.stat.exists or item.stat.checksum != ansible.builtin.slurp(src="/tmp/{{ item.item }}.p12")["content"]|b64decode|hash('sha256')
   become: true
+  notify: restart elasticsearch
 
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:

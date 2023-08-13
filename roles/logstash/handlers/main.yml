@@ -1,5 +1,10 @@
 ---
-
 - name: reload systemd
   ansible.builtin.systemd:
     daemon_reload: yes
+
+- name: restart logstash
+  ansible.builtin.systemd:
+    name: logstash
+    state: restarted
+  when: ansible.builtin.systemd.get_unit_state('logstash').ActiveState == 'active'

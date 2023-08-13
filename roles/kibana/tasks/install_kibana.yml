@@ -88,6 +88,7 @@
     mode: 0644
   notify:
     - reload systemd
+  notify: restart kibana
 
 - name: Copy elastic CA
   ansible.builtin.copy:
@@ -99,6 +100,7 @@
   when: 
     - elasticsearch_https_enabled
     - not elastic_ca_file.stat.exists
+  notify: restart kibana
 
 - ansible.builtin.fail:
     msg: no elasticsearch_hosts specified
@@ -116,6 +118,7 @@
     group: "{{ kibana_group }}"
     mode: 0644
   register: kibana_config
+  notify: restart kibana
 
 - name: Render node.options file
   ansible.builtin.template:
