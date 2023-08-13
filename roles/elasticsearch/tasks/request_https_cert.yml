@@ -85,7 +85,7 @@
 
 - name: Copy the trusted CA to the elasticsearch config directory
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}"
+    src: "{{ elasticsearch_local_certs_dir }}/{{item}}"
     dest: "{{ elasticsearch_certs_dir }}/{{ item }}"
   loop: "{{ elasticsearch_certificate_authorities }}"
   become: true
