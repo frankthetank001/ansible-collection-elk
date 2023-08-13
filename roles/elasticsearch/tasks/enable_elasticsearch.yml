@@ -14,6 +14,7 @@
     name: elasticsearch 
     state: started 
     enabled: yes
+  register: elastic_service
 
 - name: wait elasticsearh to be ready
   ansible.builtin.uri:
