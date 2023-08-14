@@ -12,7 +12,7 @@
   ansible.builtin.systemd:
     name: kibana
     state: restarted
-  when: kibana_check.rc == 0  # rc (return code) is 0 when the service is active
+  when: kibana_check.rc == 0 and kibana_service is defined and not kibana_service.changed # rc (return code) is 0 when the service is active
   
 - name: wait kibana to be ready
   ansible.builtin.uri:

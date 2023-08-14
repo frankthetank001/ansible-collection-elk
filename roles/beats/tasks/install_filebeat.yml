@@ -88,6 +88,7 @@
     group: "{{ beats_group }}"
     mode: 0640
   notify:
+    - check if filebeat is active
     - reload filebeat
 
 - name: Render filebeat service file
@@ -112,3 +113,4 @@
     name: filebeat 
     state: started 
     enabled: yes
+  register: filebeat_service

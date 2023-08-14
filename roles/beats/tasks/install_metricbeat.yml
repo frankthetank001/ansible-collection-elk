@@ -91,6 +91,7 @@
     group: root
     mode: 0644
   notify:
+    - check if metricbeat is active
     - reload metricbeat
 
 - name: Update metricbeat.yml with encryption key
@@ -147,3 +148,4 @@
     name: metricbeat 
     state: started 
     enabled: yes
+  register: metricbeat_service

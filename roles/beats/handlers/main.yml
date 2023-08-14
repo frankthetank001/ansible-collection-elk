@@ -4,17 +4,38 @@
   ansible.builtin.systemd:
     daemon_reload: yes
 
+- name: check if filebeat is active
+  command: systemctl is-active filebeat
+  register: filebeat_check
+  changed_when: false
+  ignore_errors: true
+
 - name: reload filebeat
   ansible.builtin.systemd:
     name: filebeat 
     state: restarted
+  when: filebeat_check.rc == 0 and filebeat_service is defined and not filebeat_service.changed
+
+- name: check if heartbeat is active
+  command: systemctl is-active heartbeat
+  register: heartbeat_check
+  changed_when: false
+  ignore_errors: true
 
 - name: reload heartbeat
   ansible.builtin.systemd:
     name: heartbeat 
     state: restarted
+  when: heartbeat_check.rc == 0 and heartbeat_service is defined and not heartbeat_service.changed
+
+- name: check if metricbeat is active
+  command: systemctl is-active metricbeat
+  register: metricbeat_check
+  changed_when: false
+  ignore_errors: true
 
 - name: reload metricbeat
   ansible.builtin.systemd:
     name: metricbeat 
     state: restarted
+  when: metricbeat_check.rc == 0 and metricbeat_service is defined and not metricbeat_service.changed

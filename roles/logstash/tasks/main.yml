@@ -5,3 +5,9 @@
     apply:
       tags: elkinstall,logstash
   tags: elkinstall,logstash
+
+- include_tasks: 
+    file: enable_logstash.yml
+    apply:
+      tags: elkenable,logstash
+  tags: elkenable,logstash

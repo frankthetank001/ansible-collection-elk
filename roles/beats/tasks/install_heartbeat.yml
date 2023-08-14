@@ -88,6 +88,7 @@
     group: "{{ beats_group }}"
     mode: 0644
   notify:
+    - check if heartbeat is active
     - reload heartbeat
 
 - name: Render heartbeat service file
@@ -112,3 +113,4 @@
     name: heartbeat 
     state: started 
     enabled: yes
+  register: heartbeat_service
