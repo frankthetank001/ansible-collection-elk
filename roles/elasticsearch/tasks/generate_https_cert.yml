@@ -63,7 +63,7 @@
   ansible.builtin.file:
     path: "{{ elasticsearch_certs_dir}}/http.p12"
     state: absent
-  when: cert_file.stat.exists and not https_cert_issued_by_ca
+  when: https_file.stat.exists and not https_cert_issued_by_ca
 
 - name: generate HTTPS cert
   ansible.builtin.command: > 
