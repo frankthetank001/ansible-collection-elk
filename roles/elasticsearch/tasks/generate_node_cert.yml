@@ -20,14 +20,14 @@
   register: cert_file
 
 - name: Get issuer of the certificate
-  command: openssl x509 -noout -issuer -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}
+  command: openssl pkcs12 -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} -passin pass:{{ elasticsearch_cert_password }} -nokeys -clcerts | openssl x509 -noout -issuer
   register: cert_issuer
   changed_when: false
   ignore_errors: true
   when: cert_file.stat.exists and ca_file.stat.exists
 
 - name: Get subject of the CA
-  command: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
+  command: openssl pkcs12 -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }} -passin pass:{{ elasticsearch_ca_password }} -nokeys -clcerts | openssl x509 -noout -subject
   register: ca_subject
   changed_when: false
   ignore_errors: true

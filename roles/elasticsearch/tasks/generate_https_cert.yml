@@ -11,7 +11,7 @@
   register: https_file
 
 - name: Get issuer of the http.p12 certificate
-  command: openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass: -nokeys -clcerts | openssl x509 -noout -issuer
+  command: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass:{{ elasticsearch_cert_password }} -nokeys -clcerts | openssl x509 -noout -issuer"
   register: https_issuer
   changed_when: false
   ignore_errors: true
