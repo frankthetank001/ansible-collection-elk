@@ -1,9 +1,35 @@
 ---
 
+- name: CA exists
+  stat:
+    path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
+  register: ca_file
+
 - name: cert HTTPS exists
   stat:
     path: "{{ elasticsearch_certs_dir}}/http.p12"
   register: https_file
+
+- name: Get issuer of the http.p12 certificate
+  command: openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass: -nokeys -clcerts | openssl x509 -noout -issuer
+  register: https_issuer
+  changed_when: false
+  ignore_errors: true
+  when: https_file.stat.exists and ca_file.stat.exists
+
+- name: Get subject of the CA
+  command: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
+  register: ca_subject
+  changed_when: false
+  ignore_errors: true
+  when: https_file.stat.exists and ca_file.stat.exists
+
+- name: Set fact for https cert issued by CA
+  set_fact:
+    https_cert_issued_by_ca: "{{ https_issuer.stdout == ca_subject.stdout }}"
+  when: 
+    - https_issuer.stdout is defined 
+    - ca_subject.stdout is defined
 
 - name: generate HTTPS answer file
   ansible.builtin.template:
@@ -36,7 +62,13 @@
 - name: generate HTTPS cert
   ansible.builtin.command: > 
     /usr/local/sbin/generate_https_certs.sh
-  when: not https_file.stat.exists
+  when: 
+    - not https_file.stat.exists
+    - not https_cert_issued_by_ca
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Remove answer file
   ansible.builtin.file:

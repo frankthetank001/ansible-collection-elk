@@ -84,29 +84,38 @@
         owner: "{{ elasticsearch_user }}"
         group: "{{ elasticsearch_group }}"
 
-    - include_tasks: 
-        file: generate_ca.yml
-      when: 
-        - generateca is defined
-        - elasticsearch_security_enabled
-        - inventory_hostname in groups['elasticsearch_ca']
-
-    - include_tasks: 
-        file: generate_node_cert.yml
-      when:
-        - elasticsearch_security_enabled
-        - generateca is defined
-
-    - include_tasks: 
-        file: generate_https_cert.yml
-      when:
-        - elasticsearch_https_enabled
-        - generateca is defined
-
   when: 
     - not elasticsearch_dir.stat.exists
     - elk_http_result.status is defined 
     - elk_http_result.status != 401
+
+# Check if the CA exists and set a fact.
+- name: Check if local CA exists
+  stat:
+    path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
+  register: local_ca_file
+
+- set_fact:
+    using_local_ca: "{{ local_ca_file.stat.exists }} and generateca"
+
+- include_tasks: 
+    file: generate_ca.yml
+  when: 
+    - elasticsearch_security_enabled
+    - using_local_ca
+    - inventory_hostname in groups['elasticsearch_ca']
+
+- include_tasks:
+    file: generate_https_cert.yml
+  when:
+    - elasticsearch_https_enabled
+    - using_local_ca
+
+- include_tasks: 
+    file: generate_node_cert.yml
+  when:
+    - elasticsearch_security_enabled
+    - using_local_ca
 
 - include_tasks: 
     file: keystore_setup.yml
@@ -115,9 +124,10 @@
 - include_tasks:
     file: request_https_cert.yml
   when:
-    - elasticsearch_https_enabled
     # TODO: Security enabled, nodes require TLS regardless of https_enabled?
-    - generateca is not defined
+    - elasticsearch_https_enabled
+    # Not using local CA, i.e., using certbot
+    - not using_local_ca
 
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:
@@ -137,6 +147,7 @@
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Render elasticsearch service file
   ansible.builtin.template:

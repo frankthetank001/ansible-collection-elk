@@ -18,13 +18,40 @@
   stat:
     path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}"
   register: cert_file
+
+- name: Get issuer of the certificate
+  command: openssl x509 -noout -issuer -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}
+  register: cert_issuer
+  changed_when: false
+  ignore_errors: true
+  when: cert_file.stat.exists and ca_file.stat.exists
+
+- name: Get subject of the CA
+  command: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
+  register: ca_subject
+  changed_when: false
+  ignore_errors: true
+  when: cert_file.stat.exists and ca_file.stat.exists
+
+- name: Set fact for cert issued by CA
+  set_fact:
+    cert_issued_by_ca: "{{ cert_issuer.stdout == ca_subject.stdout }}"
+  when: 
+    - cert_issuer.stdout is defined 
+    - ca_subject.stdout is defined
   
 - name: generate node cert
   ansible.builtin.command: > 
     {{ elasticsearch_extract_dir }}/elasticsearch/bin/elasticsearch-certutil
     cert --ca {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }} --ca-pass {{ elasticsearch_ca_password }} 
     --out {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} --pass {{ elasticsearch_cert_password }}
-  when: not cert_file.stat.exists
+  when:
+    - not cert_file.stat.exists
+    - cert_issued_by_ca
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Fix cert permission
   ansible.builtin.file:

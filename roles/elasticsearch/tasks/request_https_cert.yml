@@ -102,7 +102,7 @@
   when: 
     - not elastic_root_ca_file.stat.exists
     - not elasticsearch_ca_root_manually_provided
-
+# TODO: below task assumes that the password for both elasticsearch_cert_password and elasticsearch_http_password are the same. May need to split into two PKCS12 files
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
     cmd: > 
