@@ -56,12 +56,12 @@
 - name: Write the intermediate certificate to its own file
   copy:
     content: "{{ certificates[0] }}-----END CERTIFICATE-----\n"
-    dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch_intermediate.pem"
+    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
 
 - name: Write the root certificate to its own file
   copy:
     content: "{{ certificates[1] }}-----END CERTIFICATE-----\n"
-    dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch_root.pem"
+    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
 
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
