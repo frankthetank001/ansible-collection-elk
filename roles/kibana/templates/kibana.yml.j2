@@ -91,7 +91,11 @@ elasticsearch.password: "{{ elasticsearch_password }}"
 # Enables you to specify a path to the PEM file for the certificate
 # authority for your Elasticsearch instance.
 {% if elasticsearch_https_enabled %}
-elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_certs_dir }}/{{ elasticsearch_ca_name }}" ]
+{% if generateca is defined %}
+elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_certs_dir }}/{{ elasticsearch_ca_chain_name }}" ]
+{% else %}
+elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_certs_dir }}/{{ elasticsearch_ca_intermediate }}","{{ kibana_certs_dir }}/{{ elasticsearch_ca_root }}" ]
+{% endif %}
 {% endif %}
 
 # To disregard the validity of SSL certificates, change this setting's value to 'none'.

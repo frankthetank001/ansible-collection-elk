@@ -14,7 +14,9 @@ kibana_install_mode: http # local
 kibana_local_tar_path: ''
 
 elasticsearch_local_certs_dir: ~/very_secure_dir
-elasticsearch_ca_name: elasticsearch-ca.pem
+elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem
+elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
+elasticsearch_ca_root: elasticsearch-root-ca.pem
 elasticsearch_security_enabled: yes
 elasticsearch_https_enabled: yes
 elasticsearch_username: kibana_system

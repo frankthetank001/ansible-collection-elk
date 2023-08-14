@@ -144,7 +144,7 @@ output.elasticsearch:
   {% endif %}
   
   {% if elasticsearch_https_enabled -%}
-  ssl.certificate_authorities: ["{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_name }}"]
+  ssl.certificate_authorities: ["{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_chain_name }}"]
   {% endif %}
 
 # ------------------------------ Logstash Output -------------------------------

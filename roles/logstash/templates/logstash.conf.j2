@@ -18,7 +18,7 @@ output {
 		password => "{{ elasticsearch_password }}"
 		{% endif %}
 		{%- if elasticsearch_https_enabled -%}
-        cacert => "{{ logstash_certs_dir }}/{{ elasticsearch_ca_name}}"
+        cacert => "{{ logstash_certs_dir }}/{{ elasticsearch_ca_chain_name}}"
 		{% endif -%}
 		
 	}

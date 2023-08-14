@@ -36,7 +36,7 @@ kibana_url: ''
 elasticsearch_https_enabled: yes
 elasticsearch_security_enabled: yes
 elasticsearch_local_certs_dir: ~/very_secure_dir
-elasticsearch_ca_name: elasticsearch-ca.pem
+elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem
 elasticsearch_username: elastic
 elasticsearch_password: changeme
 elasticsearch_monitoring_enabled: no

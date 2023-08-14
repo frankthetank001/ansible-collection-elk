@@ -33,7 +33,7 @@
 - name: Copy letsencrypt CA to local files
   ansible.builtin.copy:
     src: /etc/letsencrypt/live/{{ item }}/chain.pem
-    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
+    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   loop: " {{ elasticsearch_hosts }}"
   notify:
     - check if elasticsearch is active
@@ -42,7 +42,7 @@
 
 - name: Slurp the chain.pem content
   slurp:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: slurped_chain
 
 - name: Decode the chain content
@@ -114,8 +114,8 @@
 
 - name: Copy the trusted CA to the elasticsearch config directory
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
-    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   # loop: "{{ elasticsearch_certificate_authorities }}"
   become: true
 
@@ -137,10 +137,10 @@
       cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/http.p12
 
       if [[ -f "/etc/logstash/certs" ]]; then
-        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/logstash/certs/{{ elasticsearch_ca_name }}
+        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/logstash/certs/{{ elasticsearch_ca_chain_name }}
       fi
       if [[ -f "/etc/kibana/certs" ]]; then
-        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/kibana/certs/{{ elasticsearch_ca_name }}
+        cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/kibana/certs/{{ elasticsearch_ca_chain_name }}
       fi
 
       # Cleanup

@@ -2,7 +2,7 @@
 
 - name: CA exists
   stat:
-    path: "{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_name }}"
+    path: "{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_file
 
 - shell: uname -s
@@ -60,8 +60,8 @@
 
 - name: Copy elastic CA
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
-    dest: "{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
     mode: 0640

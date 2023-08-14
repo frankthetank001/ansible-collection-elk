@@ -17,7 +17,9 @@ elasticsearch_ca_filename: elastic_ca.p12
 elasticsearch_cert_password: cerT,P4Ssw0rD
 elasticsearch_cert_filename: elastic_keystore.p12
 elasticsearch_http_password: htTp4sS2o3d
-elasticsearch_ca_name: elasticsearch-ca.pem
+elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem
+elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
+elasticsearch_ca_root: elasticsearch-root-ca.pem
 # elasticsearch_certificate_authorities:
 #   - elasticsearch-ca.pem
 elasticsearch_http_file: /tmp/elasticsearch-ssl-http.zip

@@ -2,7 +2,7 @@
 
 - name: CA exists
   stat:
-    path: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_name }}"
+    path: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_file
 
 - shell: uname -s
@@ -95,14 +95,14 @@
 
 - name: Copy elastic CA
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
-    dest: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ kibana_user }}"
     group: "{{ kibana_group }}"
     mode: 0644
   when: 
     - elasticsearch_https_enabled
-    - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_name) | hash('sha256'))
+    - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
   notify:
     - check if kibana is active
     - restart kibana
