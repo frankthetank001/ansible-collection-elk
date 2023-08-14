@@ -63,8 +63,7 @@
   ansible.builtin.command: > 
     /usr/local/sbin/generate_https_certs.sh
   when: 
-    - not https_file.stat.exists
-    - not https_cert_issued_by_ca
+    - not https_file.stat.exists or not https_cert_issued_by_ca
   notify:
     - check if elasticsearch is active
     - restart elasticsearch

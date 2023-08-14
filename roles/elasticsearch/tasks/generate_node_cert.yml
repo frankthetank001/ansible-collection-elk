@@ -46,8 +46,7 @@
     cert --ca {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }} --ca-pass {{ elasticsearch_ca_password }} 
     --out {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} --pass {{ elasticsearch_cert_password }}
   when:
-    - not cert_file.stat.exists
-    - cert_issued_by_ca
+    - not cert_file.stat.exists or not cert_issued_by_ca
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
