@@ -89,7 +89,7 @@
     dest: "{{ filebeat_conf_dir }}/filebeat.yml"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: 0640
+    mode: 0644
   notify:
     - check if filebeat is active
     - reload filebeat

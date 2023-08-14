@@ -117,7 +117,7 @@
     path: "{{ metricbeat_conf_dir }}/metricbeat.yml"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: "0644"
+    mode: 0644
 
 - name: Cleanup deprecated elasticsearch.yml module.d file
   file:

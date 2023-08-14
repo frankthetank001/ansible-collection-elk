@@ -64,7 +64,7 @@
     dest: "{{ heartbeat_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: 0640
+    mode: 0644
   when: 
     - elasticsearch_https_enabled
     - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', heartbeat_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
