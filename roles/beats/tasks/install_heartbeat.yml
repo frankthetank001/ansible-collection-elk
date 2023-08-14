@@ -40,7 +40,7 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
     recurse: yes
-    mode: u=rwX,g=rX,o-rwx
+    mode: u=rwX,g=rX,o=r
   loop:
     - "{{ heartbeat_conf_dir }}"
     - "{{ heartbeat_data_dir }}"
