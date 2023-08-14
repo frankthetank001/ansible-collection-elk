@@ -134,6 +134,10 @@
     - https_issuer.stdout is defined 
     - ca_subject.stdout is defined
 
+- name: debug pkcs11 matches
+  ansible.builtin.debug:
+    msg: "Value of  https_issuer.stdout: {{ https_issuer.stdout is defined }}, value of ca_subject.stdout: {{ ca_subject.stdout }}"
+
 # TODO: below task assumes that the password for both elasticsearch_cert_password and elasticsearch_http_password are the same. May need to split into two PKCS12 files
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
