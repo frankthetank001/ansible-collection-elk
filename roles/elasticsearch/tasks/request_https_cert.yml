@@ -144,7 +144,7 @@
       -out /tmp/{{ item[0] }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
-  when: item[1].changed or https_cert_issued_by_ca
+  when: https_cert_issued_by_ca or item[1].changed
   become: true
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
@@ -154,7 +154,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: item[1].changed or https_cert_issued_by_ca
+  when: https_cert_issued_by_ca or item[1].changed
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
@@ -169,7 +169,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: item[1].changed or https_cert_issued_by_ca
+  when: https_cert_issued_by_ca or item[1].changed
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
