@@ -67,7 +67,7 @@
     mode: 0640
   when: 
     - elasticsearch_https_enabled
-    - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', heartbeat_certs_dir + "/" + {{ elasticsearch_ca_chain_file }}) | hash('sha256'))
+    - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', heartbeat_certs_dir + "/" + {elasticsearch_ca_chain_file) | hash('sha256'))
   notify:
     - check if filebeat is active
     - reload filebeat
