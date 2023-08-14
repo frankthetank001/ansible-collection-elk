@@ -44,7 +44,7 @@
   ansible.builtin.command: > 
     {{ elasticsearch_extract_dir }}/elasticsearch/bin/elasticsearch-certutil
     cert --ca {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }} --ca-pass {{ elasticsearch_ca_password }} 
-    --out {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} --pass {{ elasticsearch_cert_password }}
+    --out {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} --pass {{ elasticsearch_cert_password }} --force
   when:
     - not cert_file.stat.exists or not cert_issued_by_ca
   notify:

@@ -88,7 +88,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     remote_src: yes
-  when: not https_file.stat.exists
+  when: not https_file.stat.exists or not https_cert_issued_by_ca
 
 - ansible.builtin.fetch:
     src:  /tmp/kibana/elasticsearch-ca.pem
