@@ -96,14 +96,7 @@
   notify:
     - check if metricbeat is active
     - reload metricbeat
-
-- name: Update metricbeat.yml with encryption key
-  ansible.builtin.lineinfile:
-    path: /path/to/metricbeat.yml
-    regexp: '^xpack.security.encryptionKey:'
-    line: "xpack.security.encryptionKey: {{ metricbeat_encryption_key }}"
-    create: yes
-
+    
 - name: Enable the Elasticsearch module in Metricbeat
   ansible.builtin.command:
     cmd: /opt/metricbeat/metricbeat -c /etc/metricbeat/metricbeat.yml modules enable elasticsearch

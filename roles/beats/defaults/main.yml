@@ -22,6 +22,7 @@ metricbeat_data_dir: /metricbeat
 metricbeat_log_dir: /var/log/metricbeat
 metricbeat_number_of_shards: 1
 metricbeat_number_of_replicas: 1
+metricbeat_encryption_key: pG9m3X6eAXdTBrG8h$xchFqi8&Emz!3i
 
 heartbeat_conf_dir: /etc/heartbeat
 heartbeat_certs_dir: /etc/heartbeat/certs
