@@ -11,14 +11,14 @@
   register: https_file
 
 - name: Get issuer of the http.p12 certificate
-  command: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass:{{ elasticsearch_cert_password }} -nokeys -clcerts | openssl x509 -noout -issuer"
+  shell: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass:{{ elasticsearch_cert_password }} -nokeys -clcerts | openssl x509 -noout -issuer"
   register: https_issuer
   changed_when: false
   ignore_errors: true
   when: https_file.stat.exists and ca_file.stat.exists
 
 - name: Get subject of the CA
-  command: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
+  shell: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
   register: ca_subject
   changed_when: false
   ignore_errors: true
