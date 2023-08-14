@@ -37,6 +37,8 @@ elasticsearch_https_enabled: yes
 elasticsearch_security_enabled: yes
 elasticsearch_local_certs_dir: ~/very_secure_dir
 elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem
+elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
+elasticsearch_ca_root: elasticsearch-root-ca.pem
 elasticsearch_username: elastic
 elasticsearch_password: changeme
 elasticsearch_monitoring_enabled: no
