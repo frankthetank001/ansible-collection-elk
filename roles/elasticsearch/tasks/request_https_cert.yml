@@ -89,6 +89,20 @@
     - not elastic_root_ca_file.stat.exists or elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256'))
     - not elasticsearch_ca_root_manually_provided
 
+- name: Check for missing intermediate certificate
+  fail:
+    msg: "elasticsearch_ca_intermediate_manually_provided is YES in config file, but root certificate is missing. Please provide it or disable this setting."
+  when: 
+    - not elastic_intermediate_ca_file.stat.exists
+    - not elasticsearch_ca_intermediate_manually_provided
+
+- name: Check for missing root certificate
+  fail:
+    msg: "elasticsearch_ca_root_manually_provided is YES in config file, but intermediate certificate is missing. Please provide it or disable this setting."
+  when: 
+    - not elastic_root_ca_file.stat.exists
+    - not elasticsearch_ca_root_manually_provided
+
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
     cmd: > 
