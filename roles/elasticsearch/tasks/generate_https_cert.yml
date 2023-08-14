@@ -36,7 +36,7 @@
     src: https_answer_file.txt.j2
     dest: /tmp/https_answer_file.txt
     mode: 0400
-  when: not https_file.stat.exists
+  when: not https_file.stat.exists or not https_cert_issued_by_ca
 
 - name: generate HTTPS cert script
   ansible.builtin.template:
@@ -98,10 +98,10 @@
 
 - ansible.builtin.fetch:
     src:  /tmp/kibana/elasticsearch-ca.pem
-    dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch-ca.pem"
+    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     flat: true
   run_once: true
-  when: not https_file.stat.exists
+  when: not https_file.stat.exists or not https_cert_issued_by_ca
 
 - name: Remove HTTPS zip file
   ansible.builtin.file:
