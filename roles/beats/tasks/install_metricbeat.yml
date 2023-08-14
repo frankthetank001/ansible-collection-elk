@@ -88,15 +88,21 @@
   ansible.builtin.template:
     src: metricbeat/metricbeat.yml.j2
     dest: "{{ metricbeat_conf_dir }}/metricbeat.yml"
-      #owner: "{{ beats_user }}"
-      #group: "{{ beats_group }}"
-    owner: root
-    group: root
+    owner: "{{ beats_user }}"
+    group: "{{ beats_group }}"
     mode: 0644
   notify:
     - check if metricbeat is active
     - reload metricbeat
-    
+
+
+- name: Resolve metricbeat config file permissions
+  ansible.builtin.file:
+    path: "{{ metricbeat_conf_dir }}/metricbeat.yml"
+    owner: "root"
+    group: "root"
+    mode: 0644
+
 - name: Enable the Elasticsearch module in Metricbeat
   ansible.builtin.command:
     cmd: /opt/metricbeat/metricbeat -c /etc/metricbeat/metricbeat.yml modules enable elasticsearch
