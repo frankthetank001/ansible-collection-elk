@@ -69,8 +69,8 @@
     - elasticsearch_https_enabled
     - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', heartbeat_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
   notify:
-    - check if filebeat is active
-    - reload filebeat
+    - check if heartbeat is active
+    - reload heartbeat
 
 - ansible.builtin.fail:
     msg: no elasticsearch_hosts specified

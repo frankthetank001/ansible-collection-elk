@@ -69,8 +69,8 @@
     - elasticsearch_https_enabled
     - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', metricbeat_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
   notify:
-    - check if filebeat is active
-    - reload filebeat
+    - check if metricbeat is active
+    - reload metricbeat
 
 
 - ansible.builtin.fail:
@@ -112,6 +112,13 @@
     - reload metricbeat
   when: elasticsearch_monitoring_enabled
 
+- name: Resolve metricbeat config file permissions
+  ansible.builtin.file:
+    path: "{{ metricbeat_conf_dir }}/metricbeat.yml"
+    owner: "{{ beats_user }}"
+    group: "{{ beats_group }}"
+    mode: "0644"
+
 - name: Cleanup deprecated elasticsearch.yml module.d file
   file:
     path: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch.yml"
@@ -124,7 +131,7 @@
     dest: "{{ metricbeat_conf_dir }}/modules.d/elasticsearch-xpack.yml"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: 0640
+    mode: 0644
   notify:
     - reload metricbeat
   when: elasticsearch_monitoring_enabled
