@@ -33,36 +33,19 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
 
-- name: Fix directory and file permissions
-  ansible.builtin.find:
-    paths:
-      - "{{ filebeat_conf_dir }}"
-      - "{{ filebeat_data_dir }}"
-      - "{{ filebeat_log_dir }}"
-      - "{{ filebeat_certs_dir }}"
-    recurse: yes
-  register: found_files
-
-- name: Get current file and directory attributes
-  ansible.builtin.stat:
-    path: "{{ item.path }}"
-  loop: "{{ found_files.files }}"
-  register: file_attributes
-
-- name: Set directory and file permissions
+- name: Fix directory permission
   ansible.builtin.file:
-    path: "{{ item.item.path }}"
-    state: "{{ item.item.isdir | ternary('directory', 'file') }}"
+    path: "{{ item }}"
+    state: directory
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: "{{ item.item.mode }}"
-  loop: "{{ file_attributes.results }}"
-  when: 
-    - item.stat.pw_name != beats_user
-    - item.stat.gr_name != beats_group
-    - item.stat.mode != (item.item.isdir | ternary(493, 420))  # Decimal values for modes (755 and 644)
-  changed_when: true
-
+    recurse: yes
+    mode: u=rwX,g=rX,o=r
+  loop:
+    - "{{ filebeat_conf_dir }}"
+    - "{{ filebeat_data_dir }}"
+    - "{{ filebeat_log_dir }}"
+    - "{{ filebeat_certs_dir }}"
 
 - name: Copy modules.d directory
   ansible.posix.synchronize:
