@@ -18,7 +18,7 @@
   when: https_file.stat.exists and ca_file.stat.exists
 
 - name: Get subject of the CA
-  shell: openssl x509 -noout -subject -in {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}
+  shell: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }} -passin pass:{{ elasticsearch_ca_password }} -nokeys -clcerts | openssl x509 -noout -subject"
   register: ca_subject
   changed_when: false
   ignore_errors: true
