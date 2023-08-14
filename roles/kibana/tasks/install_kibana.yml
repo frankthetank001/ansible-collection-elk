@@ -5,6 +5,16 @@
     path: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_file
 
+- name: Intermediate exists
+  stat:
+    path: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+  register: elastic_intermediate_ca_file
+
+- name: Root exists
+  stat:
+    path: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_root }}"
+  register: elastic_root_ca_file
+
 - shell: uname -s
   register: unames
 
@@ -102,7 +112,40 @@
     mode: 0644
   when: 
     - elasticsearch_https_enabled
+    - generateca is defined
     - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
+  notify:
+    - check if kibana is active
+    - restart kibana
+    - wait kibana to be ready
+
+- name: Copy the intermediate CA
+  ansible.builtin.copy:
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+    dest: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: 0644
+  when: 
+    - elasticsearch_https_enabled
+    - generateca is not defined
+    - not elastic_intermediate_ca_file.stat.exists or elastic_intermediate_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_intermediate) | hash('sha256'))
+  notify:
+    - check if kibana is active
+    - restart kibana
+    - wait kibana to be ready
+
+- name: Copy the root CA
+  ansible.builtin.copy:
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+    dest: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_root }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: 0644
+  when: 
+    - elasticsearch_https_enabled
+    - generateca is not defined
+    - not elastic_root_ca_file.stat.exists or elastic_root_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_root) | hash('sha256'))
   notify:
     - check if kibana is active
     - restart kibana
