@@ -5,15 +5,6 @@
     path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
   register: ca_file
 
-- name: Copy elasticsearch CA
-  ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_filename }}"
-    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_filename }}"
-    owner: "{{ elasticsearch_user }}"
-    group: "{{ elasticsearch_group }}"
-    mode: 0644
-  when: not ca_file.stat.exists
-
 - name: cert exists
   stat:
     path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}"
@@ -39,6 +30,15 @@
   when: 
     - cert_issuer.stdout is defined 
     - ca_subject.stdout is defined
+
+- name: Copy elasticsearch CA
+  ansible.builtin.copy:
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_filename }}"
+    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_filename }}"
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    mode: 0644
+  when: not ca_file.stat.exists or not cert_issued_by_ca
   
 - name: Remove existing node cert if not issued by correct CA
   ansible.builtin.file:
