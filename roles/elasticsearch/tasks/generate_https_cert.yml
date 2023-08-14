@@ -81,14 +81,14 @@
     remote_src: yes
   when: not https_file.stat.exists
 
-- name: Copy http.p12 file in cert dir
-  ansible.builtin.copy:
-    src: /tmp/elasticsearch/http.p12
-    dest: "{{ elasticsearch_certs_dir }}/http.p12"
-    owner: "{{ elasticsearch_user }}"
-    group: "{{ elasticsearch_group }}"
-    remote_src: yes
-  when: not https_file.stat.exists or not https_cert_issued_by_ca
+# - name: Copy http.p12 file in cert dir
+#   ansible.builtin.copy:
+#     src: /tmp/elasticsearch/http.p12
+#     dest: "{{ elasticsearch_certs_dir }}/http.p12"
+#     owner: "{{ elasticsearch_user }}"
+#     group: "{{ elasticsearch_group }}"
+#     remote_src: yes
+#   when: not https_file.stat.exists or not https_cert_issued_by_ca
 
 - ansible.builtin.fetch:
     src:  /tmp/kibana/elasticsearch-ca.pem
