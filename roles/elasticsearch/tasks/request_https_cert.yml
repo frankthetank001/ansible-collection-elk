@@ -30,6 +30,16 @@
   become: true
   register: cert_requested
 
+- name: Local intermediate exists
+  stat:
+    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+  register: elastic_intermediate_ca_file
+
+- name: Local root exists
+  stat:
+    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+  register: elastic_root_ca_file
+
 - name: Copy letsencrypt CA to local files
   ansible.builtin.copy:
     src: /etc/letsencrypt/live/{{ item }}/chain.pem
@@ -56,12 +66,28 @@
 - name: Write the intermediate certificate to its own file
   copy:
     content: "{{ certificates[0] }}-----END CERTIFICATE-----\n"
+    dest: "/tmp/{{ elasticsearch_ca_intermediate }}"
+
+- name: Copy the intermediate CA file to local certs storage
+  ansible.builtin.copy:
+    src: "/tmp/{{ elasticsearch_ca_intermediate }}"
     dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+  when:
+    - not elastic_intermediate_ca_file.stat.exists or elastic_intermediate_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_intermediate) | hash('sha256'))
+    - elasticsearch_intermediate_manually_provided
 
 - name: Write the root certificate to its own file
   copy:
     content: "{{ certificates[1] }}-----END CERTIFICATE-----\n"
+    dest: "/tmp/{{ elasticsearch_ca_root }}"
+
+- name: Copy the root CA file to local certs storage
+  ansible.builtin.copy:
+    src: "/tmp/{{ elasticsearch_ca_root }}"
     dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+  when:
+    - not elastic_root_ca_file.stat.exists or elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256'))
+    - elasticsearch_ca_root_manually_provided
 
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
