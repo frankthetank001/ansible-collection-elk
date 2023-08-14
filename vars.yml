@@ -1,7 +1,7 @@
 ---
 
-disable_firewall: yes
-disable_selinux: yes
+disable_firewall: no
+disable_selinux: no
 
 elasticsearch_version: 8.9.0
 kibana_version: 8.9.0
@@ -34,7 +34,7 @@ filebeat_number_of_shards: 3
 filebeat_number_of_replicas: 3
 
 elasticsearch_hosts:
-  - localhost
+  - hon-elk-dev.honfigurator.app
     #  - k8s-ubuntu-0 
     #  - k8s-ubuntu-1
     #  - k8s-ubuntu-2 

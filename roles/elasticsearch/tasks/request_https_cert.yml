@@ -34,7 +34,7 @@
   ansible.builtin.copy:
     src: /etc/letsencrypt/live/{{ item }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
-  loop: " {{ elasticsearch_hosts }}"
+  loop: "{{ elasticsearch_hosts }}"
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
