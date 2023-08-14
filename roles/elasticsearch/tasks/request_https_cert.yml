@@ -129,7 +129,7 @@
 
 - name: debug pkcs11 matches
   ansible.builtin.debug:
-    msg: "Value of  https_issuer.stdout: {{ https_issuer.stdout is defined }}, value of ca_subject.stdout: {{ ca_subject.stdout }}"
+    msg: "Value of  https_issuer.stdout: {{ https_issuer.stdout }}, value of ca_subject.stdout: {{ ca_subject.stdout }}"
 - name: Set fact for https cert issued by CA
   set_fact:
     https_cert_issued_by_ca: "{{ https_issuer.stdout == ca_subject.stdout }}"
