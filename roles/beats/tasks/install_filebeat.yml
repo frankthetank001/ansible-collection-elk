@@ -43,23 +43,26 @@
     recurse: yes
   register: found_files
 
+- name: Get current file and directory attributes
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  loop: "{{ found_files.files }}"
+  register: file_attributes
+
 - name: Set directory and file permissions
   ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: "{{ item.isdir | ternary('directory', 'file') }}"
+    path: "{{ item.item.path }}"
+    state: "{{ item.item.isdir | ternary('directory', 'file') }}"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    mode: "{{ item.mode }}"
-  loop: "{{ found_files.files }}"
-  vars:
-    item_path: "{{ item.path }}"
-    item_owner: "{{ item_path.stat.pw_name }}"
-    item_group: "{{ item_path.stat.gr_name }}"
-    item_mode: "{{ item_path.stat.mode }}"
+    mode: "{{ item.item.mode }}"
+  loop: "{{ file_attributes.results }}"
   when: 
-    - item_owner != beats_user
-    - item_group != beats_group
-    - item_mode != (item.isdir | ternary('0755', '0644'))  # Adjust the modes as needed
+    - item.stat.pw_name != beats_user
+    - item.stat.gr_name != beats_group
+    - item.stat.mode != (item.item.isdir | ternary(493, 420))  # Decimal values for modes (755 and 644)
+  changed_when: true
+
 
 - name: Copy modules.d directory
   ansible.posix.synchronize:
