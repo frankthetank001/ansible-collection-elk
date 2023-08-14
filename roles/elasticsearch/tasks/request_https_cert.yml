@@ -102,6 +102,38 @@
   when: 
     - not elastic_root_ca_file.stat.exists
     - not elasticsearch_ca_root_manually_provided
+
+- name: cert HTTPS exists
+  stat:
+    path: "{{ elasticsearch_certs_dir}}/http.p12"
+  register: https_file
+
+- name: elastic CA exists
+  stat:
+    path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
+  register: ca_file
+
+- name: Get issuer of the http.p12 certificate
+  shell: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/http.p12 -passin pass:{{ elasticsearch_cert_password }} -nokeys -clcerts | openssl x509 -noout -issuer"
+  register: https_issuer
+  changed_when: false
+  ignore_errors: true
+  when: https_file.stat.exists and ca_file.stat.exists
+
+- name: Get subject of the CA
+  shell: "openssl pkcs12 -in {{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_filename }} -passin pass:{{ elasticsearch_ca_password }} -nokeys -clcerts | openssl x509 -noout -subject"
+  register: ca_subject
+  changed_when: false
+  ignore_errors: true
+  when: https_file.stat.exists and ca_file.stat.exists
+
+- name: Set fact for https cert issued by CA
+  set_fact:
+    https_cert_issued_by_ca: "{{ https_issuer.stdout == ca_subject.stdout }}"
+  when: 
+    - https_issuer.stdout is defined 
+    - ca_subject.stdout is defined
+
 # TODO: below task assumes that the password for both elasticsearch_cert_password and elasticsearch_http_password are the same. May need to split into two PKCS12 files
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
@@ -112,7 +144,7 @@
       -out /tmp/{{ item[0] }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
-  when: item[1].changed
+  when: item[1].changed or https_cert_issued_by_ca
   become: true
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
@@ -122,7 +154,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: item[1].changed
+  when: item[1].changed or https_cert_issued_by_ca
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
@@ -137,7 +169,7 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: item[1].changed
+  when: item[1].changed or https_cert_issued_by_ca
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   become: true
   notify:
