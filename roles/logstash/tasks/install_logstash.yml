@@ -63,7 +63,7 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     recurse: yes
-    mode: u=rwX,g=rX,o-rwx
+    mode: u=rwX,g=rX,o=r
   loop:
     - "{{ logstash_conf_dir }}"
     - "{{ logstash_log_dir }}"
