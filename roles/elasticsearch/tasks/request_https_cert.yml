@@ -177,6 +177,15 @@
     - restart elasticsearch
     - wait elasticsearch to be ready
 
+- name: Debug item[1].changed
+  ansible.builtin.debug:
+    msg: "Value of item[1].changed: {{ item[1].changed }}"
+  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
+
+- name: Debug https_cert_issued_by_ca
+  ansible.builtin.debug:
+    msg: "Value of https_cert_issued_by_ca: {{ https_cert_issued_by_ca }}"
+
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:
     path: "/tmp/{{ item }}.p12"
