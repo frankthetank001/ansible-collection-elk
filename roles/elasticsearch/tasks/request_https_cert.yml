@@ -30,6 +30,39 @@
   become: true
   register: cert_requested
 
+- name: Copy letsencrypt CA to local files
+  ansible.builtin.copy:
+    src: /etc/letsencrypt/live/{{ item }}/chain.pem
+    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
+  loop: " {{ elasticsearch_hosts }}"
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
+    - wait elasticsearch to be ready
+
+- name: Slurp the chain.pem content
+  slurp:
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_name }}"
+  register: slurped_chain
+
+- name: Decode the chain content
+  set_fact:
+    chain_content: "{{ slurped_chain['content'] | b64decode | regex_replace('\r\n', '\n') }}"
+
+- name: Split the chain content into individual certificates
+  set_fact:
+    certificates: "{{ chain_content.split('-----END CERTIFICATE-----') | select('search', 'CERTIFICATE') | list }}"
+
+- name: Write the intermediate certificate to its own file
+  copy:
+    content: "{{ certificates[0] }}-----END CERTIFICATE-----\n"
+    dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch_intermediate.pem"
+
+- name: Write the root certificate to its own file
+  copy:
+    content: "{{ certificates[1] }}-----END CERTIFICATE-----\n"
+    dest: "{{ elasticsearch_local_certs_dir }}/elasticsearch_root.pem"
+
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
     cmd: > 
@@ -41,6 +74,7 @@
   loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
   when: item[1].changed
   become: true
+
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
     src: "/tmp/{{ item[0] }}.p12"
@@ -70,6 +104,7 @@
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
+
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:
     path: "/tmp/{{ item }}.p12"
