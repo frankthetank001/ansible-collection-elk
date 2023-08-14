@@ -51,10 +51,15 @@
     group: "{{ beats_group }}"
     mode: "{{ item.mode }}"
   loop: "{{ found_files.files }}"
+  vars:
+    item_path: "{{ item.path }}"
+    item_owner: "{{ item_path.stat.pw_name }}"
+    item_group: "{{ item_path.stat.gr_name }}"
+    item_mode: "{{ item_path.stat.mode }}"
   when: 
-    - item.path.stat.pw_name != beats_user
-    - item.path.stat.gr_name != beats_group
-    - item.path.stat.mode != (item.isdir | ternary('755', '644'))  # Adjust the modes as needed
+    - item_owner != beats_user
+    - item_group != beats_group
+    - item_mode != (item.isdir | ternary('0755', '0644'))  # Adjust the modes as needed
 
 - name: Copy modules.d directory
   ansible.posix.synchronize:
