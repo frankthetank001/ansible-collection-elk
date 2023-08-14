@@ -33,19 +33,24 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
 
-- name: Fix directory permission
+- name: Fix directory and file permissions
+  ansible.builtin.find:
+    paths:
+      - "{{ filebeat_conf_dir }}"
+      - "{{ filebeat_data_dir }}"
+      - "{{ filebeat_log_dir }}"
+      - "{{ filebeat_certs_dir }}"
+    recurse: yes
+  register: found_files
+
+- name: Set directory and file permissions
   ansible.builtin.file:
-    path: "{{ item }}"
-    state: directory
+    path: "{{ item.path }}"
+    state: "{{ item.isdir | ternary('directory', 'file') }}"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
-    recurse: yes
-    mode: u=rwX,g=rX,o=r
-  loop:
-    - "{{ filebeat_conf_dir }}"
-    - "{{ filebeat_data_dir }}"
-    - "{{ filebeat_log_dir }}"
-    - "{{ filebeat_certs_dir }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ found_files.files }}"
 
 - name: Copy modules.d directory
   ansible.posix.synchronize:
