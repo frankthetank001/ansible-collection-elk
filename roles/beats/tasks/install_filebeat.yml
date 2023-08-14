@@ -33,6 +33,16 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
 
+- name: Fix directory and file permissions
+  ansible.builtin.find:
+    paths:
+      - "{{ filebeat_conf_dir }}"
+      - "{{ filebeat_data_dir }}"
+      - "{{ filebeat_log_dir }}"
+      - "{{ filebeat_certs_dir }}"
+    recurse: yes
+  register: found_files
+
 - name: Set directory and file permissions
   ansible.builtin.file:
     path: "{{ item.path }}"
