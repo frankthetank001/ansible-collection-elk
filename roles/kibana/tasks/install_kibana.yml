@@ -73,7 +73,7 @@
     owner: "{{ kibana_user }}"
     group: "{{ kibana_group }}"
     recurse: yes
-    mode: u=rwX,g=rX,o-rwx
+    mode: u=rwX,g=rX,o=r
   loop:
     - "{{ kibana_conf_dir }}"
     - "{{ kibana_certs_dir}}"
