@@ -9,6 +9,7 @@ logstash_log_dir: /var/log/logstash
 logstash_pid_dir: /var/run/logstash
 logstash_certs_dir: /etc/logstash/certs
 logstash_data_dir: /logstash
+logstash_keystore_password: L0gst4shP4ssw0rd
 
 logstash_beats_tcp_port: 5044
 logstash_tcp_port: 5000

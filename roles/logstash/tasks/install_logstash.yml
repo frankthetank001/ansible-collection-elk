@@ -56,6 +56,10 @@
     - not logstash_dir.stat.exists
     - logstash_install_mode == 'local'
 
+- include_tasks: 
+    file: keystore_setup.yml
+  when: elasticsearch_security_enabled
+
 - name: Fix directory permission
   ansible.builtin.file:
     path: "{{ item }}"
@@ -86,6 +90,9 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
 
 - name: Render logstash service file
   ansible.builtin.template:
@@ -96,6 +103,8 @@
     mode: 0644
   notify:
     - reload systemd
+    - check if logstash is active
+    - restart logstash
 
 - name: Copy elastic CA
   ansible.builtin.copy:
@@ -125,16 +134,26 @@
     - check if logstash is active
     - restart logstash
 
+- name: Ensure conf.d directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/conf.d"
+    state: directory
+
 - name: Render logstash configuration file
   ansible.builtin.template:
     src: logstash.conf.j2
-    dest: "{{ logstash_conf_dir }}/logstash.conf"
+    dest: "{{ logstash_conf_dir }}/conf.d/logstash.conf"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
   notify:
     - check if logstash is active
     - restart logstash
+
+- name: ensure expect package is present
+  ansible.builtin.package:
+    name: expect
+    state: present
 
 - name: Render logstash JVM configuration file
   ansible.builtin.template:

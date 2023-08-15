@@ -13,7 +13,7 @@ WorkingDirectory={{ logstash_extract_dir }}/logstash
 User={{ logstash_user }}
 Group={{ logstash_user }}
 
-ExecStart={{ logstash_extract_dir }}/logstash/bin/logstash -f {{ logstash_conf_dir }}/logstash.conf
+ExecStart=/opt/logstash/bin/logstash "--path.settings" "{{ logstash_conf_dir }}"
 
 StandardOutput=append:{{ logstash_log_dir }}/logstash_systemd.log
 StandardError=append:{{ logstash_log_dir }}/logstash_systemd_error.log
