@@ -60,7 +60,7 @@
 
 - name: Copy elastic CA
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     dest: "{{ metricbeat_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"

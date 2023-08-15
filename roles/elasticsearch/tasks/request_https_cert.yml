@@ -37,13 +37,13 @@
 
 - name: Local root exists
   stat:
-    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+    path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   register: elastic_root_ca_file
 
 - name: Copy letsencrypt CA to local files
   ansible.builtin.copy:
     src: /etc/letsencrypt/live/{{ item }}/chain.pem
-    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   loop: "{{ elasticsearch_hosts }}"
   notify:
     - check if elasticsearch is active
@@ -52,7 +52,7 @@
 
 - name: Slurp the chain.pem content
   slurp:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   register: slurped_chain
 
 - name: Decode the chain content
@@ -84,7 +84,7 @@
 - name: Copy the root CA file to local certs storage
   ansible.builtin.copy:
     src: "/tmp/{{ elasticsearch_ca_root }}"
-    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+    dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   when:
     - not elastic_root_ca_file.stat.exists or elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256'))
     - not elasticsearch_ca_root_manually_provided
@@ -187,7 +187,7 @@
 
 - name: Copy the trusted CA to the elasticsearch config directory
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   # loop: "{{ elasticsearch_certificate_authorities }}"
   become: true
