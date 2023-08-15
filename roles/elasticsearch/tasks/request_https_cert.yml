@@ -16,12 +16,12 @@
 
 - name: Check if certificate exists
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ ansible_fqdn|lower }}/fullchain.pem"
+    path: "/etc/letsencrypt/live/{{ inventory_hostname|lower }}/fullchain.pem"
   register: cert_exists
 
 - name: Request HTTPS certificate if not present
   ansible.builtin.command:
-    cmd: "certbot certonly --standalone -d {{ ansible_fqdn|lower }} --register-unsafely-without-email --agree-tos"
+    cmd: "certbot certonly --standalone -d {{ inventory_hostname|lower }} --register-unsafely-without-email --agree-tos"
   when: not cert_exists.stat.exists
   become: true
   register: cert_requested
