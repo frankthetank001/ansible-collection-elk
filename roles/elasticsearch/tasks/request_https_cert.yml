@@ -16,17 +16,13 @@
 
 - name: Check if certificate exists
   ansible.builtin.stat:
-    path: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
-  loop: "{{ elasticsearch_hosts }}"
+    path: "/etc/letsencrypt/live/{{ ansible_fqdn|lower }}/fullchain.pem"
   register: cert_exists
 
 - name: Request HTTPS certificate if not present
   ansible.builtin.command:
-    cmd: "certbot certonly --standalone -d {{ item[0] }} --register-unsafely-without-email --agree-tos"
-  loop: "{{ elasticsearch_hosts | zip(cert_exists.results) | list }}"
-  when: not item[1].stat.exists
-  loop_control:
-    label: "{{ item[0] }}"
+    cmd: "certbot certonly --standalone -d {{ ansible_fqdn|lower }} --register-unsafely-without-email --agree-tos"
+  when: not cert_exists.stat.exists
   become: true
   register: cert_requested
 
@@ -42,9 +38,8 @@
 
 - name: Copy letsencrypt CA to local files
   ansible.builtin.copy:
-    src: /etc/letsencrypt/live/{{ item }}/chain.pem
+    src: /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-  loop: "{{ elasticsearch_hosts }}"
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
@@ -140,38 +135,35 @@
   ansible.builtin.command:
     cmd: > 
       openssl pkcs12 -export 
-      -in /etc/letsencrypt/live/{{ item[0] }}/fullchain.pem
-      -inkey /etc/letsencrypt/live/{{ item[0] }}/privkey.pem
-      -out /tmp/{{ item[0] }}.p12
+      -in /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/fullchain.pem
+      -inkey /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/privkey.pem
+      -out /tmp/{{ ansible_fqdn|lower }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
-  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
-  when: https_cert_issued_by_ca or item[1].changed
+  when: https_cert_issued_by_ca or cert_requested.changed
   become: true
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item[0] }}.p12"
+    src: "/tmp/{{ ansible_fqdn|lower }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: https_cert_issued_by_ca or item[1].changed
-  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
+  when: https_cert_issued_by_ca or cert_requested.changed
   become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
 
-- name: Copy new PKCS12 files to Elasticsearch certs directory (node https)
+- name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ item[0] }}.p12"
+    src: "/tmp/{{ ansible_fqdn|lower }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: https_cert_issued_by_ca or item[1].changed
-  loop: "{{ elasticsearch_hosts | zip(cert_requested.results) | list }}"
+  when: https_cert_issued_by_ca or cert_requested.changed
   become: true
   notify:
     - check if elasticsearch is active
@@ -180,16 +172,14 @@
 
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:
-    path: "/tmp/{{ item }}.p12"
+    path: "/tmp/{{ ansible_fqdn|lower }}.p12"
     state: absent
-  loop: "{{ elasticsearch_hosts }}"
   become: true
 
 - name: Copy the trusted CA to the elasticsearch config directory
   ansible.builtin.copy:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
-  # loop: "{{ elasticsearch_certificate_authorities }}"
   become: true
 
 - name: Create certbot post renewal hook
