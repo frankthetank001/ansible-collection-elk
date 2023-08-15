@@ -38,7 +38,7 @@
 
 - name: Copy letsencrypt CA to local files
   ansible.builtin.copy:
-    src: /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/chain.pem
+    src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   notify:
     - check if elasticsearch is active
@@ -135,16 +135,16 @@
   ansible.builtin.command:
     cmd: > 
       openssl pkcs12 -export 
-      -in /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/fullchain.pem
-      -inkey /etc/letsencrypt/live/{{ ansible_fqdn|lower }}/privkey.pem
-      -out /tmp/{{ ansible_fqdn|lower }}.p12
+      -in /etc/letsencrypt/live/{{ inventory_hostname|lower }}/fullchain.pem
+      -inkey /etc/letsencrypt/live/{{ inventory_hostname|lower }}/privkey.pem
+      -out /tmp/{{ inventory_hostname|lower }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
   when: https_cert_issued_by_ca or cert_requested.changed
   become: true
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ ansible_fqdn|lower }}.p12"
+    src: "/tmp/{{ inventory_hostname|lower }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
@@ -158,7 +158,7 @@
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
-    src: "/tmp/{{ ansible_fqdn|lower }}.p12"
+    src: "/tmp/{{ inventory_hostname|lower }}.p12"
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
@@ -172,7 +172,7 @@
 
 - name: Clean up temporary PKCS12 files
   ansible.builtin.file:
-    path: "/tmp/{{ ansible_fqdn|lower }}.p12"
+    path: "/tmp/{{ inventory_hostname|lower }}.p12"
     state: absent
   become: true
 
