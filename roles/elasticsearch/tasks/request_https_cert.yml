@@ -81,7 +81,7 @@
     src: "/tmp/{{ elasticsearch_ca_root }}"
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   when:
-    - not elastic_root_ca_file.stat.exists or elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256'))
+    - not elastic_root_ca_file.stat.exists or (elastic_root_ca_file.stat.exists and elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256')))
     - not elasticsearch_ca_root_manually_provided
 
 - name: Check for missing intermediate certificate
