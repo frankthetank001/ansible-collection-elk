@@ -135,6 +135,17 @@
     - restart kibana
     - wait kibana to be ready
 
+- name: source root CA
+  stat:
+    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+  register: elastic_source_root_ca
+
+- ansible.builtin.fail:
+    msg: "elasticsearch_ca_root_manually_provided is yes but no root ca has been provided at path: {{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+  when:
+    - not elastic_source_root_ca.exists
+    - elasticsearch_ca_root_manually_provided
+
 - name: Copy the root CA
   ansible.builtin.copy:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
