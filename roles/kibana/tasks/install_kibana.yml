@@ -137,7 +137,7 @@
 
 - name: source root CA
   stat:
-    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_root }}"
+    path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   register: elastic_source_root_ca
 
 - ansible.builtin.fail:
