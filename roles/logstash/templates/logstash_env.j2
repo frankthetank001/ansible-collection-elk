@@ -24,7 +24,7 @@ LS_OPTS="--path.settings ${LS_SETTINGS_DIR}"
 LS_JAVA_OPTS=""
 
 # Arguments to pass to keystore
-LOGSTASH_KEYSTORE_PASSWORD={{ logstash_keystore_password }}
+LOGSTASH_KEYSTORE_PASS={{ logstash_keystore_password }}
 
 # pidfiles aren't used the same way for upstart and systemd; this is for sysv users.
 LS_PIDFILE={{ logstash_pid_dir }}logstash.pid
