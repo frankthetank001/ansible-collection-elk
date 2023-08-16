@@ -16,3 +16,35 @@
     body_format: json
   with_items: "{{ elasticsearch_users }}"
   run_once: true
+
+- name: Create logstash_writer role
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/role/logstash_writer"
+    user: elastic
+    password: "{{ elasticsearch_bootstrap_password }}"
+    method: PUT
+    body:
+      indices:
+        - names: ["*"]  # Adjust as necessary
+          privileges: ["write", "create", "delete", "create_index"]
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  run_once: true
+
+- name: Assign logstash_writer role to logstash_user
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/user/logstash_user"
+    user: elastic
+    password: "{{ elasticsearch_bootstrap_password }}"
+    method: POST
+    body:
+      password: "some_strong_password"
+      roles: ["logstash_writer"]
+      full_name: "Logstash User"
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  run_once: true
