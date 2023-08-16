@@ -3,20 +3,6 @@
 - set_fact:
     virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
 
-- name: Setup ELK users
-  ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.username }}/_password"
-    user: elastic
-    password: "{{ elasticsearch_bootstrap_password }}"
-    method: POST
-    body: {"password" : "{{ item.password }}"} 
-    force_basic_auth: yes
-    validate_certs: no
-    status_code: 200
-    body_format: json
-  with_items: "{{ elasticsearch_users }}"
-  run_once: true
-
 - name: Create logstash_writer role
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/role/logstash_writer"
@@ -33,18 +19,32 @@
     body_format: json
   run_once: true
 
-- name: Assign logstash_writer role to logstash_user
+- name: Create and assign logstash_writer role to logstash_user
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/user/logstash_user"
     user: elastic
     password: "{{ elasticsearch_bootstrap_password }}"
     method: POST
     body:
-      password: "some_strong_password"
+      password: "{{ elasticsearch_bootstrap_password }}"
       roles: ["logstash_writer"]
       full_name: "Logstash User"
     force_basic_auth: yes
     validate_certs: no
     status_code: 200
     body_format: json
+  run_once: true
+
+- name: Setup ELK users
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.username }}/_password"
+    user: elastic
+    password: "{{ elasticsearch_bootstrap_password }}"
+    method: POST
+    body: {"password" : "{{ item.password }}"} 
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  with_items: "{{ elasticsearch_users }}"
   run_once: true
