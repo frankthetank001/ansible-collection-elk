@@ -185,7 +185,7 @@ processors:
 #monitoring.enabled: false
 {% if elasticsearch_security_enabled %}
 xpack.security.enabled: true
-xpack.security.encryptionKey: {{ metricbeat_encryption_key }}
+#xpack.security.encryptionKey: {{ metricbeat_encryption_key }}
 {% endif %}
 
 # Sets the UUID of the Elasticsearch cluster under which monitoring data for this

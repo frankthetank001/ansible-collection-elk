@@ -53,6 +53,7 @@ elasticsearch.hosts:
 elasticsearch.username: "{{ elasticsearch_username }}"
 elasticsearch.password: "{{ elasticsearch_password }}"
 {% endif %}
+xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encryption_key }}"
 
 # Kibana can also authenticate to Elasticsearch via "service account tokens".
 # Service account tokens are Bearer style tokens that replace the traditional username/password based configuration.
