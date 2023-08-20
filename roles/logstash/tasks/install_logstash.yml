@@ -187,14 +187,3 @@
   notify:
     - check if logstash is active
     - restart logstash
-
-- name: Copy logstash pipelines configuration file
-  ansible.builtin.copy:
-    src: pipelines.yml
-    dest: "{{ logstash_conf_dir }}/pipelines.yml"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  notify:
-    - check if logstash is active
-    - restart logstash
