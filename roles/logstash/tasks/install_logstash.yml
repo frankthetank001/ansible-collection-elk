@@ -150,6 +150,17 @@
     - check if logstash is active
     - restart logstash
 
+- name: Render logstash pipelines file
+  ansible.builtin.template:
+    src: pipelines.yml.j2
+    dest: "{{ logstash_conf_dir }}/pipelines.yml"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+
 - name: ensure expect package is present
   ansible.builtin.package:
     name: expect
