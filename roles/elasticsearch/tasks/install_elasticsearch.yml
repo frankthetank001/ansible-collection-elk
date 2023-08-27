@@ -92,7 +92,7 @@
 - include_tasks: 
     file: generate_ca.yml
   when: 
-    - generateca is defined
+    - generateca is defined and generateca
     - elasticsearch_security_enabled
     - inventory_hostname in groups['elasticsearch_ca']
 
@@ -100,13 +100,13 @@
     file: generate_https_cert.yml
   when:
     - elasticsearch_https_enabled
-    - generateca is defined
+    - generateca is defined and generateca
 
 - include_tasks: 
     file: generate_node_cert.yml
   when:
     - elasticsearch_security_enabled
-    - generateca is defined
+    - generateca is defined and generateca
 
 - include_tasks: 
     file: keystore_setup.yml
@@ -117,7 +117,7 @@
   when:
     - elasticsearch_https_enabled
     # TODO: Security enabled, nodes require TLS regardless of https_enabled?
-    - generateca is not defined or generateca
+    - generateca is not defined or not generateca
 
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:
