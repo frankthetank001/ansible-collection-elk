@@ -117,7 +117,7 @@
   when:
     - elasticsearch_https_enabled
     # TODO: Security enabled, nodes require TLS regardless of https_enabled?
-    - generateca is not defined
+    - generateca is not defined or generateca
 
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:

@@ -103,6 +103,11 @@
     path: "{{ elasticsearch_certs_dir}}/http.p12"
   register: https_file
 
+- name: elastic keystore exists
+  stat:
+    path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}"
+  register: elastic_keystore_file
+
 - name: elastic CA exists
   stat:
     path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
@@ -134,7 +139,6 @@
     https_cert_issued_by_local_ca: false
   when: https_cert_issued_by_local_ca is undefined
 
-# TODO: below task assumes that the password for both elasticsearch_cert_password and elasticsearch_http_password are the same. May need to split into two PKCS12 files
 - name: Debug condition variables
   ansible.builtin.debug:
     msg: 
@@ -143,6 +147,7 @@
       - "ca_file.stat.exists: {{ ca_file.stat.exists }}"
       - "https_file.stat.exists: {{ https_file.stat.exists }}"
 
+# TODO: below task assumes that the password for both elasticsearch_cert_password and elasticsearch_http_password are the same. May need to split into two PKCS12 files
 - name: Create PKCS12 file for new or missing certificates
   ansible.builtin.command:
     cmd: > 
@@ -154,19 +159,19 @@
   when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists
   become: true
 
-    #- name: Copy new PKCS12 files to Elasticsearch certs directory (CA file)
-    #  ansible.builtin.copy:
-    #    src: "/tmp/{{ elasticsearch_cert_filename }}"
-    #    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
-    #    owner: "{{ elasticsearch_user }}"
-    #    group: "{{ elasticsearch_group }}"
-    #    mode: 0644
-    #  when: https_cert_issued_by_local_ca or cert_requested.changed or not ca_file.stat.exists
-    #  become: true
-    #  notify:
-    #    - check if elasticsearch is active
-    #    - restart elasticsearch
-    #    - wait elasticsearch to be ready
+- name: Copy new PKCS12 files to Elasticsearch certs directory (node https)
+  ansible.builtin.copy:
+    src: "/tmp/{{ inventory_hostname|lower }}.p12"
+    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    mode: 0644
+  when: https_cert_issued_by_local_ca or cert_requested.changed or not elastic_keystore_file.stat.exists
+  become: true
+  notify:
+    - check if elasticsearch is active
+    - restart elasticsearch
+    - wait elasticsearch to be ready
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (client https)
   ansible.builtin.copy:
