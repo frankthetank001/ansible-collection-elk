@@ -26,7 +26,7 @@
 
 - name: Set fact for cert issued by CA
   set_fact:
-    cert_issued_by_ca: "{{ cert_issuer.stdout == ca_subject.stdout }}"
+    cert_issued_by_local_ca: "{{ cert_issuer.stdout.split('=')[1].strip() == ca_subject.stdout.split('=')[1].strip() }}"
   when: 
     - cert_issuer.stdout is defined 
     - ca_subject.stdout is defined
@@ -38,13 +38,13 @@
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
     mode: 0644
-  when: not ca_file.stat.exists or not cert_issued_by_ca
+  when: not ca_file.stat.exists or not cert_issued_by_local_ca
   
 - name: Remove existing node cert if not issued by correct CA
   ansible.builtin.file:
     path: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }}"
     state: absent
-  when: cert_file.stat.exists and not cert_issued_by_ca
+  when: cert_file.stat.exists and not cert_issued_by_local_ca
 
 - name: generate node cert
   ansible.builtin.command: > 
@@ -52,7 +52,7 @@
     cert --ca {{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }} --ca-pass {{ elasticsearch_ca_password }} 
     --out {{ elasticsearch_certs_dir}}/{{ elasticsearch_cert_filename }} --pass {{ elasticsearch_cert_password }}
   when:
-    - not cert_file.stat.exists or not cert_issued_by_ca
+    - not cert_file.stat.exists or not cert_issued_by_local_ca
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
