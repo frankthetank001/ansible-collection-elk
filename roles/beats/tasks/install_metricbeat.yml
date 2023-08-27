@@ -7,9 +7,11 @@
 
 - shell: uname -s
   register: unames
+  changed_when: false
 
 - shell: uname -m
   register: unamem
+  changed_when: false
 
 - name: is metricbeat installed
   stat:
