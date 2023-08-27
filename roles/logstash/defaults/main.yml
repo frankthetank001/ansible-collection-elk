@@ -23,8 +23,8 @@ elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
 elasticsearch_ca_root: elasticsearch-root-ca.pem
 elasticsearch_https_enabled: yes
 elasticsearch_security_enabled: yes
-logstash_elasticsearch_username: logstash_user
-logstash_elasticsearch_password: l0gst4sHpAssw0rd,
+logstash_elasticsearch_username: "{{ ((elasticsearch_users | default([]) | selectattr('username', 'equalto', 'logstash_user') | list) | first).username | default('logstash_user') }}"
+logstash_elasticsearch_password: "{{ ((elasticsearch_users | default([]) | selectattr('username', 'equalto', 'logstash_user') | list) | first).password | default('l0gst4sHpAssw0rd') }}"
 
 logstash_install_mode: http # local
 logstash_local_tar_path: ''

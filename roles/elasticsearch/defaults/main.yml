@@ -48,9 +48,9 @@ elasticsearch_users:
   - username: kibana_system
     password: K1b4nap4sSw0rd
   - username: logstash_system
-    password: l0gst4sHpAssw0rd,
+    password: l0gst4sHpAssw0rd
   - username: logstash_user
-    password: l0gst4sHpAssw0rd,
+    password: l0gst4sHpAssw0rd
   - username: remote_monitoring_user
     password: Rem0t3.Mon1t0ringU
 
