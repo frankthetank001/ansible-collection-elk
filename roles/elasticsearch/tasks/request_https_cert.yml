@@ -62,6 +62,7 @@
   copy:
     content: "{{ certificates[0] }}-----END CERTIFICATE-----\n"
     dest: "/tmp/{{ elasticsearch_ca_intermediate }}"
+  changed_when: false
 
 - name: Copy the intermediate CA file to local certs storage
   ansible.builtin.copy:
@@ -75,6 +76,7 @@
   copy:
     content: "{{ certificates[1] }}-----END CERTIFICATE-----\n"
     dest: "/tmp/{{ elasticsearch_ca_root }}"
+  changed_when: false
 
 - name: Copy the root CA file to local certs storage
   ansible.builtin.copy:
