@@ -23,8 +23,8 @@ elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
 elasticsearch_ca_root: elasticsearch-root-ca.pem
 elasticsearch_https_enabled: yes
 elasticsearch_security_enabled: yes
-elasticsearch_username: logstash_user
-elasticsearch_password: l0gst4sHpAssw0rd,
+logstash_elasticsearch_username: logstash_user
+logstash_elasticsearch_password: l0gst4sHpAssw0rd,
 
 logstash_install_mode: http # local
 logstash_local_tar_path: ''
