@@ -244,8 +244,10 @@
   file:
     path: "/tmp/{{ elasticsearch_ca_intermediate }}"
     state: absent
+  changed_when: false
     
 - name: Cleanup locally created temporary certificates 2/2
   file:
     path: "/tmp/{{ elasticsearch_ca_root }}"
     state: absent
+  changed_when: false
