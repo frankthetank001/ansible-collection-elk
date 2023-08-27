@@ -32,12 +32,3 @@ metricbeat_number_of_replicas: 3
 
 filebeat_number_of_shards: 3
 filebeat_number_of_replicas: 3
-
-elasticsearch_hosts:
-  - hon-elk-dev.honfigurator.app
-    #  - k8s-ubuntu-0 
-    #  - k8s-ubuntu-1
-    #  - k8s-ubuntu-2 
-    #  - k8s-ubuntu-3 
-    #  - k8s-ubuntu-4
-    #  - k8s-ubuntu-5 

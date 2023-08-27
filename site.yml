@@ -5,8 +5,12 @@
   vars_files:
     - vars.yml
     - secrets.yml
-
+  tags:
+    - elasticsearch
   tasks:
+    - name: Set elasticsearch_hosts variable based on inventory
+      set_fact:
+        elasticsearch_hosts: "{{ groups['elasticsearch'] }}"
     - import_role:
         name: elasticsearch
 
@@ -16,7 +20,8 @@
   vars_files:
     - vars.yml
     - secrets.yml
-
+  tags:
+    - kibana
   tasks:
     - import_role:
         name: kibana
@@ -27,7 +32,8 @@
   vars_files:
     - vars.yml
     - secrets.yml
-
+  tags:
+    - logstash
   tasks:
     - import_role:
         name: logstash
@@ -38,7 +44,8 @@
   vars_files:
     - vars.yml
     - secrets.yml
-
+  tags:
+    - beats
   tasks:
     - import_role:
         name: beats
