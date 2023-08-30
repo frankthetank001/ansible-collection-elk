@@ -110,7 +110,7 @@
 
 - name: CA Chain exists
   stat:
-    file: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    path: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_chain_file
 
 - name: Copy Elastic CA Chain file
