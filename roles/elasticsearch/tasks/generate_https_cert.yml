@@ -109,7 +109,7 @@
   when: not https_file.stat.exists or not https_cert_issued_by_ca
 
 - name: CA Chain exists
-  stats:
+  stat:
     file: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_chain_file
 
