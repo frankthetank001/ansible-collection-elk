@@ -110,7 +110,7 @@
 
 - name: CA Chain exists
   stat:
-    path: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    path: "{{ elasticsearch_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_chain_file
 
 - name: Copy Elastic CA Chain file
@@ -119,7 +119,6 @@
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
-    remote_src: yes
   when: not elastic_ca_chain_file.stat.exists
 
 - name: Remove HTTPS zip file
