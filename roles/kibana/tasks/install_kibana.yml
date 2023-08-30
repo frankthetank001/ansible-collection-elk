@@ -158,7 +158,7 @@
   when: 
     - elasticsearch_https_enabled
     - generateca is not defined
-    - not elastic_root_ca_file.stat.exists or (elastic_root_ca_file.stat.exists and elastic_root_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/ca/" + elasticsearch_ca_root) | hash('sha256')))
+    - not elastic_root_ca_file.stat.exists or (elastic_root_ca_file.stat.exists and elastic_root_ca_file.stat.checksum != elastic_source_root_ca.checksum)
   notify:
     - check if kibana is active
     - restart kibana
