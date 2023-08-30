@@ -12,14 +12,17 @@ input {
 
 output {
 	elasticsearch {
-		hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:9200"{% if not loop.last -%},{% endif %}{% endfor -%}]
-		{% if elasticsearch_security_enabled -%}
+		hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:9200"{% if not loop.last -%},{% endif %}{% endfor %}]
+		{% if elasticsearch_security_enabled %}
 		user => "${ES_USER}"
 		password => "${ES_PWD}"
 		{% endif %}
-		{%- if elasticsearch_https_enabled -%}
-        cacert => "{{ logstash_certs_dir }}/{{ elasticsearch_ca_chain_name}}"
-		{% endif -%}
-		index => "mylogs-%{+YYYY.MM.dd}"
+		{% if elasticsearch_https_enabled %}
+		{% if use_new_ssl_setting %}
+		ssl_certificate_authorities => "{{ logstash_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+		{% else %}
+		cacert => "{{ logstash_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+		{% endif %}
+		{% endif %}
 	}
 }

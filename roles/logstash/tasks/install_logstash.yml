@@ -125,6 +125,10 @@
 - set_fact:
     elastic_virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
 
+- name: Set a flag if Logstash version is greater than or equal to 8.9.0
+  set_fact:
+    use_new_ssl_setting: "{{ logstash_version is version('8.9.0', '>=') }}"
+
 - name: Render logstash yml configuration file
   ansible.builtin.template:
     src: logstash.yml.j2
