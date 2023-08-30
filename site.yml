@@ -11,6 +11,8 @@
     - name: Set elasticsearch_hosts variable based on inventory
       set_fact:
         elasticsearch_hosts: "{{ groups['elasticsearch'] }}"
+      when:
+        - "elasticsearch_hosts is not defined"
     - import_role:
         name: elasticsearch
 
@@ -23,6 +25,11 @@
   tags:
     - kibana
   tasks:
+    - name: Set elasticsearch_hosts variable based on inventory
+      set_fact:
+        elasticsearch_hosts: "{{ groups['elasticsearch'] }}"
+      when:
+        - "elasticsearch_hosts is not defined"
     - import_role:
         name: kibana
 
@@ -35,6 +42,11 @@
   tags:
     - logstash
   tasks:
+    - name: Set elasticsearch_hosts variable based on inventory
+      set_fact:
+        elasticsearch_hosts: "{{ groups['elasticsearch'] }}"
+      when:
+        - "elasticsearch_hosts is not defined"
     - import_role:
         name: logstash
 
@@ -47,5 +59,10 @@
   tags:
     - beats
   tasks:
+    - name: Set elasticsearch_hosts variable based on inventory
+      set_fact:
+        elasticsearch_hosts: "{{ groups['elasticsearch'] }}"
+      when:
+        - "elasticsearch_hosts is not defined"
     - import_role:
         name: beats
