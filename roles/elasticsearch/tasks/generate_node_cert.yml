@@ -24,6 +24,10 @@
   ignore_errors: true
   when: cert_file.stat.exists and ca_file.stat.exists
 
+- name: Set initial value for cert_issued_by_local_ca
+  set_fact:
+    cert_issued_by_local_ca: false
+
 - name: Set fact for cert issued by CA
   set_fact:
     cert_issued_by_local_ca: "{{ cert_issuer.stdout.split('=')[1].strip() == ca_subject.stdout.split('=')[1].strip() }}"

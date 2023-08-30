@@ -80,6 +80,11 @@
     path: /tmp/https_answer_file.txt
     state: absent
 
+- name: Install unzip package
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
 - name: Unarchive HTTPS zip file
   ansible.builtin.unarchive:
     src: "{{ elasticsearch_http_file }}"
@@ -98,10 +103,24 @@
 
 - ansible.builtin.fetch:
     src:  /tmp/kibana/elasticsearch-ca.pem
-    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     flat: true
   run_once: true
   when: not https_file.stat.exists or not https_cert_issued_by_ca
+
+- name: CA Chain exists
+  stats:
+    file: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+  register: elastic_ca_chain_file
+
+- name: Copy Elastic CA Chain file
+  copy:
+    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    remote_src: yes
+  when: not elastic_ca_chain_file.stat.exists
 
 - name: Remove HTTPS zip file
   ansible.builtin.file:
