@@ -10,10 +10,10 @@
     password: "{{ elasticsearch_bootstrap_password }}"
     method: PUT
     body:
-      cluster: ["monitor"]  # <-- Adding the cluster privilege here
+      cluster: ["monitor", "manage_index_templates", "manage_ingest_pipelines"]  # Cluster level permissions
       indices:
         - names: ["*"]  # Adjust as necessary
-          privileges: ["write", "create", "delete", "create_index"]
+          privileges: ["write", "create", "delete", "create_index", "manage"]  # Index level permissions
     force_basic_auth: yes
     validate_certs: no
     status_code: 200
