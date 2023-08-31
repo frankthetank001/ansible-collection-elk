@@ -12,7 +12,7 @@
     --pass {{ elasticsearch_ca_password }}
   when: not ca_file.stat.exists
 
-- ansible.builtin.fetch:
-    src: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
-    dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_filename }}"
-    flat: true
+# - ansible.builtin.fetch:
+#     src: "{{ elasticsearch_certs_dir}}/{{ elasticsearch_ca_filename }}"
+#     dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_filename }}"
+#     flat: true
