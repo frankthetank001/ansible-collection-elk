@@ -110,12 +110,12 @@
 
 - name: CA Chain exists
   stat:
-    path: "{{ elasticsearch_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+    path: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
   register: elastic_ca_chain_file
 
 - name: Copy Elastic CA Chain file
   copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
