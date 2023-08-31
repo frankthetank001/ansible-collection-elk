@@ -1,2 +1,4 @@
 *.p12
 secrets.yml
+hosts.ini
+vars.yml
