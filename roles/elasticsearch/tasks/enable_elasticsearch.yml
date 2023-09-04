@@ -21,7 +21,7 @@
     url: "{{ virtual_proto }}://localhost:9200"
     status_code: 200
     user: elastic
-    password: "{{ elasticsearch_bootstrap_password }}"
+    password: "{{ elasticsearch_username }}"
     method: GET
     force_basic_auth: yes
     validate_certs: no

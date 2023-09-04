@@ -7,7 +7,7 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/role/logstash_writer"
     user: elastic
-    password: "{{ elasticsearch_bootstrap_password }}"
+    password: "{{ elasticsearch_username }}"
     method: PUT
     body:
       cluster: ["monitor", "manage_index_templates", "manage_ingest_pipelines"]  # Cluster level permissions
@@ -24,10 +24,10 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/user/logstash_user"
     user: elastic
-    password: "{{ elasticsearch_bootstrap_password }}"
+    password: "{{ elasticsearch_username }}"
     method: POST
     body:
-      password: "{{ elasticsearch_bootstrap_password }}"
+      password: "{{ elasticsearch_username }}"
       roles: ["logstash_writer"]
       full_name: "Logstash User"
     force_basic_auth: yes
@@ -40,7 +40,7 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.username }}/_password"
     user: elastic
-    password: "{{ elasticsearch_bootstrap_password }}"
+    password: "{{ elasticsearch_username }}"
     method: POST
     body: {"password" : "{{ item.password }}"} 
     force_basic_auth: yes
