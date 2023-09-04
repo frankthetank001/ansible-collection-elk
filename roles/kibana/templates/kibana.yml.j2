@@ -51,7 +51,7 @@ elasticsearch.hosts:
 # is proxied through the Kibana server.
 {% if elasticsearch_security_enabled %}
 elasticsearch.username: "{{ kibana_elasticsearch_user }}
-elasticsearch.password: "{{ elasticsearch_users[kibana_elasticsearch_user]['password'] }}"
+elasticsearch.password: "{{ elasticsearch_users[kibana_elasticsearch_username]['password'] }}"
 {% endif %}
 xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encryption_key }}"
 
