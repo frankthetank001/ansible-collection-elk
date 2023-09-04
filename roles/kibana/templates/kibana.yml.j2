@@ -50,7 +50,7 @@ elasticsearch.hosts:
 # index at startup. Your Kibana users still need to authenticate with Elasticsearch, which
 # is proxied through the Kibana server.
 {% if elasticsearch_security_enabled %}
-elasticsearch.username: "{{ kibana_elasticsearch_username }}
+elasticsearch.username: "{{ kibana_elasticsearch_username }}"
 elasticsearch.password: "{{ elasticsearch_users[kibana_elasticsearch_username]['password'] }}"
 {% endif %}
 xpack.encryptedSavedObjects.encryptionKey: "{{ kibana_encryption_key }}"
