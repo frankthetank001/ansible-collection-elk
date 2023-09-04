@@ -39,19 +39,19 @@ elasticsearch_default_node_roles:
   - transform
 
 elasticsearch_users:
-  - username: beats_system
+  beats_system:
     password: beats_p4ssword
-  - username: apm_system
+  apm_system:
     password: aPmP4ssW0rd
-  - username: kibana
+  kibana:
     password: K1b4nap4sSw0rd
-  - username: kibana_system
+  kibana_system:
     password: K1b4nap4sSw0rd
-  - username: logstash_system
+  logstash_system:
     password: l0gst4sHpAssw0rd
-  - username: logstash_user
+  logstash_user:
     password: l0gst4sHpAssw0rd
-  - username: remote_monitoring_user
+  remote_monitoring_user:
     password: Rem0t3.Mon1t0ringU
 
 elasticsearch_resolv_mode: dns # hosts

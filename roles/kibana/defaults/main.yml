@@ -20,8 +20,7 @@ elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
 elasticsearch_ca_root: elasticsearch-root-ca.pem
 elasticsearch_security_enabled: yes
 elasticsearch_https_enabled: yes
-elasticsearch_username: kibana_system
-elasticsearch_password: K1b4nap4sSw0rd
+kibana_elasticsearch_username: kibana_system
 elasticsearch_ca_root_manually_provided: no
 elasticsearch_ca_intermediate_manually_provided: no
 

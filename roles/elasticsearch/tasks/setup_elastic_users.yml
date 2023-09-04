@@ -38,14 +38,14 @@
 
 - name: Setup ELK users
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.username }}/_password"
+    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.key }}/_password"
     user: elastic
     password: "{{ elasticsearch_username }}"
     method: POST
-    body: {"password" : "{{ item.password }}"} 
+    body: {"password" : "{{ item.value.password }}"}
     force_basic_auth: yes
     validate_certs: no
     status_code: 200
     body_format: json
-  with_items: "{{ elasticsearch_users }}"
+  with_dict: "{{ elasticsearch_users }}"
   run_once: true
