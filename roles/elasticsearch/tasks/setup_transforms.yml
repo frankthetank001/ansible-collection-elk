@@ -17,21 +17,19 @@
 - name: Debug transform_check
   ansible.builtin.debug:
     var: transform_check
-    
-- name: Execute transforms
+
+- name: Create transforms
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_item | basename | regex_replace('\\.json$', '') }}"
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
-    body: "{{ lookup('template', transform_item) }}"
+    body: "{{ lookup('template', transform_result.transform_item) }}"
     force_basic_auth: yes
     validate_certs: no
     status_code: 200
     body_format: json
-  when: transform_check.status == 404  # Only execute when the transform does not exist
+  when: transform_result.status == 404  # Replace with a condition that makes sense for your use case
+  loop: "{{ transform_check.results }}"
   loop_control:
-    loop_var: transform_item
-  with_fileglob:
-    - "{{ role_path }}/files/transforms/*.json"
-  run_once: true
+    loop_var: transform_result
