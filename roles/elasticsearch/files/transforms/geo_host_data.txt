@@ -1,0 +1,73 @@
+{
+  "id": "geo_host_data",
+  "authorization": {
+    "roles": [
+      "superuser"
+    ]
+  },
+  "source": {
+    "index": [
+      "*filebeat*"
+    ],
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "bool": {
+              "should": [
+                {
+                  "exists": {
+                    "field": "Server.Public_IP"
+                  }
+                }
+              ],
+              "minimum_should_match": 1
+            }
+          },
+          {
+            "bool": {
+              "should": [
+                {
+                  "exists": {
+                    "field": "Server.Name.keyword"
+                  }
+                }
+              ],
+              "minimum_should_match": 1
+            }
+          },
+          {
+            "bool": {
+              "should": [
+                {
+                  "exists": {
+                    "field": "host.geo.location"
+                  }
+                }
+              ],
+              "minimum_should_match": 1
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "geo_host_data",
+    "pipeline": "geoip-info"
+  },
+  "frequency": "30m",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "Server.Name.keyword"
+    ],
+    "sort": "@timestamp"
+  },
+  "settings": {}
+}

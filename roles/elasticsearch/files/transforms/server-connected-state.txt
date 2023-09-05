@@ -1,0 +1,35 @@
+{
+  "id": "server-connected-state",
+  "authorization": {
+    "roles": [
+      "superuser"
+    ]
+  },
+  "source": {
+    "index": [
+      "*filebeat*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "server-connected-state"
+  },
+  "frequency": "5m",
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "Server.Connected",
+      "Server.Instance.keyword"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "the last known status of the server (connected or not to chat server)",
+  "settings": {}
+}'

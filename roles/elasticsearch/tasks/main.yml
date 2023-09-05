@@ -29,3 +29,10 @@
       tags: elkusers,elasticsearch
   tags: elkusers,elasticsearch
   when: elasticsearch_security_enabled
+
+- include_tasks: "{{ item }}"
+  loop:
+    - setup_ingest_pipelines.yml
+    - setup_index_templates.yml
+    - setup_transforms.yml
+  tags: elkindexes,elasticsearch

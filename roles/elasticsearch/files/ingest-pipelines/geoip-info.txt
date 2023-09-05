@@ -1,0 +1,22 @@
+PUT _ingest/pipeline/geoip-info
+{
+  "description": "Add geoip info",
+  "processors": [
+    {
+      "geoip": {
+        "field": "Server.Event.Connection.IP",
+        "target_field": "client.geo",
+        "database_file": "GeoLite2-City.mmdb",
+        "ignore_failure": true
+      }
+    },
+    {
+      "geoip": {
+        "field": "Server.Public_IP",
+        "target_field": "host.geo",
+        "database_file": "GeoLite2-City.mmdb",
+        "ignore_failure": true
+      }
+    }
+  ]
+}

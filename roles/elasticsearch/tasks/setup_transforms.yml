@@ -1,0 +1,14 @@
+- name: Execute transforms
+    ansible.builtin.uri:
+      url: "{{ virtual_proto }}://localhost:9200/_transform/{{ item | basename | regex_replace('\\.txt$', '') }}"
+      user: elastic
+      password: "{{ elasticsearch_users['elastic']['password'] }}"
+      method: PUT
+      body: "{{ lookup('file', item) }}"
+      force_basic_auth: yes
+      validate_certs: no
+      status_code: 200
+      body_format: json
+    with_fileglob:
+      - "{{ role_path }}/files/transforms/*.txt"
+    run_once: true

@@ -1,0 +1,33 @@
+{
+  "id": "server-count-per-region",
+  "authorization": {
+    "roles": [
+      "superuser"
+    ]
+  },
+  "source": {
+    "index": [
+      "server-list*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "server-count-per-region"
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "region.keyword"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "server-count-per-region",
+  "settings": {}
+}
