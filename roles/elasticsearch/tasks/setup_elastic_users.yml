@@ -7,7 +7,7 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/role/logstash_writer"
     user: elastic
-    password: "{{ elasticsearch_username }}"
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
     body:
       cluster: ["monitor", "manage_index_templates", "manage_ingest_pipelines"]  # Cluster level permissions
