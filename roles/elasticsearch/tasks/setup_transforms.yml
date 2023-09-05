@@ -1,3 +1,18 @@
+- name: Check if transform exists
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_item | basename | regex_replace('\\.json$', '') }}"
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: GET
+    validate_certs: no
+    status_code: [200, 404]
+  register: transform_check
+  loop_control:
+    loop_var: transform_item
+  with_fileglob:
+    - "{{ role_path }}/files/transforms/*.json"
+  run_once: true
+
 - name: Execute transforms
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_item | basename | regex_replace('\\.json$', '') }}"
@@ -9,8 +24,9 @@
     validate_certs: no
     status_code: 200
     body_format: json
-  with_fileglob:
-    - "{{ role_path }}/files/transforms/*.json"
+  when: transform_check.status == 404  # Only execute when the transform does not exist
   loop_control:
     loop_var: transform_item
+  with_fileglob:
+    - "{{ role_path }}/files/transforms/*.json"
   run_once: true
