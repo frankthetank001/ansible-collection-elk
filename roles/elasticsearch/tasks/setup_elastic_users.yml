@@ -24,10 +24,10 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/user/logstash_user"
     user: elastic
-    password: "{{ elasticsearch_username }}"
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST
     body:
-      password: "{{ elasticsearch_username }}"
+      password: "{{ elasticsearch_users['elastic']['password'] }}"
       roles: ["logstash_writer"]
       full_name: "Logstash User"
     force_basic_auth: yes
@@ -40,7 +40,7 @@
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.key }}/_password"
     user: elastic
-    password: "{{ elasticsearch_username }}"
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST
     body: {"password" : "{{ item.value.password }}"}
     force_basic_auth: yes
@@ -48,4 +48,5 @@
     status_code: 200
     body_format: json
   with_dict: "{{ elasticsearch_users }}"
+  when: item.key != "elastic"
   run_once: true

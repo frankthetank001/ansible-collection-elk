@@ -2,3 +2,4 @@
 secrets.yml
 hosts.ini
 vars.yml
+vagrant

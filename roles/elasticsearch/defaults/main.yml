@@ -53,6 +53,8 @@ elasticsearch_users:
     password: l0gst4sHpAssw0rd
   remote_monitoring_user:
     password: Rem0t3.Mon1t0ringU
+  elastic:
+    password: changeme
 
 elasticsearch_resolv_mode: dns # hosts
 elasticsearch_install_mode: http # local

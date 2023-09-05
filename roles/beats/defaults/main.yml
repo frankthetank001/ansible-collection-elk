@@ -40,8 +40,7 @@ elasticsearch_local_certs_dir: ~/very_secure_dir
 elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem
 elasticsearch_ca_intermediate: elasticsearch-intermediate-ca.pem
 elasticsearch_ca_root: elasticsearch-root-ca.pem
-elasticsearch_username: elastic
-elasticsearch_password: changeme
+beats_elasticsearch_username: elastic
 elasticsearch_monitoring_enabled: no
 
 elasticsearch_hosts: []
