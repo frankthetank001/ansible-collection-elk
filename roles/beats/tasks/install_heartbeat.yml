@@ -111,7 +111,7 @@
   ansible.builtin.command: > 
     su - {{ beats_user }} -c "{{ beats_extract_dir }}/heartbeat/heartbeat -c {{ heartbeat_conf_dir }}/heartbeat.yml setup -e {{ setup_params }}"
   run_once: true
-  when: not heartbeat_dir.stat.exists
+  when: not heartbeat_dir.stat.exists and heartbeat_setup_dashboards
 
 - name: enable and start heartbeat
   ansible.builtin.systemd:

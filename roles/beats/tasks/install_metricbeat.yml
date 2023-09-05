@@ -152,7 +152,7 @@
   ansible.builtin.command: > 
     su - {{ beats_user }} -c "{{ beats_extract_dir }}/metricbeat/metricbeat -c {{ metricbeat_conf_dir }}/metricbeat.yml setup -e {{ setup_params }}"
   run_once: true
-  when: not metricbeat_dir.stat.exists
+  when: not metricbeat_dir.stat.exists and metricbeat_setup_dashboards
 
 - name: enable and start metricbeat
   ansible.builtin.systemd:

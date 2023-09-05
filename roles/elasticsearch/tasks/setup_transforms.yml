@@ -14,10 +14,6 @@
     - "{{ role_path }}/files/transforms/*.json"
   run_once: true
 
-- name: Debug transform_check
-  ansible.builtin.debug:
-    var: transform_check
-
 - name: Create transforms
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}"

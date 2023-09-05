@@ -15,6 +15,7 @@ filebeat_data_dir: /filebeat
 filebeat_log_dir: /var/log/filebeat
 filebeat_number_of_shards: 1
 filebeat_number_of_replicas: 1
+filebeat_setup_dashboards: yes
 
 metricbeat_conf_dir: /etc/metricbeat
 metricbeat_certs_dir: /etc/metricbeat/certs
@@ -23,6 +24,7 @@ metricbeat_log_dir: /var/log/metricbeat
 metricbeat_number_of_shards: 1
 metricbeat_number_of_replicas: 1
 metricbeat_encryption_key: pG9m3X6eAXdTBrG8h$xchFqi8&Emz!3i
+metricbeat_setup_dashboards: yes
 
 heartbeat_conf_dir: /etc/heartbeat
 heartbeat_certs_dir: /etc/heartbeat/certs
@@ -30,6 +32,7 @@ heartbeat_data_dir: /heartbeat
 heartbeat_log_dir: /var/log/heartbeat
 heartbeat_number_of_shards: 1
 heartbeat_number_of_replicas: 1
+heartbeat_setup_dashboards: yes
 
 setup_kibana_dashboards: no
 kibana_url: ''
