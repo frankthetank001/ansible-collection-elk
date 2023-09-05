@@ -1,0 +1,19 @@
+server {
+    listen 443 ssl;
+    server_name {{ inventory_hostname|lower }};
+  
+    ssl_certificate /etc/letsencrypt/live/{{ inventory_hostname|lower }}/cert.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ inventory_hostname|lower }}/privkey.pem;
+    ssl_protocols TLSv1.2;
+
+    # Add proxy caching here as needed
+
+    location / {
+        proxy_pass http://localhost:5601;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}

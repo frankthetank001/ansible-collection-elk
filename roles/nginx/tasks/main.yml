@@ -1,0 +1,18 @@
+---
+- name: Ensure Nginx is installed
+  apt:
+    name: nginx
+    state: present
+
+- name: Copy Nginx proxy config for Kibana
+  template:
+    src: kibana_nginx_proxy.conf.j2
+    dest: /etc/nginx/sites-available/kibana_proxy
+  notify: Reload Nginx
+
+- name: Enable Nginx proxy config for Kibana
+  file:
+    src: /etc/nginx/sites-available/kibana_proxy
+    dest: /etc/nginx/sites-enabled/kibana_proxy
+    state: link
+  notify: Reload Nginx

@@ -25,3 +25,5 @@ elasticsearch_ca_root_manually_provided: no
 elasticsearch_ca_intermediate_manually_provided: no
 
 elasticsearch_hosts: []
+
+kibana_use_nginx_proxy: false

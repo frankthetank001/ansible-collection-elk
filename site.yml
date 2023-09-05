@@ -32,6 +32,9 @@
         - "elasticsearch_hosts is not defined"
     - import_role:
         name: kibana
+    - import_role:
+        name: nginx_kibana_proxy
+      when: kibana_use_nginx_proxy
 
 - hosts: logstash
   become: yes
