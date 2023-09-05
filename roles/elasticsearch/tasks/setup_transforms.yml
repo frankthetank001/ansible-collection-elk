@@ -14,9 +14,6 @@
     - "{{ role_path }}/files/transforms/*.json"
   run_once: true
 
-- debug:
-    var: transform_check
-    
 - name: Create transforms
   ansible.builtin.uri:
     url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}"
@@ -26,9 +23,9 @@
     body: "{{ lookup('template', transform_result.transform_item) }}"
     force_basic_auth: yes
     validate_certs: no
-    status_code: 200
+    status_code: [200, 400]  # Expect 200 OK if created, 400 if already exists
     body_format: json
-  when: transform_result.status == 404  # Replace with a condition that makes sense for your use case
+  when: transform_result.status == 404  # Run only if transform does not exist
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
