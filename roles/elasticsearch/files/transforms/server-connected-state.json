@@ -32,4 +32,4 @@
   },
   "description": "the last known status of the server (connected or not to chat server)",
   "settings": {}
-}'
+}
