@@ -4,8 +4,9 @@
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: GET
+    force_basic_auth: yes
     validate_certs: no
-    status_code: [200, 404]
+    status_code: [200, 404]  # 200 if exists, 404 if not
   register: transform_check
   loop_control:
     loop_var: transform_item
