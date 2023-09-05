@@ -1,10 +1,5 @@
 {
   "id": "server-count-per-region",
-  "authorization": {
-    "roles": [
-      "superuser"
-    ]
-  },
   "source": {
     "index": [
       "server-list*"

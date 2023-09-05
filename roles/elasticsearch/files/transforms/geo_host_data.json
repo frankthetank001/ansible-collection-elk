@@ -1,10 +1,5 @@
 {
   "id": "geo_host_data",
-  "authorization": {
-    "roles": [
-      "superuser"
-    ]
-  },
   "source": {
     "index": [
       "*filebeat*"

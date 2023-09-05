@@ -1,10 +1,5 @@
 {
   "id": "server-connected-state",
-  "authorization": {
-    "roles": [
-      "superuser"
-    ]
-  },
   "source": {
     "index": [
       "*filebeat*"

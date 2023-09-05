@@ -1,14 +1,16 @@
 - name: Execute ingest pipelines
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_ingest/pipeline/{{ item | basename | regex_replace('\\.json$', '') }}"
+    url: "{{ virtual_proto }}://localhost:9200/_ingest/pipeline/{{ ingest_pipeline_item | basename | regex_replace('\\.json$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
-    body: "{{ lookup('template', item) }}"
+    body: "{{ lookup('template', ingest_pipeline_item) }}"
     force_basic_auth: yes
     validate_certs: no
     status_code: 200
     body_format: json
   with_fileglob:
     - "{{ role_path }}/files/ingest-pipelines/*.json"
+  loop_control:
+    loop_var: ingest_pipeline_item
   run_once: true
