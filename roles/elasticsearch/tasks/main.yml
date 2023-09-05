@@ -35,5 +35,5 @@
     - setup_ingest_pipelines.yml
     - setup_index_templates.yml
     - setup_transforms.yml
-    - setup_index_lifecycle.yml
+    - setup_index_lifecycles.yml
   tags: elkindexes,elasticsearch
