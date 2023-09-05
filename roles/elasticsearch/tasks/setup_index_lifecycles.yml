@@ -1,0 +1,16 @@
+- name: Execute index lifecycle policy
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_ilm/_policy/{{ index_template_item | basename | regex_replace('\\.json$', '') }}"
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: PUT
+    body: "{{ lookup('template', index_lifecycle_item) }}"
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: 200
+    body_format: json
+  with_fileglob:
+    - "{{ role_path }}/files/index-lifecycles/*.json"
+  loop_control:
+    loop_var: index_lifecycle_item
+  run_once: true
