@@ -13,6 +13,7 @@ kibana_old_space_mb: 1024
 kibana_install_mode: http # local
 kibana_local_tar_path: ''
 kibana_encryption_key: pG9m3X6eAXdTBrG8h$xchFqi8&Emz!3i
+kibana_max_payload_bytes: 2097152
 
 elasticsearch_local_certs_dir: ~/very_secure_dir
 elasticsearch_ca_chain_name: elasticsearch-ca-chain.pem

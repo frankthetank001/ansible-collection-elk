@@ -121,7 +121,7 @@ name: {{ ansible_hostname|lower }}
 # website.
 #setup.dashboards.url:
 
-{% if setup_kibana_dashboards %}
+{% if kibana_setup_dashboards %}
 # =================================== Kibana ===================================
 
 # Starting with Beats version 6.0.0, the dashboards are loaded via the Kibana API.

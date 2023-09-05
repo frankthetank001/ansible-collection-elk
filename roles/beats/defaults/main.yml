@@ -34,7 +34,7 @@ heartbeat_number_of_shards: 1
 heartbeat_number_of_replicas: 1
 heartbeat_setup_dashboards: yes
 
-setup_kibana_dashboards: no
+kibana_setup_dashboards: no
 kibana_url: ''
 
 elasticsearch_https_enabled: yes

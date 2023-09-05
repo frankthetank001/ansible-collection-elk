@@ -81,9 +81,9 @@
     - elasticsearch_hosts | length == 0
 
 - ansible.builtin.fail:
-    msg: setup_kibana_dashboards set to true but no kibana_url specified
+    msg: kibana_setup_dashboards set to true but no kibana_url specified
   when:
-    - setup_kibana_dashboards
+    - kibana_setup_dashboards
     - kibana_url == ''
 
 - name: Render metricbeat configuration file
@@ -146,7 +146,7 @@
     - reload systemd
 
 - set_fact:
-    setup_params: "{{ '--dashboards --index-management --pipelines' if setup_kibana_dashboards else '--pipelines --index-management' }}"
+    setup_params: "{{ '--dashboards --index-management --pipelines' if kibana_setup_dashboards else '--pipelines --index-management' }}"
 
 - name: metricbeat setup
   ansible.builtin.command: > 

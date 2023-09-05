@@ -80,9 +80,9 @@
     - elasticsearch_hosts | length == 0
 
 - ansible.builtin.fail:
-    msg: setup_kibana_dashboards set to true but no kibana_url specified
+    msg: kibana_setup_dashboards set to true but no kibana_url specified
   when:
-    - setup_kibana_dashboards
+    - kibana_setup_dashboards
     - kibana_url == ''
 
 - name: Render filebeat configuration file
@@ -105,13 +105,13 @@
     - reload systemd
 
 - set_fact:
-    setup_params: "{{ '--dashboards --index-management --pipelines' if setup_kibana_dashboards else '--pipelines --index-management' }}"
+    setup_params: "{{ '--dashboards --index-management --pipelines' if kibana_setup_dashboards else '--pipelines --index-management' }}"
 
 - name: filebeat setup
   ansible.builtin.command: > 
     su - {{ beats_user }} -c "{{ beats_extract_dir }}/filebeat/filebeat -c {{ filebeat_conf_dir }}/filebeat.yml setup -e {{ setup_params }}"
   run_once: true
-  when: not filebeat_dir.stat.exists
+  when: not filebeat_dir.stat.exists and filebeat_setup_dashboards
 
 - name: enable and start filebeat
   ansible.builtin.systemd:

@@ -32,7 +32,7 @@ Setup and configure elastic Beats
 | `heartbeat_log_dir`              | `/var/log/heartbeat`       | Heartbeat log directory  |
 | `heartbeat_number_of_shards`     | `1`       | Number of shard for the heartbeat index template  |
 | `heartbeat_number_of_replicas`   | `1`       | Number of replica for the heartbeat index template  |
-| `setup_kibana_dashboards`        | `no`       | Install or not the kibana dashboards  |
+| `kibana_setup_dashboards`        | `no`       | Install or not the kibana dashboards  |
 | `kibana_url`                     | `''`       | kibana url required for the setup of the dashboards  |
 | `elasticsearch_local_certs_dir`  | `~/very_secure_dir`       | Local directory where the Elasticsearch certificates are stored  |
 | `elasticsearch_ca_chain_name`          | `elasticsearch-ca.pem`       | Elasticsearch CA name  |
