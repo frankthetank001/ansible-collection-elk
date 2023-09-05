@@ -33,7 +33,7 @@
     - import_role:
         name: kibana
     - import_role:
-        name: nginx_kibana_proxy
+        name: nginx
       when: kibana_use_nginx_proxy
 
 - hosts: logstash
