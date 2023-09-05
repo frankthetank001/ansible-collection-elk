@@ -66,7 +66,11 @@ path.logs: {{ elasticsearch_log_dir }}
 # address here to expose this node on the network:
 #
 network.host: 0.0.0.0
+{% if elasticsearch_resolv_mode == 'dns' %}
+network.publish_host: {{ inventory_hostname|lower }}
+{% else %}
 network.publish_host: {{ elastic_ip_address }}
+{% endif %}
 #
 # By default Elasticsearch listens for HTTP traffic on the first free port it
 # finds starting at 9200. Set a specific HTTP port here:
