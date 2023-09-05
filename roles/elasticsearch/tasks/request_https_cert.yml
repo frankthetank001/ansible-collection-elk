@@ -38,6 +38,10 @@
   register: elastic_root_ca_file
   delegate_to: localhost
 
+- name: Debug elasticsearch_local_certs_dir
+  ansible.builtin.debug:
+    msg: "elasticsearch_local_certs_dir value is: {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+
 - name: Copy remote letsencrypt CA to local files
   fetch:
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
