@@ -1,6 +1,6 @@
 - name: Execute index lifecycle policy
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_ilm/_policy/{{ index_lifecycle_item | basename | regex_replace('\\.json$', '') }}"
+    url: "{{ virtual_proto }}://localhost:9200/_ilm/policy/{{ index_lifecycle_item | basename | regex_replace('\\.json$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
