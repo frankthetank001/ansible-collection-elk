@@ -26,66 +26,72 @@
   become: true
   register: cert_requested
 
-- name: Local intermediate exists
+- name: Local | intermediate exists
   stat:
     path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
   register: elastic_intermediate_ca_file
+  delegate_to: localhost
 
-- name: Local root exists
+- name: Local | root exists
   stat:
     path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   register: elastic_root_ca_file
+  delegate_to: localhost
 
-- name: Copy letsencrypt CA to local files
-  ansible.builtin.copy:
+- name: Copy remote letsencrypt CA to local files
+  fetch:
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-    remote_src: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
 
-- name: Slurp the chain.pem content
+- name: Local | Slurp the chain.pem content
   slurp:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   register: slurped_chain
+  delegate_to: localhost
 
-- name: Decode the chain content
+- name: Local | Decode the chain content
   set_fact:
     chain_content: "{{ slurped_chain['content'] | b64decode | regex_replace('\r\n', '\n') }}"
 
-- name: Split the chain content into individual certificates
+- name: Local | Split the chain content into individual certificates
   set_fact:
     certificates: "{{ chain_content.split('-----END CERTIFICATE-----') | select('search', 'CERTIFICATE') | list }}"
 
-- name: Write the intermediate certificate to its own file
+- name: Local | Write the intermediate certificate to its own file
   copy:
     content: "{{ certificates[0] }}-----END CERTIFICATE-----\n"
     dest: "/tmp/{{ elasticsearch_ca_intermediate }}"
   changed_when: false
+  delegate_to: localhost
 
-- name: Copy the intermediate CA file to local certs storage
+- name: Local | Copy the intermediate CA file to local certs storage
   ansible.builtin.copy:
     src: "/tmp/{{ elasticsearch_ca_intermediate }}"
     dest: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
   when:
     - not elastic_intermediate_ca_file.stat.exists or elastic_intermediate_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_intermediate) | hash('sha256'))
     - not elasticsearch_ca_intermediate_manually_provided
+  delegate_to: localhost
 
-- name: Write the root certificate to its own file
+- name: Local | Write the root certificate to its own file
   copy:
     content: "{{ certificates[1] }}-----END CERTIFICATE-----\n"
     dest: "/tmp/{{ elasticsearch_ca_root }}"
   changed_when: false
+  delegate_to: localhost
 
-- name: Copy the root CA file to local certs storage
+- name: Local | Copy the root CA file to local certs storage
   ansible.builtin.copy:
     src: "/tmp/{{ elasticsearch_ca_root }}"
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   when:
     - not elastic_root_ca_file.stat.exists or (elastic_root_ca_file.stat.exists and elastic_root_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_root) | hash('sha256')))
     - not elasticsearch_ca_root_manually_provided
+  delegate_to: localhost
 
 - name: Check for missing intermediate certificate
   fail:
@@ -168,6 +174,7 @@
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
+    remote_src: true
     mode: 0644
   when: https_cert_issued_by_local_ca or cert_requested.changed or not elastic_keystore_file.stat.exists
   become: true
@@ -182,6 +189,7 @@
     dest: "{{ elasticsearch_certs_dir }}/http.p12"
     owner: "{{ elasticsearch_user }}"
     group: "{{ elasticsearch_group }}"
+    remote_src: true
     mode: 0644
   when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists
   become: true
@@ -243,14 +251,16 @@
     enabled: true
   become: true
 
-- name: Cleanup locally created temporary certificates 1/2
+- name: Local | Cleanup locally created temporary certificates 1/2
   file:
     path: "/tmp/{{ elasticsearch_ca_intermediate }}"
     state: absent
   changed_when: false
+  delegate_to: localhost
     
-- name: Cleanup locally created temporary certificates 2/2
+- name: Local | Cleanup locally created temporary certificates 2/2
   file:
     path: "/tmp/{{ elasticsearch_ca_root }}"
     state: absent
   changed_when: false
+  delegate_to: localhost
