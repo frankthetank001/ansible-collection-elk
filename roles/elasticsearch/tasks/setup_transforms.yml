@@ -12,14 +12,13 @@
     loop_var: transform_item
   with_fileglob:
     - "{{ role_path }}/templates/transforms/*.json.j2"
-  run_once: true
 
-- name: Debug - Show transform item name and status
-  debug:
-    msg: "Transform Item: {{ transform_result.transform_item }}, Status: {{ transform_result.status }}"
-  loop: "{{ transform_check.results }}"
-  loop_control:
-    loop_var: transform_result
+# - name: Debug - Show transform item name and status
+#   debug:
+#     msg: "Transform Item: {{ transform_result.transform_item }}, Status: {{ transform_result.status }}"
+#   loop: "{{ transform_check.results }}"
+#   loop_control:
+#     loop_var: transform_result
 
 - name: Create transforms
   ansible.builtin.uri:
@@ -36,28 +35,6 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
-
-- name: Debug - Output the result of transform creation
-  ansible.builtin.debug:
-    var: transform_result
-
-- name: Debug - Check if transform actually exists now
-  ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
-    user: elastic
-    password: "{{ elasticsearch_users['elastic']['password'] }}"
-    method: GET
-    force_basic_auth: yes
-    validate_certs: no
-    status_code: [200, 404]  # 200 if exists, 404 if not
-  loop: "{{ transform_check.results }}"
-  loop_control:
-    loop_var: transform_result
-  register: debug_transform_check
-
-- name: Debug - Output the result of the debug transform check
-  ansible.builtin.debug:
-    var: debug_transform_check.results
 
 - name: Start transforms
   ansible.builtin.uri:
