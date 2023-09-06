@@ -1,6 +1,6 @@
 - name: Check if transform exists
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_item | basename | regex_replace('\\.json$', '') }}"
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: GET
@@ -11,12 +11,12 @@
   loop_control:
     loop_var: transform_item
   with_fileglob:
-    - "{{ role_path }}/files/transforms/*.json"
+    - "{{ role_path }}/templates/transforms/*.json.j2"
   run_once: true
 
 - name: Create transforms
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}"
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
@@ -32,7 +32,7 @@
 
 - name: Start transforms
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}/_start"
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}/_start"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST

@@ -1,6 +1,14 @@
 {
     "template": {
         "settings": {
+            "index": {
+                "lifecycle": {
+                    "name": "filebeat"
+                },
+                "refresh_interval": "5s",
+                "number_of_shards": "{{ elasticsearch_hosts | length }}",
+                "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+            }
         },
         "mappings": {
             "_routing": {
