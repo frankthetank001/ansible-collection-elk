@@ -13,6 +13,7 @@
   with_fileglob:
     - "{{ role_path }}/templates/transforms/*.json.j2"
   run_once: true
+  delegate_to: localhost
 
 - name: Create transforms
   ansible.builtin.uri:
@@ -29,6 +30,7 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
+  delegate_to: localhost
 
 - name: Start transforms
   ansible.builtin.uri:
@@ -42,3 +44,4 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
+  delegate_to: localhost

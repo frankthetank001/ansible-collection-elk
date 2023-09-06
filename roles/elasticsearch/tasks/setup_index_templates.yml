@@ -14,3 +14,4 @@
   loop_control:
     loop_var: index_template_item
   run_once: true
+  delegate_to: localhost
