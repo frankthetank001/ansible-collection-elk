@@ -1,14 +1,6 @@
 {
     "template": {
         "settings": {
-            "index": {
-                "lifecycle": {
-                    "name": "filebeat"
-                },
-                "refresh_interval": "5s",
-                "number_of_shards": "1",
-                "number_of_replicas": "0"
-            }
         },
         "mappings": {
             "_routing": {

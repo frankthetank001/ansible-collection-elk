@@ -2,7 +2,7 @@
   "id": "geo_host_data",
   "source": {
     "index": [
-      "*filebeat*"
+      "hon-logs"
     ],
     "query": {
       "bool": {
