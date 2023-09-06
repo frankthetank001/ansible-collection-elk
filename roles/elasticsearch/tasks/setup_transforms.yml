@@ -35,7 +35,7 @@
   loop_control:
     loop_var: transform_item
   with_fileglob:
-    - "{{ role_path }}/files/transforms/*.json"
+    - "{{ role_path }}/templates/transforms/*.json.j2"
   register: transform_result
 
 # - name: Start transforms
