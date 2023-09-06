@@ -29,3 +29,16 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
+
+- name: Start transforms
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json$', '') }}/_start"
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: POST
+    force_basic_auth: yes
+    validate_certs: no
+    status_code: [200, 409]  # Expect 200 OK if started, 409 if already running
+  loop: "{{ transform_check.results }}"
+  loop_control:
+    loop_var: transform_result
