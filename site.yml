@@ -1,7 +1,7 @@
 ---
 - hosts: elasticsearch
   become: yes
-  remote_user: vagrant
+  #remote_user: vagrant
   vars_files:
     - vars.yml
     - secrets.yml
@@ -18,7 +18,7 @@
 
 - hosts: kibana
   become: yes
-  remote_user: vagrant
+  #remote_user: vagrant
   vars_files:
     - vars.yml
     - secrets.yml
@@ -38,7 +38,7 @@
 
 - hosts: logstash
   become: yes
-  remote_user: vagrant
+  #remote_user: vagrant
   vars_files:
     - vars.yml
     - secrets.yml
@@ -55,7 +55,7 @@
 
 - hosts: elasticsearch
   become: yes
-  remote_user: vagrant
+  #remote_user: vagrant
   vars_files:
     - vars.yml
     - secrets.yml

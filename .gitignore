@@ -3,3 +3,4 @@ secrets.yml
 hosts.ini
 vars.yml
 .vagrant/
+ansible.cfg
