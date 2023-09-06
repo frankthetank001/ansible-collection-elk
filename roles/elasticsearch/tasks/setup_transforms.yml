@@ -13,7 +13,13 @@
   with_fileglob:
     - "{{ role_path }}/templates/transforms/*.json.j2"
   run_once: true
-  delegate_to: localhost
+
+- name: Debug - Show transform item name and status
+  debug:
+    msg: "Transform Item: {{ transform_result.transform_item }}, Status: {{ transform_result.status }}"
+  loop: "{{ transform_check.results }}"
+  loop_control:
+    loop_var: transform_result
 
 - name: Create transforms
   ansible.builtin.uri:
@@ -30,7 +36,6 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
-  delegate_to: localhost
 
 - name: Start transforms
   ansible.builtin.uri:
@@ -44,4 +49,3 @@
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
-  delegate_to: localhost
