@@ -34,17 +34,54 @@
         "Match.Players_Connected": {
           "type": "integer"
         },
-        "Match.Player.Ping": {
-          "type": "integer"
-        },
-        "ping": {
-          "type": "integer"
-        },
-        "average_ping": {
-          "type": "integer"
-        },
-        "Match.Average_Ping": {
-          "type": "integer"
+        "Diagnostics": {
+          "properties": {
+            "ping": {
+              "type": "integer"
+            },
+            "average_ping": {
+              "type": "integer"
+            },
+            "clients_connected": {
+              "type": "integer"
+            },
+            "client_ip": {
+              "type": "ip"
+            },
+            "client_name": {
+              "type": "keyword"
+            },
+            "reliable_sv_sent": {
+              "type": "integer"
+            },
+            "reliable_cl_ack": {
+              "type": "integer"
+            },
+            "reliable_cl_sent": {
+              "type": "integer"
+            },
+            "reliable_sv_ack": {
+              "type": "integer"
+            },
+            "unreliable_sv_sent": {
+              "type": "integer"
+            },
+            "unreliable_cl_recv": {
+              "type": "integer"
+            },
+            "unreliable_cl_sent": {
+              "type": "integer"
+            },
+            "unreliable_sv_recv": {
+              "type": "integer"
+            },
+            "load_average": {
+              "type": "float"
+            },
+            "total_long_server_frames": {
+              "type": "integer"
+            }
+          }
         },
         "geo.client.location": {
           "type": "geo_point"
