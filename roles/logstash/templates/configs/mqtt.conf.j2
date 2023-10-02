@@ -29,6 +29,38 @@ filter {
     mutate {
       remove_field => ["message", "timestamp"]
     }
+    if [game_phase] {
+      translate {
+        source => "game_phase"
+        target => "game_phase_desc"
+        dictionary => {
+          "0" => "IDLE"
+          "1" => "IN_LOBBY"
+          "2" => "BANNING_PHASE"
+          "3" => "PICKING_PHASE"
+          "4" => "LOADING_INTO_MATCH"
+          "5" => "PREPERATION_PHASE"
+          "6" => "MATCH_STARTED"
+          "7" => "GAME_ENDING"
+          "8" => "GAME_ENDED"
+        }
+        fallback => "UNKNOWN_PHASE"
+      }
+    }
+    if [status] {
+      translate {
+        source => "status"
+        target => "status_desc"
+        dictionary => {
+         "0" => "SLEEPING"
+         "1" => "READY"
+         "3" => "OCCUPIED"
+         "4" => "STARTING"
+         "5" => "QUEUED"
+        }
+        fallback => "UNKNOWN_STATUS"
+      }
+    }
   }
 }
 
