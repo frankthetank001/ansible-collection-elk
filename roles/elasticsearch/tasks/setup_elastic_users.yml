@@ -27,7 +27,7 @@
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST
     body:
-      password: "{{ elasticsearch_users['elastic']['password'] }}"
+      password: "{{ elasticsearch_users['logstash_user']['password'] }}"
       roles: ["logstash_writer"]
       full_name: "Logstash User"
     force_basic_auth: yes
