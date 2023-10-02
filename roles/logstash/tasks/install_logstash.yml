@@ -219,6 +219,9 @@
     - "{{ role_path }}/templates/configs/*.conf.j2"
   loop_control:
     loop_var: config_item
+  notify:
+    - check if logstash is active
+    - restart logstash
 
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
