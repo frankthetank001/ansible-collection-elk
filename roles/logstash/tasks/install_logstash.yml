@@ -203,7 +203,7 @@
 - name: Copy all logstash .conf files from templates to destination
   ansible.builtin.template:
     src: "{{ config_item }}"
-    dest: "{{ logstash_conf_dir }}/conf.d/{{ config_item | basename | regex_replace('\\.conf\\.j2$', '') }}"
+    dest: "{{ logstash_conf_dir }}/conf.d/{{ config_item | basename | regex_replace('\\.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
@@ -215,7 +215,7 @@
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
     src: "{{ script_item }}"
-    dest: "{{ logstash_conf_dir }}/scripts/{{ script_item | basename | regex_replace('\\.*\\.j2$', '') }}"
+    dest: "{{ logstash_conf_dir }}/scripts/{{ script_item | basename | regex_replace('\\.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
