@@ -59,14 +59,19 @@
 
 - name: Get certificate end date
   command: >
-    openssl x509 -enddate -noout -in {{ logstash_certs_dir }}/logstash.pem
-  register: cert_end_date
+    openssl x509 -enddate -noout -in {{ logstash_certs_dir }}/logstash.pem | cut -d= -f2-
+  register: cert_end_date_raw
   when: client_cert.stat.exists
   changed_when: false
 
+- name: Convert certificate end date to epoch
+  set_fact:
+    cert_end_epoch: "{{ (cert_end_date_raw.stdout | to_datetime('%b %d %H:%M:%S %Y %Z')).strftime('%s') }}"
+  when: client_cert.stat.exists
+
 - name: Determine if certificate is still valid
   set_fact:
-    cert_is_valid: "{{ 'notAfter=' + (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ') | strftime('%b %d %H:%M:%S %Y %Z')) not in cert_end_date.stdout }}"
+    cert_is_valid: "{{ (ansible_date_time.epoch | int) < (cert_end_epoch | int) }}"
   when: client_cert.stat.exists
 
 - name: Register a client certificate
