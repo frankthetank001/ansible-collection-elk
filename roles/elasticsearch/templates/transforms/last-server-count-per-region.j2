@@ -1,17 +1,16 @@
 {
-  "id": "server-connected-state",
+  "id": "last-server-count-per-region",
   "source": {
     "index": [
-      "*filebeat*"
+      "server-list*"
     ],
     "query": {
       "match_all": {}
     }
   },
   "dest": {
-    "index": "server-connected-state"
+    "index": "last-server-count-per-region"
   },
-  "frequency": "5m",
   "sync": {
     "time": {
       "field": "@timestamp",
@@ -20,11 +19,10 @@
   },
   "latest": {
     "unique_key": [
-      "Server.Connected",
-      "Server.Instance.keyword"
+      "region.keyword"
     ],
     "sort": "@timestamp"
   },
-  "description": "the last known status of the server (connected or not to chat server)",
+  "description": "last-server-count-per-region",
   "settings": {}
 }

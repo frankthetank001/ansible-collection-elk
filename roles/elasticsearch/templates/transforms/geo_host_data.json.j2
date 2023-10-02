@@ -1,5 +1,5 @@
 {
-  "id": "geo_host_data",
+  "id": "last-geo-host-data",
   "source": {
     "index": [
       "*filebeat*"
@@ -48,7 +48,7 @@
     }
   },
   "dest": {
-    "index": "geo_host_data",
+    "index": "last-geo-host-data",
     "pipeline": "geoip-info"
   },
   "frequency": "30m",
