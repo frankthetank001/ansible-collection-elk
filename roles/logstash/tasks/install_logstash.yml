@@ -156,7 +156,7 @@
 - name: Copy additional Intermediate CAs
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ logstash_certs_dir }}/ca/{{ item.filename }}"
+    dest: "{{ logstash_certs_dir }}/ca/{{ item.path | basename }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
@@ -180,7 +180,7 @@
 - name: Copy additional Root CAs
   ansible.builtin.copy:
     src: "{{ item.path }}"
-    dest: "{{ logstash_certs_dir }}/ca/{{ item.filename }}"
+    dest: "{{ logstash_certs_dir }}/ca/{{ item.path | basename }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
