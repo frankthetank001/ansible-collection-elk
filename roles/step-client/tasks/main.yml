@@ -82,6 +82,9 @@
   vars:
     ansible_become: yes
   when: step_password is defined and (not client_cert.stat.exists or not cert_is_valid)
+  notify:
+    - check if logstash is active
+    - restart logstash
 
 - name: Remove password file
   file:
