@@ -183,7 +183,21 @@
 - name: Ensure conf.d directory exists
   ansible.builtin.file:
     path: "{{ logstash_conf_dir }}/conf.d"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/scripts"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Ensure certs/ca directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/certs/ca"
     state: directory
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
 
 - name: Copy all logstash .conf files from templates to destination
   ansible.builtin.template:
@@ -193,13 +207,6 @@
     group: "{{ logstash_group }}"
     mode: 0644
   loop: "{{ lookup('fileglob', 'templates/configs/*.conf.j2', wantlist=True) }}"
-
-- name: Ensure logstash scripts directory exists
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/scripts"
-    state: directory
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
 
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
