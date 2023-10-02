@@ -48,7 +48,22 @@
                             "ignore_above": 256
                         }
                     }
-                }
+                },
+                players.ip {
+                    "type": ip
+                },,
+                svr_ip {
+                    "type": ip
+                },
+                "current_match_id": {
+                    "type": "integer",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
             }
         }
     },
