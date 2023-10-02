@@ -62,6 +62,29 @@
     path: "{{ password_file }}"
     state: absent
 
+- name: Stat and adjust permissions for cert and key
+  block:
+    - name: Stat files
+      stat:
+        path: "{{ item.path }}"
+      register: stat_result
+      loop:
+        - { name: 'certificate', path: "{{ logstash_certs_dir }}/{{ logstash_mqtt_client_cert }}", mode: '0644' }
+        - { name: 'key', path: "{{ logstash_certs_dir }}/{{ logstash_mqtt_client_key }}", mode: '0600' }
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Adjust file permissions
+      ansible.builtins.file:
+        path: "{{ item.item.path }}"
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: "{{ item.item.mode }}"
+      when: item.stat.exists
+      loop: "{{ stat_result.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
 - name: Deploy cert-renewer@.service systemd unit
   template:
     src: cert-renewer@.service.j2

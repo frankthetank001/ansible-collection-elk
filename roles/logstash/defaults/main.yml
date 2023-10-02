@@ -14,7 +14,7 @@ logstash_keystore_password: L0gst4shP4ssw0rd
 logstash_mqtt_client_mtls: true
 logstash_mqtt_root_cert: "step-ca-root.crt"
 logstash_mqtt_intermediate_cert: "step-ca-intermediate.crt"
-logstash_mqtt_client_cert: "logstash.crt"
+logstash_mqtt_client_cert: "logstash.pem"
 logstash_mqtt_client_key: "logstash.key"
 logstash_mqtt_host: "doormat.honfigurator.app"
 logstash_mqtt_ssl_port: 8883
