@@ -25,7 +25,7 @@
     validate_certs: no
     status_code: [200]  # Expect 200 OK if created, 400 if already exists
     body_format: json
-  when: transform_result.status == 404  # Run only if transform does not exist
+  # when: transform_result.status == 404  # Run only if transform does not exist
   loop: "{{ transform_check.results }}"
   loop_control:
     loop_var: transform_result
