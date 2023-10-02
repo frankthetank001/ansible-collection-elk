@@ -1,9 +1,10 @@
 input {
+  {% for topic in logstash_mqtt_topics %}
   mqtt {
-    host => "45.132.247.12"
-    port => 8883
+    host => "{{ logstash_mqtt_host }}"
+    port => {{ logstash_mqtt_ssl_port }}
     logfile => "/tmp/mqtt.log"
-    topic => "game_server/+"
+    topic => "{{ topic }}"
     qos => 1
     type => "mqtt"
     clean_session => true
@@ -12,19 +13,7 @@ input {
     key_path => "{{ logstash_certs_dir }}/logstash.key"
     root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_intermediate_cert }}"
   }
-  mqtt {
-    host => "45.132.247.12"
-    port => 8883
-    logfile => "/tmp/mqtt.log"
-    topic => "manager/+"
-    qos => 1
-    type => "mqtt"
-    clean_session => true
-    ssl => true
-    certificate_path => "{{ logstash_certs_dir }}/logstash.crt"
-    key_path => "{{ logstash_certs_dir }}/logstash.key"
-    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_intermediate_cert }}"
-  }
+  {% endfor %}
 }
 
 filter {
