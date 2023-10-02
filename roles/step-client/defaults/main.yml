@@ -3,3 +3,4 @@ root_ca_url: https://hon-elk.honfigurator.app/roots.pem
 ca_server_url: https://hon-elk.honfigurator.app
 logstash_certs_dir: /etc/logstash/certs
 password_file: /tmp/.step-provisioner-pw
+step_password: testpassword
