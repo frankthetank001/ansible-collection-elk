@@ -25,15 +25,18 @@
   stat:
     path: "{{ user_home }}/.step/certs/root_ca.crt"
   register: root_ca_check
+  changed_when: false
 
 - name: Get fingerprint of existing root_ca.crt
   command: step certificate fingerprint {{ user_home }}/.step/certs/root_ca.crt
   register: existing_fingerprint
   when: root_ca_check.stat.exists
+  changed_when: false
 
 - name: Get fingerprint of /tmp/root.crt
   command: step certificate fingerprint /tmp/root.crt
   register: tmp_fingerprint
+  changed_when: false
 
 - name: Bootstrap the CA
   command: >
@@ -47,6 +50,24 @@
     dest: "{{ password_file }}"
     mode: '0600'
   when: step_password is defined
+  changed_when: false
+
+- name: Check if client certificate exists
+  stat:
+    path: "{{ logstash_certs_dir }}/logstash.pem"
+  register: client_cert
+
+- name: Get certificate end date
+  command: >
+    openssl x509 -enddate -noout -in {{ logstash_certs_dir }}/logstash.pem
+  register: cert_end_date
+  when: client_cert.stat.exists
+  changed_when: false
+
+- name: Determine if certificate is still valid
+  set_fact:
+    cert_is_valid: "{{ 'notAfter=' + (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ') | strftime('%b %d %H:%M:%S %Y %Z')) not in cert_end_date.stdout }}"
+  when: client_cert.stat.exists
 
 - name: Register a client certificate
   command: >
@@ -55,12 +76,13 @@
     --force --provisioner step --not-after=168h
   vars:
     ansible_become: yes
-  when: step_password is defined
+  when: step_password is defined and (not client_cert.stat.exists or not cert_is_valid)
 
 - name: Remove password file
   file:
     path: "{{ password_file }}"
     state: absent
+  changed_when: false
 
 - name: Stat and adjust permissions for cert and key
   block:
