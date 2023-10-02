@@ -108,6 +108,25 @@
     - check if logstash is active
     - restart logstash
 
+- name: Ensure conf.d directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/conf.d"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/scripts"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Ensure certs/ca directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/certs/ca"
+    state: directory
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
 - name: Copy elastic CA
   ansible.builtin.copy:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -179,25 +198,6 @@
   notify:
     - check if logstash is active
     - restart logstash
-
-- name: Ensure conf.d directory exists
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/conf.d"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-
-- name: Ensure scripts directory exists
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/scripts"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-
-- name: Ensure certs/ca directory exists
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/certs/ca"
-    state: directory
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
 
 - name: Copy all logstash .conf files from templates to destination
   ansible.builtin.template:
