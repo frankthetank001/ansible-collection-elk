@@ -26,7 +26,30 @@
             },
             "dynamic": true,
             "dynamic_templates": [],
-            "date_detection": true
+            "date_detection": true,
+            "properties": {
+                "svr_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "instance_id": {
+                    "type": "integer"
+                },      
+                "instance_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                }
+            }
         }
     },
     "index_patterns": [
