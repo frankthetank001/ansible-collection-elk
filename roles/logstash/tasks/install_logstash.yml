@@ -202,21 +202,27 @@
 
 - name: Copy all logstash .conf files from templates to destination
   ansible.builtin.template:
-    src: "{{ item | basename }}"
-    dest: "{{ logstash_conf_dir }}/conf.d/{{ item | basename | regex_replace('.j2$', '') }}"
+    src: "{{ config_item }}"
+    dest: "{{ logstash_conf_dir }}/conf.d/{{ config_item | basename | regex_replace('\\.conf\\.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
-  loop: "{{ lookup('fileglob', 'configs/*.conf.j2', wantlist=True) | map('basename') | list }}"
+  with_fileglob:
+    - "{{ role_path }}/templates/configs/*.conf.j2"
+  loop_control:
+    loop_var: config_item
 
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
-    src: "configs/{{ item }}"
-    dest: "{{ logstash_conf_dir }}/scripts/{{ item | basename | regex_replace('.j2$', '') }}"
+    src: "{{ script_item }}"
+    dest: "{{ logstash_conf_dir }}/scripts/{{ script_item | basename | regex_replace('\\.*\\.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
-  loop: "{{ lookup('fileglob', 'templates/configs/*.*.j2', wantlist=True) }}"
+  with_fileglob:
+    - "{{ role_path }}/templates/scripts/*.*.j2"
+  loop_control:
+    loop_var: script_item
 
 - name: Render logstash configuration file
   ansible.builtin.template:
