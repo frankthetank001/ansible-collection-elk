@@ -249,7 +249,7 @@
 - name: Include step-client role
   include_role:
     name: step-client
-  when: logstash_client_to_mqtt_with_mtls
+  when: logstash_mqtt_client_mtls
 
 - name: ensure expect package is present
   ansible.builtin.package:
