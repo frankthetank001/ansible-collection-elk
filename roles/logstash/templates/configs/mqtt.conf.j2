@@ -61,6 +61,11 @@ filter {
         fallback => "UNKNOWN_STATUS"
       }
     }
+    if [current_match_id] {
+      mutate {
+        copy => { "current_match_id" => "current_match_id_text" }
+      }
+    }
   }
 }
 

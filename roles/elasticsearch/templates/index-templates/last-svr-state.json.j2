@@ -1,0 +1,71 @@
+{
+    "template": {
+        "settings": {
+            "index": {
+                "refresh_interval": "5s",
+                "number_of_shards": "{{ elasticsearch_hosts | length }}",
+                "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+            }
+        },
+        "mappings": {
+            "_routing": {
+                "required": false
+            },
+            "numeric_detection": false,
+            "dynamic_date_formats": [
+                "strict_date_optional_time",
+                "yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"
+            ],
+            "_source": {
+                "excludes": [],
+                "includes": [],
+                "enabled": true
+            },
+            "dynamic": true,
+            "dynamic_templates": [],
+            "date_detection": true,
+            "properties": {
+                "svr_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "instance_id": {
+                    "type": "integer"
+                },
+                "instance_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "players.ip": {
+                    "type": "ip"
+                },
+                "svr_ip": {
+                    "type": "ip"
+                },
+                "current_match_id_text": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "index_patterns": [
+        "last-svr-state"
+    ],
+    "composed_of": []
+}
