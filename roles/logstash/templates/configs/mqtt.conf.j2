@@ -10,7 +10,7 @@ input {
     ssl => true
     certificate_path => "{{ logstash_certs_dir }}/logstash.crt"
     key_path => "{{ logstash_certs_dir }}/logstash.key"
-    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_root_cert }}"
+    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_intermediate_cert }}"
   }
   mqtt {
     host => "45.132.247.12"
@@ -23,7 +23,7 @@ input {
     ssl => true
     certificate_path => "{{ logstash_certs_dir }}/logstash.crt"
     key_path => "{{ logstash_certs_dir }}/logstash.key"
-    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_root_cert }}"
+    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_intermediate_cert }}"
   }
 }
 
