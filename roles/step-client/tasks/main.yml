@@ -1,10 +1,16 @@
 ---
+- name: Check if step CLI exists
+  stat:
+    path: /usr/bin/step
+  register: step_binary
+
 - name: Download and install step CLI
   get_url:
     url: "{{ step_cli_url }}"
     dest: /usr/bin/step
     mode: '0755'
-
+  when: not step_binary.stat.exists
+  
 - name: Download root certificate
   get_url:
     url: "{{ root_ca_url }}"
