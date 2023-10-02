@@ -1,0 +1,35 @@
+input {
+    http_poller {
+        urls => {
+            kongor_stats => {
+                method => get
+                url => "http://api.kongor.online/stats/portal"
+                headers => {
+                    "User-Agent" => "S2 Games"
+                }
+            }
+        }
+        request_timeout => 60
+        # Define how often the polling will occur (in seconds)
+        # Here, we poll every 5 minutes
+        schedule => { "every" => "300s" }
+        codec => "json"
+        tags => ["kongor","api"]
+        add_field => {
+          "source" => "kongor_stats_portal"
+        }
+    }
+}
+
+output {
+  if [source] == "kongor_stats_portal" {
+    elasticsearch {
+      hosts => [{{ elasticsearch_hosts | map('quote') | join(", ") }}]
+      index => "kongor-statistics"
+      ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+      user => "${ES_USER}"
+      password => "${ES_PWD}"
+      action => "create"
+    }
+  }
+}

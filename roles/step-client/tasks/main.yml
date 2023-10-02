@@ -1,0 +1,62 @@
+---
+- name: Download and install step CLI
+  get_url:
+    url: "{{ step_cli_url }}"
+    dest: /usr/bin/step
+    mode: '0755'
+
+- name: Download root certificate
+  get_url:
+    url: "{{ root_ca_url }}"
+    dest: /tmp/root.crt
+    validate_certs: no
+
+- name: Bootstrap the CA
+  command: >
+    step ca bootstrap --ca-url {{ ca_server_url }}
+    --fingerprint $(step certificate fingerprint /tmp/root.crt) --force
+    
+- name: Create password file
+  copy:
+    content: "{{ step_password }}"
+    dest: "{{ password_file }}"
+    mode: '0600'
+  when: step_password is defined
+
+- name: Register a client certificate
+  command: >
+    step ca certificate logstash {{ logstash_certs_dir }}/logstash.pem 
+    {{ logstash_certs_dir }}/logstash.key --provisioner-password-file {{ password_file }}
+    --force --provisioner step --not-after=168h
+  vars:
+    ansible_become: yes
+  when: step_password is defined
+
+- name: Remove password file
+  file:
+    path: "{{ password_file }}"
+    state: absent
+
+- name: Deploy cert-renewer@.service systemd unit
+  template:
+    src: cert-renewer@.service.j2
+    dest: /etc/systemd/system/cert-renewer@.service
+    mode: '0644'
+
+- name: Deploy cert-renewer@.timer systemd unit
+  template:
+    src: cert-renewer@.timer.j2
+    dest: /etc/systemd/system/cert-renewer@.timer
+    mode: '0644'
+
+- name: Start renewal services
+  systemd:
+    name: cert-renewer@logstash.service
+    state: started
+    enabled: yes
+
+- name: Enable automatic renewal
+  systemd:
+    name: cert-renewer@logstash.timer
+    state: started
+    enabled: yes

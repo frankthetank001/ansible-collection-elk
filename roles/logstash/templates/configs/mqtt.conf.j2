@@ -1,0 +1,65 @@
+input {
+  beats {
+    port => 5044
+    ssl_enabled => true
+    ssl_certificate_authorities => [{{ lookup('fileglob', '/etc/logstash/certs/ca/*.crt', wantlist=True) | map('quote') | join(", ") }}]
+    ssl_certificate => "/etc/logstash/certs/cert1.pem"
+    ssl_key => "/etc/logstash/certs/privkey1.pem"
+    ssl_client_authentication => "required"
+  }
+  mqtt {
+    host => "45.132.247.12"
+    port => 8883
+    logfile => "/tmp/mqtt.log"
+    topic => "game_server/+"
+    qos => 1
+    type => "mqtt"
+    clean_session => true
+    ssl => true
+    certificate_path => "{{ logstash_certs_dir }}/logstash.crt"
+    key_path => "{{ logstash_certs_dir }}/logstash.key"
+    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_root_cert }}"
+  }
+  mqtt {
+    host => "45.132.247.12"
+    port => 8883
+    logfile => "/tmp/mqtt.log"
+    topic => "manager/+"
+    qos => 1
+    type => "mqtt"
+    clean_session => true
+    ssl => true
+    certificate_path => "{{ logstash_certs_dir }}/logstash.crt"
+    key_path => "{{ logstash_certs_dir }}/logstash.key"
+    root_ca_path => "{{ logstash_certs_dir }}/ca/{{ logstash_mqtt_root_cert }}"
+  }
+}
+
+filter {
+  if [type] == "mqtt" {
+    json {
+      source => "message"
+    }
+    date {
+      match => ["timestamp", "YYYY-MM-dd HH:mm:ss"]
+      target => "@timestamp"
+      tag_on_failure => "_dateparsefailure"
+    }
+    mutate {
+      remove_field => ["message", "timestamp"]
+    }
+  }
+}
+
+output {
+  if [type] == "mqtt" {
+    elasticsearch {
+      hosts => [{{ elasticsearch_hosts | map('quote') | join(", ") }}]
+      index => "mqtt"
+      ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+      user => "${ES_USER}"
+      password => "${ES_PWD}"
+      action => "create"
+    }
+  }
+}

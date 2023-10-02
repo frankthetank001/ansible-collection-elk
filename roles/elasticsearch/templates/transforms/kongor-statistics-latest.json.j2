@@ -1,0 +1,28 @@
+{
+  "id": "kongor-statistics-latest",
+  "source": {
+    "index": [
+      "server-list*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "kongor-statistics-latest"
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "region.keyword"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "server-count-per-region",
+  "settings": {}
+}

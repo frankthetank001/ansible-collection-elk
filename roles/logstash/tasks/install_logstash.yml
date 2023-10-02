@@ -111,13 +111,53 @@
 - name: Copy elastic CA
   ansible.builtin.copy:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-    dest: "{{ logstash_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
+    dest: "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
   when: 
     - elasticsearch_https_enabled
     - not elastic_ca_file.stat.exists or elastic_ca_file.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/" + elasticsearch_ca_chain_name) | hash('sha256'))
+  notify:
+    - check if logstash is active
+    - restart logstash
+
+- name: Find additional Intermediate CAs
+  ansible.builtin.find:
+    paths: "{{ elasticsearch_local_certs_dir }}/ca/intermediates"
+    patterns: "*"
+  register: intermediate_files
+  when: elasticsearch_https_enabled
+
+- name: Copy additional Intermediate CAs
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ logstash_certs_dir }}/ca/{{ item.filename }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  loop: "{{ intermediate_files.files }}"
+  when: elasticsearch_https_enabled
+  notify:
+    - check if logstash is active
+    - restart logstash
+
+- name: Find additional Root CAs
+  ansible.builtin.find:
+    paths: "{{ elasticsearch_local_certs_dir }}/ca/roots"
+    patterns: "*"
+  register: root_files
+  when: elasticsearch_https_enabled
+
+- name: Copy additional Root CAs
+  ansible.builtin.copy:
+    src: "{{ item.path }}"
+    dest: "{{ logstash_certs_dir }}/ca/{{ item.filename }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  loop: "{{ root_files.files }}"
+  when: elasticsearch_https_enabled
   notify:
     - check if logstash is active
     - restart logstash
@@ -145,6 +185,31 @@
     path: "{{ logstash_conf_dir }}/conf.d"
     state: directory
 
+- name: Copy all logstash .conf files from templates to destination
+  ansible.builtin.template:
+    src: "configs/{{ item }}"
+    dest: "{{ logstash_conf_dir }}/conf.d/{{ item | basename | regex_replace('.j2$', '') }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  loop: "{{ lookup('fileglob', 'templates/configs/*.conf.j2', wantlist=True) }}"
+
+- name: Ensure logstash scripts directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/scripts"
+    state: directory
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Copy all logstash script files from templates to destination
+  ansible.builtin.template:
+    src: "configs/{{ item }}"
+    dest: "{{ logstash_conf_dir }}/scripts/{{ item | basename | regex_replace('.j2$', '') }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  loop: "{{ lookup('fileglob', 'templates/configs/*.*.j2', wantlist=True) }}"
+
 - name: Render logstash configuration file
   ansible.builtin.template:
     src: logstash.conf.j2
@@ -166,6 +231,11 @@
   notify:
     - check if logstash is active
     - restart logstash
+
+- name: Include step-client role
+  include_role:
+    name: step-client
+  when: logstash_client_to_mqtt_with_mtls
 
 - name: ensure expect package is present
   ansible.builtin.package:

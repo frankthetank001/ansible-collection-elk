@@ -11,6 +11,12 @@ logstash_certs_dir: /etc/logstash/certs
 logstash_data_dir: /logstash
 logstash_keystore_password: L0gst4shP4ssw0rd
 
+logstash_mqtt_client_mtls: false
+logstash_mqtt_root_cert: "step-ca-root.crt"
+logstash_mqtt_intermediate_cert: "step-ca-intermediate.crt"
+logstash_mqtt_client_cert: "logstash.crt"
+logstash_mqtt_client_key: "logstash.key"
+
 logstash_beats_tcp_port: 5044
 logstash_tcp_port: 5000
 

@@ -1,0 +1,37 @@
+input {
+  exec {
+    command => "/usr/bin/python3 {{ logstash_conf_dir }}/scripts/server-list.py"
+    interval => 60  # Interval in Seconds
+    codec => json
+    add_field => { "source" => "hon-api" }
+  }
+}
+
+filter {
+  if [source] == "hon-api" {
+    ruby {
+      code => "
+        region_keys = ['EU', 'SEA', 'USE', 'USW', 'BR', 'TH', 'NEWERTH', 'AU', 'RU']
+        regions = region_keys.map { |name| {'region' => name, 'count' => event.get(name)} }
+        event.set('regions', regions)
+        region_keys.each { |name| event.remove(name) }
+      "
+    }
+    split {
+      field => "regions"
+    }
+  }
+}
+
+output {
+  if [source] == "hon-api" {
+    elasticsearch {
+      hosts => hosts => [{{ elasticsearch_hosts | map('quote') | join(", ") }}]
+      index => "server-list"  # Index-Name (?)
+      ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+      user => "${ES_USER}"
+      password => "${ES_PWD}"
+      action => "create"
+    }
+  }
+}

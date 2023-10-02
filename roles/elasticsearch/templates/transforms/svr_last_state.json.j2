@@ -1,0 +1,74 @@
+{
+  "id": "server-count-per-region",
+  "source": {
+    "index": [
+      "mqtt*"
+    ],
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "bool": {
+              "filter": [
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "exists": {
+                          "field": "instance_name.keyword"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                },
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "exists": {
+                          "field": "instance_id"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                },
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "match_phrase": {
+                          "topic": "game_server*"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "svr_last_state"
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "svr_name.keyword",
+      "instance_id"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "The last known state if each server instance.",
+  "settings": {}
+}

@@ -1,0 +1,5 @@
+step_cli_url: https://dl.step.sm/s3/cli/ui-cli-install/step_latest_linux_amd64
+root_ca_url: https://hon-elk.honfigurator.app/roots.pem
+ca_server_url: https://hon-elk.honfigurator.app
+logstash_certs_dir: /etc/logstash/certs
+password_file: /tmp/.step-provisioner-pw
