@@ -13,5 +13,4 @@
     - "{{ role_path }}/templates/index-templates/*.json.j2"
   loop_control:
     loop_var: index_template_item
-  run_once: true
   delegate_to: localhost
