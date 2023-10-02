@@ -202,12 +202,12 @@
 
 - name: Copy all logstash .conf files from templates to destination
   ansible.builtin.template:
-    src: "{{ item }}"
+    src: "{{ item | basename }}"
     dest: "{{ logstash_conf_dir }}/conf.d/{{ item | basename | regex_replace('.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
-  loop: "{{ lookup('fileglob', 'configs/*.conf.j2', wantlist=True) }}"
+  loop: "{{ lookup('fileglob', 'configs/*.conf.j2', wantlist=True) | map('basename') | list }}"
 
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
