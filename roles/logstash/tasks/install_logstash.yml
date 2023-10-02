@@ -235,16 +235,16 @@
   loop_control:
     loop_var: script_item
 
-- name: Render logstash configuration file
-  ansible.builtin.template:
-    src: logstash.conf.j2
-    dest: "{{ logstash_conf_dir }}/conf.d/logstash.conf"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  notify:
-    - check if logstash is active
-    - restart logstash
+# - name: Render logstash configuration file
+#   ansible.builtin.template:
+#     src: logstash.conf.j2
+#     dest: "{{ logstash_conf_dir }}/conf.d/logstash.conf"
+#     owner: "{{ logstash_user }}"
+#     group: "{{ logstash_group }}"
+#     mode: 0644
+#   notify:
+#     - check if logstash is active
+#     - restart logstash
 
 - name: Render logstash pipelines file
   ansible.builtin.template:
