@@ -10,18 +10,37 @@
     dest: /usr/bin/step
     mode: '0755'
   when: not step_binary.stat.exists
-  
+
 - name: Download root certificate
   get_url:
     url: "{{ root_ca_url }}"
     dest: /tmp/root.crt
     validate_certs: no
 
+- name: Get home directory of the current user
+  set_fact:
+    user_home: "{{ ansible_env.HOME }}"
+
+- name: Check if root_ca.crt exists in the current user's home directory
+  stat:
+    path: "{{ user_home }}/.step/certs/root_ca.crt"
+  register: root_ca_check
+
+- name: Get fingerprint of existing root_ca.crt
+  command: step certificate fingerprint {{ user_home }}/.step/certs/root_ca.crt
+  register: existing_fingerprint
+  when: root_ca_check.stat.exists
+
+- name: Get fingerprint of /tmp/root.crt
+  command: step certificate fingerprint /tmp/root.crt
+  register: tmp_fingerprint
+
 - name: Bootstrap the CA
   command: >
     step ca bootstrap --ca-url {{ ca_server_url }}
-    --fingerprint $(step certificate fingerprint /tmp/root.crt) --force
-    
+    --fingerprint {{ tmp_fingerprint.stdout }} --force
+  when: not root_ca_check.stat.exists or (tmp_fingerprint.stdout != existing_fingerprint.stdout)
+
 - name: Create password file
   copy:
     content: "{{ step_password }}"
