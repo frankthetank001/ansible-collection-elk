@@ -75,7 +75,7 @@
         label: "{{ item.name }}"
 
     - name: Adjust file permissions
-      ansible.builtins.file:
+      file:
         path: "{{ item.item.path }}"
         owner: "{{ logstash_user }}"
         group: "{{ logstash_group }}"
