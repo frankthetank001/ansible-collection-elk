@@ -117,6 +117,7 @@
 - name: Ensure scripts directory exists
   ansible.builtin.file:
     path: "{{ logstash_conf_dir }}/scripts"
+    state: directory
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
 
