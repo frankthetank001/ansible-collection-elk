@@ -24,7 +24,7 @@ input {
 output {
   if [source] == "kongor_stats_portal" {
     elasticsearch {
-      hosts => [{% for host in elasticsearch_hosts %}"{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+      hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
       index => "kongor-statistics"
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"
