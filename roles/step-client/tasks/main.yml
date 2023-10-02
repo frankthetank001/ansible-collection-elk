@@ -58,7 +58,7 @@
   register: client_cert
 
 - name: Get certificate end date
-  command: >
+  shell: >
     openssl x509 -enddate -noout -in {{ logstash_certs_dir }}/logstash.pem | cut -d= -f2-
   register: cert_end_date_raw
   when: client_cert.stat.exists
