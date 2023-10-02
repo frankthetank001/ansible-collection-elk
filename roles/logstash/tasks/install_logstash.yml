@@ -149,6 +149,10 @@
   register: intermediate_files
   when: elasticsearch_https_enabled
 
+- name: Intermediate files
+  debug:
+    var: intermediate_files
+
 - name: Copy additional Intermediate CAs
   ansible.builtin.copy:
     src: "{{ item.path }}"
@@ -168,6 +172,10 @@
     patterns: "*"
   register: root_files
   when: elasticsearch_https_enabled
+
+- name: Root files
+  debug:
+    var: root_files
 
 - name: Copy additional Root CAs
   ansible.builtin.copy:

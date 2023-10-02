@@ -46,7 +46,7 @@ filter {
 output {
   if [type] == "mqtt" {
     elasticsearch {
-      hosts => [{{ elasticsearch_hosts | map('quote') | join(", ") }}]
+      hosts => [{% for host in elasticsearch_hosts %}"{{ host }}"{% if not loop.last %}, {% endif %}{% endfor %}]
       index => "mqtt"
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"
