@@ -43,10 +43,12 @@ filter {
         if [@metadata][beat] == "filebeat" {
             #Determine the Server Instance number
             if [Server][Launcher] == "HoNfigurator" {
-                grok {
-                    match => ["[log][file][path]",".+?(?=Hon)Hon_Server_%{NUMBER:temp}%{GREEDYDATA}"]
-                    match => ["[log][file][path]",".+?(?=Slave)Slave%{NUMBER:temp}%{GREEDYDATA}"]
-                    tag_on_failure => ["_honfigurator_match_id_grok_failure"]
+                if [Log_Type] != "match" { # match logs dont contain the Slave ID
+                    grok {
+                        match => ["[log][file][path]",".+?(?=Hon)Hon_Server_%{NUMBER:temp}%{GREEDYDATA}"]
+                        match => ["[log][file][path]",".+?(?=Slave)Slave%{NUMBER:temp}%{GREEDYDATA}"]
+                        tag_on_failure => ["_honfigurator_match_id_grok_failure"]
+                    }
                 }
             } else {
                 grok {
