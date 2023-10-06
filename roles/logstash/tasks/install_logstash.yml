@@ -223,6 +223,28 @@
     - check if logstash is active
     - restart logstash
 
+- name: Ensure patterns directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/patterns"
+    state: directory
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
+- name: Copy all logstash custom regex pattern files to destination
+  ansible.builtin.template:
+    src: "{{ patterns_item }}"
+    dest: "{{ logstash_conf_dir }}/patterns/{{ config_item | basename | regex_replace('\\.j2$', '') }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+  with_fileglob:
+    - "{{ role_path }}/templates/patterns/*.txt.j2"
+  loop_control:
+    loop_var: patterns_item
+  notify:
+    - check if logstash is active
+    - restart logstash
+
 - name: Copy all logstash script files from templates to destination
   ansible.builtin.template:
     src: "{{ script_item }}"

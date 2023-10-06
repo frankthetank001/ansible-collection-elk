@@ -7,5 +7,352 @@ input {
         ssl_certificate => "{{ logstash_certs_dir }}/cert1.pem"
         ssl_key => "{{ logstash_certs_dir }}/privkey1.pem"
         ssl_client_authentication => "required"
+        type => "beats"
+    }
+}
+
+filter {
+    if [type] == "beats" {
+        # # deprecated but still here in case # #
+        #
+        # remove the hon password for the account in the hon process arguments
+        if  [system][process][cmdline] =~ /man_masterPassword/ {
+            mutate {
+            gsub => [
+                "[process][command_line]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>",
+                "[system][process][cmdline]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>",
+                "[process][args]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>"
+                ]
+            }
+        }
+        else if [system][process][cmdline] =~ /svr_password/ {
+            mutate {
+            gsub => [
+                "[process][command_line]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>",
+                "[system][process][cmdline]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>",
+                "[process][args]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>"
+                ]
+            }
+        }
+        #
+        # # # # # # # # # # #
+
+
+        # # # # # # # # # # #
+        # Filebeat config parsing
+        if [@metadata][beat] == "filebeat" {
+            #Determine the Server Instance number
+            if [Server][Launcher] == "HoNfigurator" {
+                grok {
+                    match => ["[log][file][path]",".+?(?=Hon)Hon_Server_%{NUMBER:temp}%{GREEDYDATA}"]
+                    match => ["[log][file][path]",".+?(?=Slave)Slave%{NUMBER:temp}%{GREEDYDATA}"]
+                }
+            } else {
+                grok {
+                    match => ["[log][file][path]",".+?(?=Slave)Slave%{NUMBER:temp}%{GREEDYDATA}"]
+                }
+            }
+            if [temp] {
+                mutate {
+                    add_field => { "[Server][Instance]" => "%{[Server][Name]}-%{temp}" }
+                }
+            } else {
+                mutate {
+                    add_field => { "[Server][Instance]" => "%{[Server][Name]}"}
+                }
+            }
+
+            # # # # # # # # # # #
+            # Log type specific parsing
+            if [Log_Type] in ["console", "match", "diagnostic"] {
+                grok {
+                    match => [
+                        "[log][file][path]",".+?(?=M%{NUMBER})M(?<[Match][ID]>.+?(?=_console))",
+                        "[log][file][path]",".+?(?=M%{NUMBER})M(?<[Match][ID]>.+?(?=.log))"
+                    ]
+                }
+            }
+
+            if [Log_Type] == "honfigurator" {
+                grok {
+                match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{DATA:[HoNfigurator][Log_Level]} - %{DATA:[HoNfigurator][Filename]}:%{INT:[HoNfigurator][Line_Number]} - %{GREEDYDATA:[@metadata][message]}" }
+                }
+            } else if [Log_Type] == "diagnostic" {
+                grok {
+                    patterns_dir => ["/etc/logstash/patterns"]
+                    match => [
+                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} %{DATA:[Diagnostics][client_name]} ip: %{IP:[Diagnostics][client_ip]} ping: %{NUMBER:[Diagnostics][ping]} reliable_sv_sent: %{NUMBER:[Diagnostics][reliable_sv_sent]} reliable_cl_ack: %{NUMBER:[Diagnostics][reliable_cl_ack]} reliable_cl_sent: %{NUMBER:[Diagnostics][reliable_cl_sent]} reliable_sv_ack: %{NUMBER:[Diagnostics][reliable_sv_ack]} unreliable_sv_sent: %{NUMBER:[Diagnostics][unreliable_sv_sent]} unreliable_cl_recv: %{NUMBER:[Diagnostics][unreliable_cl_recv]} unreliable_cl_sent: %{NUMBER:[Diagnostics][unreliable_cl_sent]} unreliable_sv_recv: %{NUMBER:[Diagnostics][unreliable_sv_recv]}",
+                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} clients_connected: %{NUMBER:[Diagnostics][clients_connected]} average_ping: %{NUMBER:[Diagnostics][average_ping]} load_average: %{BASE10NUM:[Diagnostics][load_average]} total_long_server_frames: %{NUMBER:[Diagnostics][total_long_server_frames]}"
+                    ]
+                    tag_on_failure => ["_diagnostic_grok_failed"]
+                }
+            } else if [Log_Type] in ["console", "k2 console"] {
+                ## THIS ENTIRE SECTION TO BE DEPRECATED ##
+                grok {
+                    patterns_dir => ["/etc/logstash/patterns"]
+                    match => [
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
+                    ]
+                    tag_on_failure => ["_console_generic_no_match"]
+                }
+
+                # Calculate the duration of matches
+                elapsed {
+                    start_tag => "match_started"
+                    end_tag => "match_ended"
+                    unique_id_field => "[Match][ID]"
+                    timeout => "4000"
+                }
+                
+                # Default status
+                add_field => { "[Server][Event][Severity]" => "OK" }
+
+                if "skipped" in [message] {
+                    grok {
+                        match => ["[message]","^%{GREEDYDATA}Server skipped %{NUMBER} \(%{NUMBER:[Server][Event][Skipped_Frame][Time]}%{GREEDYDATA}$"]
+                        tag_on_failure => ["_console_skipped_frame_no_match"]
+                    }
+                    mutate {
+                        add_field => { 
+                            "[Server][Event][Type]" => "Skipped server frame"
+                        }
+                    }
+                } else if [message] == "Stat submission successful" {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Successful stat submission" }
+                    }
+                } else if "game server status update" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Game server status update" }
+                    }
+                } else if "Sent heartbeat" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Sent heartbeat to chat server" }
+                    }
+                } else if "Connection to chat server terminated" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Chat server connection terminated." }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "Connected to chat server." in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Connected to chat server" }
+                        add_field => { "[Server][Event][Severity]" => "OK" }
+                    }
+                } else if "Server port is unreachable" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Game server port unavailable" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "invalid session cookie" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Invalid session cookie" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "New session cookie" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Obtained session cookie" }
+                    }
+                } else if [message] =~ /^Name:.*/ {
+                    grok {
+                        match => [ "message","^Name: %{GREEDYDATA:[Match][Player][Name]}"]
+                    }
+                    mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
+                } else if [message] =~ /^IP:.*/  {
+                    grok {
+                        match => [ "message","^IP: %{GREEDYDATA:[Server][Event][Connection][IP]}" ]
+                    }
+                } else if [message] =~ /Client.*disconnected:/ {
+                    mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
+                } else if [message] =~ /Client Reconnected/ {
+                    mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
+                } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
+                    add_tag => "match_started"
+                } else if "EndGame" in [message] or [Match][Event][Type] == "GAME_END" {
+                    add_tag => "match_ended"
+                }
+            } else if [Log_Type] == "match" {
+                # Extracting basic event details
+                grok {
+                    match => {
+                        "message" => [
+                            "^%{WORD:[Match][Event][Type]} (time:%{NUMBER})? (player:%{NUMBER:[Match][Player][ID]})? (target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\" %{GREEDYDATA})?",
+                            "^%{WORD:[Match][Event][Type]} %{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]} %{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}%{GREEDYDATA}$",
+                            "^%{WORD:[Match][Event][Type]}%{GREEDYDATA}$"
+                        ]
+                    }
+                    tag_on_failure => ["match_chat_no_match"]
+                }
+
+                # Additional extraction and logic depending on the specific event type
+                if [Match][Event][Type] == "KILL" {
+                    grok {
+                        match => { "message" => "^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}%{GREEDYDATA}target:\"%{DATA:[Match][Stats][Kill][Target_Type]}_%{DATA:[Match][Stats][Kill][Target]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source_Type]}_%{DATA:[Match][Stats][Kill][Source]}\"%{GREEDYDATA}$" }
+                    }
+                } else if [Match][Event][Type] == "EXP_EARNED" {
+                    grok {
+                        match => { "message" => "^%{GREEDYDATA}experience:%{NUMBER:[Match][Stats][Exp_Earned]}%{GREEDYDATA}$" }
+                    }
+                } else if [Match][Event][Type] == "GOLD_EARNED" {
+                    grok {
+                        match => { "message" => "^%{GREEDYDATA}gold:%{NUMBER:[Match][Stats][Gold_Earned]}%{GREEDYDATA}$" }
+                    }
+                } else if [Match][Event][Type] == "DAMAGE" { # Handling damage numbers and inflictors
+                    grok {
+                        patterns_dir => ["/etc/logstash/patterns"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA}_%{DATA:[Match][Stats][Damage][Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{LETTERS}%{NUMBER:[Match][Stats][Damage][Ability_Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA:[Match][Stats][Damage][Item_Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                    }
+                    if [Match][Stats][Damage][Type] == "Hero" {
+                        mutate { replace => { "[Match][Stats][Damage][Type]" => "Melee" }}
+                        if ![Match][Stats][Damage][Source] {
+                            mutate { add_field => { "[Match][Stats][Damage][Source]" => "Attack" }}
+                        }
+                    } else if [Match][Stats][Damage][Type] == "Projectile" and ![Match][Stats][Damage][Source] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "Attack" } }
+                    } else if [Match][Stats][Damage][Type] == "Item" and ![Match][Stats][Damage][Source] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "%{[Match][Stats][Damage][Item_Source]}" } }
+                    } else if [Match][Stats][Damage][Type] == "Ability" and ![Match][Stats][Damage][Source] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "Ability%{[Match][Stats][Damage][Ability_Source]}" } }
+                    }
+                } else if [Match][Event][Type] == "INFO_SETTINGS" { # Handling 'INFO_SETTINGS' events to extract and aggregate match mode
+                    grok {
+                        match => { "message" => "^%{GREEDYDATA}mode:\"%{WORD:[Match][Mode]}\"%{GREEDYDATA}options:\"%{WORD:[Match][Options]}\"$" }
+                    }
+                    # Error Handling: Tagging event if extracted field is null
+                    if ![Match][Mode] {
+                        mutate {
+                            add_tag => ["_info_settings_extraction_failure"]
+                        }
+                    }
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['match_mode'] = event.get('[Match][Mode]')"
+                    }
+                } else if [Match][Event][Type] == "INFO_MAP" {
+                    grok {
+                        match => { "message" => "^%{GREEDYDATA}name:\"%{WORD:[Match][Map]}\"%{GREEDYDATA}$" }
+                    }
+                    # Error Handling: Tagging event if extracted field is null
+                    if ![Match][Map] {
+                        mutate {
+                            add_tag => ["_info_map_extraction_failure"]
+                        }
+                    }
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['match_map'] = event.get('[Match][Map]')"
+                    }
+                } else {
+                    drop { }
+                }
+
+                if [Match][Player][ID] {
+                    mutate {
+                        add_field => { "[Match][Player][ID-Match]" => "%{[Match][Player][ID]}-%{[Match][ID]}" }
+                    }
+                }
+
+                if [Match][Event][Type] == "PLAYER_CONNECT" {
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}"
+                    }
+                }
+                else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['player'][event.get('[Match][Player][ID]')]['team'] = event.get('[Match][Player][Team]')"
+                    }
+                }
+                else if [Match][Event][Type] == "PLAYER_SELECT" {
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')"
+                    }
+                }
+                # Retrieving mapped values
+                aggregate {
+                    task_id => "%{[Match][ID]}"
+                    # Safeguarding field retrieval with conditional checks to avoid null pointer issues
+                    code => "
+                        event.set('[Match][Player][Name]', map['player'][event.get('[Match][Player][ID]')]['name']) if map['player'][event.get('[Match][Player][ID]')] && map['player'][event.get('[Match][Player][ID]')]['name'];
+                        event.set('[Match][Player][Team]', map['player'][event.get('[Match][Player][ID]')]['team']) if map['player'][event.get('[Match][Player][ID]')] && map['player'][event.get('[Match][Player][ID]')]['team'];
+                        event.set('[Match][Player][Hero]', map['player'][event.get('[Match][Player][ID]')]['hero']) if map['player'][event.get('[Match][Player][ID]')] && map['player'][event.get('[Match][Player][ID]')]['hero'];
+                        event.set('[Match][Mode]', map['match_mode']) if map['match_mode'];
+                        event.set('[Match][Map]', map['match_map']) if map['match_map'];
+                    "
+                }
+                # Translate team IDs to human-readable names
+                translate {
+                    source => "[Match][Player][Team]"
+                    target => "[Match][Player][Team]"
+                    dictionary => {
+                        "0" => "No_team"
+                        "1" => "Legion"
+                        "2" => "Hellbourne"
+                    }
+                    fallback => "No_team"
+                    override => true
+                }
+            }
+        }
+
+        # Handle date parsing with timezone consideration
+        if [event][timezone] {
+            date {
+                match => ["timestamp", "MMM dd HH:mm:ss","MMM d HH:mm:ss","yyyy-MM-dd HH:mm:ss,SSS","yyyy/dd/MM HH:mm:ss"]
+                target => "@timestamp"
+                timezone => "%{[event][timezone]}"
+            }
+        } else {
+            date {
+                match => ["timestamp", "MMM dd HH:mm:ss","MMM d HH:mm:ss","yyyy-MM-dd HH:mm:ss,SSS","yyyy/dd/MM HH:mm:ss"]
+                target => "@timestamp"
+            }
+        }
+
+        # Perform multiple mutate operations in a single block
+        mutate {
+            add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+            rename => {"[@metadata][message]" => "[message]"}
+            lowercase => ["[server][name][lc]"]
+            uppercase => ["[Match][Chat][Type]"]
+            gsub => [
+                "[server][name][lc]", "[\"\ .]", "-",
+                "[Server][Admin]","#","-"
+            ]
+        }
+    }
+}
+
+output {
+    if [type] == "beats" {
+        if [@metadata][beat] == "filebeat" {
+            if [Log_Type] in ["console", "match", "honfigurator"] {
+                elasticsearch {
+                    hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                    pipeline => "geoip-info"
+                    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{[server][name][lc]}"
+                    ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                    user => "${ES_USER}"
+                    password => "${ES_PWD}"
+                    action => "create"
+                }
+            } else if [Log_Type] == "diagnostic" {
+                elasticsearch {
+                    hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                    pipeline => "geoip-info"
+                    index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{[server][name][lc]}-diag"
+                    ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                    user => "${ES_USER}"
+                    password => "${ES_PWD}"
+                    action => "create"
+                }
+            }
+        }
     }
 }
