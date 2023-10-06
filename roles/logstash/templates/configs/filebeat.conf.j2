@@ -257,7 +257,10 @@ filter {
                 } else if [Match][Event][Type] == "PLAYER_CONNECT" {
                     aggregate {
                         task_id => "%{[Match][ID]}"
-                        code => "map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}"
+                        code => "
+                            map['player'] ||= {}
+                            map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}
+                        "
                     }
                 } else if [Match][Event][Type] == "PLAYER_CHAT" {
                 } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
