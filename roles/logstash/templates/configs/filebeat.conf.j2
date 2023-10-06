@@ -254,17 +254,7 @@ filter {
                         task_id => "%{[Match][ID]}"
                         code => "map['match_map'] = event.get('[Match][Map]')"
                     }
-                } else {
-                    drop { }
-                }
-
-                if [Match][Player][ID] {
-                    mutate {
-                        add_field => { "[Match][Player][ID-Match]" => "%{[Match][Player][ID]}-%{[Match][ID]}" }
-                    }
-                }
-
-                if [Match][Event][Type] == "PLAYER_CONNECT" {
+                } else if [Match][Event][Type] == "PLAYER_CONNECT" {
                     aggregate {
                         task_id => "%{[Match][ID]}"
                         code => "map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}"
@@ -275,13 +265,25 @@ filter {
                         task_id => "%{[Match][ID]}"
                         code => "map['player'][event.get('[Match][Player][ID]')]['team'] = event.get('[Match][Player][Team]')"
                     }
-                }
-                else if [Match][Event][Type] == "PLAYER_SELECT" {
+                } else if [Match][Event][Type] in ["PLAYER_SELECT","PLAYER_SWAP"] {
+                    grok {
+                        match => [ "message","^%{GREEDYDATA}hero:\"%{DATA}_%{DATA:[Match][Player][Hero]}\"$"]
+                        match => [ "message","^%{GREEDYDATA}newhero:\"%{DATA}_%{DATA}:[Match][Player][Hero]}\"$"]
+                    }
                     aggregate {
                         task_id => "%{[Match][ID]}"
                         code => "map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')"
                     }
+                } else {
+                    drop { }
                 }
+
+                if [Match][Player][ID] {
+                    mutate {
+                        add_field => { "[Match][Player][ID-Match]" => "%{[Match][Player][ID]}-%{[Match][ID]}" }
+                    }
+                }
+
                 # Retrieving mapped values
                 aggregate {
                     task_id => "%{[Match][ID]}"
