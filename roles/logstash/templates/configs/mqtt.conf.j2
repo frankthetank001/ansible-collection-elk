@@ -66,6 +66,32 @@ filter {
         copy => { "current_match_id" => "current_match_id_text" }
       }
     }
+    if [players] and [players][0] {
+      split {
+        field => "[players]"
+      }
+      mutate {
+        rename => {
+          "[players][minping]" => "[Match][Player][Min_Ping]"
+          "[players][avgping]" => "[Match][Player][Avg_Ping]"
+          "[players][maxping]" => "[Match][Player][Max_Ping]"
+          "[players][name]" => "[Match][Player][Name]"
+          "[players][ip]" => "[Match][Player][IP]"
+        }
+      }
+    }
+
+    mutate {
+      copy => {
+        "current_match_id" => "[Match][ID]"
+        "svr_name" => "[Server][Name]"
+        "instance_name" => "[Server][Instance]"
+        "instance_id" => "[Server][Instance_ID]"
+        "svr_location" => "[Server][Location]"
+        "discord_id" => "[Server][Admin]"
+        "svr_ip" => "[Server][IP]"
+      }
+    }
   }
 }
 
