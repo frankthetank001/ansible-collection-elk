@@ -107,7 +107,9 @@ filter {
                 }
                 
                 # Default status
-                add_field => { "[Server][Event][Severity]" => "OK" }
+                mutate {
+                    add_field => { "[Server][Event][Severity]" => "OK" }
+                }
 
                 if "skipped" in [message] {
                     grok {
