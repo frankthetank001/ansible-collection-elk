@@ -66,19 +66,19 @@ filter {
         copy => { "current_match_id" => "current_match_id_text" }
       }
     }
-    if [players] and [players][0] {
-      mutate {
-        rename => {
-          "[players][minping]" => "[Match][Player][Min_Ping]"
-          "[players][avgping]" => "[Match][Player][Avg_Ping]"
-          "[players][maxping]" => "[Match][Player][Max_Ping]"
-          "[players][name]" => "[Match][Player][Name]"
-          "[players][ip]" => "[Match][Player][IP]"
-          "[players][account_id]" => "[Match][Player][Account_ID]"
-          "[players][location]" => "[Match][Player][Location]"
-        }
-      }
-    }
+    #if [players] and [players][0] {
+    #  mutate {
+    #    rename => {
+    #      "[players][minping]" => "[Match][Player][Min_Ping]"
+    #      "[players][avgping]" => "[Match][Player][Avg_Ping]"
+    #      "[players][maxping]" => "[Match][Player][Max_Ping]"
+    #      "[players][name]" => "[Match][Player][Name]"
+    #      "[players][ip]" => "[Match][Player][IP]"
+    #      "[players][account_id]" => "[Match][Player][Account_ID]"
+    #      "[players][location]" => "[Match][Player][Location]"
+    #    }
+    #  }
+    #}
 
     mutate {
       copy => {
