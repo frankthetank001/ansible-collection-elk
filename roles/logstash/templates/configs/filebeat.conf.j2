@@ -171,9 +171,13 @@ filter {
                 } else if [message] =~ /Client Reconnected/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
                 } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
-                    add_tag => "match_started"
+                    mutate {
+                        add_tag => "match_started"
+                    }
                 } else if "EndGame" in [message] or [Match][Event][Type] == "GAME_END" {
-                    add_tag => "match_ended"
+                    mutate {
+                        add_tag => "match_ended"
+                    }
                 }
             } else if [Log_Type] == "match" {
                 # Extracting basic event details
