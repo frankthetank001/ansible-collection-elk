@@ -309,7 +309,7 @@
   command: "/opt/logstash/bin/logstash-plugin install {{ item }}"
   loop:
     - logstash-input-paho-mqtt
-    - elapsed
+    - logstash-filter-elapsed
   when: "item not in installed_plugins.stdout_lines"
   notify:
     - check if logstash is active
