@@ -4,6 +4,8 @@ logstash_user: elk
 logstash_extract_dir: /opt
 logstash_version: 8.1.0
 
+logstash_single_threaded: false
+
 logstash_conf_dir: /etc/logstash
 logstash_log_dir: /var/log/logstash
 logstash_pid_dir: /var/run/logstash

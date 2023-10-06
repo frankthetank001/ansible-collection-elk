@@ -259,8 +259,8 @@ filter {
                         task_id => "%{[Match][ID]}"
                         code => "map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}"
                     }
-                }
-                else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
+                } else if [Match][Event][Type] == "PLAYER_CHAT" {
+                } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
                     aggregate {
                         task_id => "%{[Match][ID]}"
                         code => "map['player'][event.get('[Match][Player][ID]')]['team'] = event.get('[Match][Player][Team]')"

@@ -38,7 +38,12 @@ path.data: {{ logstash_data_dir }}
 #
 # This defaults to the number of the host's CPU cores.
 #
+{% if logstash_single_threaded %}
+pipeline.workers: 1
+pipeline.ordered: true
+{% else %}
 # pipeline.workers: 2
+{% endif %}
 #
 # How many events to retrieve from inputs before sending to filters+workers
 #
