@@ -67,9 +67,6 @@ filter {
       }
     }
     if [players] and [players][0] {
-      split {
-        field => "[players]"
-      }
       mutate {
         rename => {
           "[players][minping]" => "[Match][Player][Min_Ping]"
