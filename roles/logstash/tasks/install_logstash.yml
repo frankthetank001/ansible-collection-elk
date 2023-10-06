@@ -233,7 +233,7 @@
 - name: Copy all logstash custom regex pattern files to destination
   ansible.builtin.template:
     src: "{{ patterns_item }}"
-    dest: "{{ logstash_conf_dir }}/patterns/{{ config_item | basename | regex_replace('\\.j2$', '') }}"
+    dest: "{{ logstash_conf_dir }}/patterns/{{ patterns_item | basename | regex_replace('\\.j2$', '') }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
