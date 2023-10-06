@@ -324,9 +324,13 @@ filter {
         # Perform multiple mutate operations in a single block
         mutate {
             add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+        }
+        mutate {
             rename => {"[@metadata][message]" => "[message]"}
             lowercase => ["[server][name][lc]"]
             uppercase => ["[Match][Chat][Type]"]
+        }
+        mutate {
             gsub => [
                 "[server][name][lc]", "[\"\ .]", "-",
                 "[Server][Admin]","#","-"
