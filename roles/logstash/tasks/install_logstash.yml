@@ -301,7 +301,7 @@
     - restart logstash
 
 - name: Check if Logstash plugins are installed
-  command: /usr/share/logstash/bin/logstash-plugin list
+  command: /opt/logstash/bin/logstash-plugin list
   register: installed_plugins
   changed_when: false
 
