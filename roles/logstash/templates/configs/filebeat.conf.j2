@@ -293,7 +293,11 @@ filter {
                     }
                     aggregate {
                         task_id => "%{[Match][ID]}"
-                        code => "map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')"
+                        code => "
+                            map['player'] ||= {}
+                            map['player'][event.get('[Match][Player][ID]')] ||= {}
+                            map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
+                        "
                     }
                 } else if [Match][Event][Type] == "PLAYER_SWAP" {
                     grok {
@@ -302,7 +306,11 @@ filter {
                     }
                     aggregate {
                         task_id => "%{[Match][ID]}"
-                        code => "map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')"
+                        code => "
+                            map['player'] ||= {}
+                            map['player'][event.get('[Match][Player][ID]')] ||= {}
+                            map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
+                        "
                     }
                 } else {
                     drop { }
