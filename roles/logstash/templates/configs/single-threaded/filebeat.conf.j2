@@ -284,7 +284,13 @@ filter {
                 } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
                     aggregate {
                         task_id => "%{[Match][ID]}"
-                        code => "map['player'][event.get('[Match][Player][ID]')]['team'] = event.get('[Match][Player][Team]')"
+                        code => "
+                            map['player'] ||= {}
+                            player_id = event.get('[Match][Player][ID]')
+                            map['player'][player_id] ||= {}
+                            
+                            map['player'][player_id]['team'] = event.get('[Match][Player][Team]') if event.get('[Match][Player][Team]')
+                        "
                     }
                 } else if [Match][Event][Type] == "PLAYER_SELECT" {
                     grok {
