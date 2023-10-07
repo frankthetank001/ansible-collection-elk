@@ -26,11 +26,16 @@
       }
     },
     {
-      "geoip": {
-        "field": "players.ip",
-        "target_field": "client.geo",
-        "database_file": "GeoLite2-City.mmdb",
-        "ignore_missing": true
+      "foreach": {
+        "field": "players",
+        "processor": {
+          "geoip": {
+            "field": "_ingest._value.ip",
+            "target_field": "_ingest._value.geo",
+            "database_file": "GeoLite2-City.mmdb",
+            "ignore_missing": true
+          }
+        }
       }
     }
   ]
