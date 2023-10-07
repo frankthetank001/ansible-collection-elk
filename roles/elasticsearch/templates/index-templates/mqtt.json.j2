@@ -58,9 +58,6 @@
                         }
                     }
                 },
-                "players.ip": {
-                    "type": "ip"
-                },
                 "svr_ip": {
                     "type": "ip"
                 },
@@ -177,6 +174,44 @@
                                             "ignore_above": 256
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                },
+                "players": {
+                    "type": "nested",
+                    "properties": {
+                        "ip": {
+                            "type": "ip"
+                        },
+                        "minping": {
+                            "type": "integer"
+                        },
+                        "avgping": {
+                            "type": "integer"
+                        },
+                        "maxping": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "account_id": {
+                            "type": "integer"
+                        },
+                        "location": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
                                 }
                             }
                         }
