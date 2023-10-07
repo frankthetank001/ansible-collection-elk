@@ -88,7 +88,7 @@ filter {
         "instance_id" => "[Server][Instance_ID]"
         "svr_location" => "[Server][Location]"
         "discord_id" => "[Server][Admin]"
-        "svr_ip" => "[Server][IP]"
+        "svr_ip" => "[Server][Public_IP]"
       }
     }
   }
@@ -99,6 +99,7 @@ output {
     elasticsearch {
       hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
       index => "mqtt"
+      pipeline => "geoip-info"
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"
       password => "${ES_PWD}"

@@ -16,6 +16,14 @@
         "database_file": "GeoLite2-City.mmdb",
         "ignore_failure": true
       }
+    },
+    {
+      "geoip": {
+        "field": "Match.Player.IP",
+        "target_field": "client.geo",
+        "database_file": "GeoLite2-City.mmdb",
+        "ignore_failure": true
+      }
     }
   ]
 }
