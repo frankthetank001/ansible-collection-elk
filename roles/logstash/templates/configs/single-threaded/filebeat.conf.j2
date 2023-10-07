@@ -402,7 +402,7 @@ output {
         elasticsearch {
             hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
             pipeline => "geoip-info"
-            index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{[Log_Type]}"
+            index => "%{[@metadata][beat]}-%{[Log_Type]}"
             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
             user => "${ES_USER}"
             password => "${ES_PWD}"
