@@ -161,6 +161,11 @@ filter {
                         add_field => { "[Server][Event][Type]" => "DDOS" }
                         add_field => { "[Server][Event][Severity]" => "ERROR" }
                     }
+                } else if [message] =~ /Client #\d+ is flooding/ {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "DDOS culprit" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
                 } else if "Server port is unreachable" in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Game server port unavailable" }
