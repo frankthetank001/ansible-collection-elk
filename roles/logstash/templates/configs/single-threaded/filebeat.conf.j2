@@ -98,115 +98,6 @@ filter {
                         "[Diagnostics][client_ip]" => "[Match][Player][IP]"
                     }
                 }
-            } else if [Log_Type] in ["console", "k2 console"] {
-                ## THIS ENTIRE SECTION TO BE DEPRECATED ##
-                grok {
-                    patterns_dir => ["/etc/logstash/patterns"]
-                    match => [
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}$"
-                    ]
-                    match => [
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
-                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$",
-                        "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
-                    ]
-                    tag_on_failure => ["_console_generic_grok_failure"]
-                }
-
-                # Calculate the duration of matches
-                elapsed {
-                    start_tag => "match_started"
-                    end_tag => "match_ended"
-                    unique_id_field => "[Match][ID]"
-                    timeout => "4000"
-                }
-                
-                # Default status
-                mutate {
-                    add_field => { "[Server][Event][Severity]" => "OK" }
-                }
-
-                if "skipped" in [message] {
-                    grok {
-                        match => ["[message]","^%{GREEDYDATA}Server skipped %{NUMBER} \(%{NUMBER:[Server][Event][Skipped_Frame][Time]}%{GREEDYDATA}$"]
-                        tag_on_failure => ["_console_skipped_frame_grok_failure"]
-                    }
-                    mutate {
-                        add_field => { 
-                            "[Server][Event][Type]" => "Skipped server frame"
-                        }
-                    }
-                } else if [message] == "Stat submission successful" {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Successful stat submission" }
-                    }
-                } else if "game server status update" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Game server status update" }
-                    }
-                } else if "Sent heartbeat" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Sent heartbeat to chat server" }
-                    }
-                } else if "Connection to chat server terminated" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Chat server connection terminated." }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
-                    }
-                } else if "Connected to chat server." in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Connected to chat server" }
-                        add_field => { "[Server][Event][Severity]" => "OK" }
-                    }
-                } else if "Exceeded MAX_PACKET_SIZE" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "DDOS" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
-                    }
-                } else if [message] =~ /Client #\d+ is flooding/ {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "DDOS culprit" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
-                    }
-                } else if "Server port is unreachable" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Game server port unavailable" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
-                    }
-                } else if "invalid session cookie" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Invalid session cookie" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
-                    }
-                } else if "New session cookie" in [message] {
-                    mutate {
-                        add_field => { "[Server][Event][Type]" => "Obtained session cookie" }
-                    }
-                } else if [message] =~ /^Name:.*/ {
-                    grok {
-                        match => [ "message","^Name: %{GREEDYDATA:[Match][Player][Name]}"]
-                        tag_on_failure => ["_console_connection_name_grok_failure"]
-                    }
-                    mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
-                } else if [message] =~ /^IP:.*/  {
-                    grok {
-                        match => [ "message","^IP: %{GREEDYDATA:[Server][Event][Connection][IP]}" ]
-                        tag_on_failure => ["_console_connection_ip_grok_failure"]
-                    }
-                } else if [message] =~ /Client.*disconnected:/ {
-                    mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
-                } else if [message] =~ /Client Reconnected/ {
-                    mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
-                } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
-                    mutate {
-                        add_tag => "match_started"
-                    }
-                } else if "EndGame" in [message] or [Match][Event][Type] == "GAME_END" {
-                    mutate {
-                        add_tag => "match_ended"
-                    }
-                }
             } else if [Log_Type] == "match" {
                 # Extracting basic event details
                 grok {
@@ -348,22 +239,6 @@ filter {
                     }
                 }
 
-                # Retrieving mapped values
-                aggregate {
-                    task_id => "%{[Match][ID]}"
-                    # Safeguarding field retrieval with conditional checks to avoid null pointer issues
-                    code => "
-                        player_id = event.get('[Match][Player][ID]')
-                        player_info = map['player'][player_id] if map['player']
-
-                        event.set('[Match][Player][Name]', player_info['name']) if player_info && player_info['name']
-                        event.set('[Match][Player][Team]', player_info['team']) if player_info && player_info['team']
-                        event.set('[Match][Player][Hero]', player_info['hero']) if player_info && player_info['hero']
-                        event.set('[Match][Mode]', map['match_mode']) if map['match_mode']
-                        event.set('[Match][Options]', map['match_options']) if map['match_options']
-                        event.set('[Match][Map]', map['match_map']) if map['match_map']
-                    "
-                }
                 # Translate team IDs to human-readable names
                 translate {
                     source => "[Match][Player][Team]"
@@ -376,6 +251,132 @@ filter {
                     fallback => "No_team"
                     override => true
                 }
+            } else if [Log_Type] in ["console", "k2 console"] {
+                ## THIS ENTIRE SECTION TO BE DEPRECATED ##
+                grok {
+                    patterns_dir => ["/etc/logstash/patterns"]
+                    match => [
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}$"
+                    ]
+                    match => [
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
+                    ]
+                    tag_on_failure => ["_console_generic_grok_failure"]
+                }
+
+                # Calculate the duration of matches
+                elapsed {
+                    start_tag => "match_started"
+                    end_tag => "match_ended"
+                    unique_id_field => "[Match][ID]"
+                    timeout => "4000"
+                }
+                
+                # Default status
+                mutate {
+                    add_field => { "[Server][Event][Severity]" => "OK" }
+                }
+
+                if "skipped" in [message] {
+                    grok {
+                        match => ["[message]","^%{GREEDYDATA}Server skipped %{NUMBER} \(%{NUMBER:[Server][Event][Skipped_Frame][Time]}%{GREEDYDATA}$"]
+                        tag_on_failure => ["_console_skipped_frame_grok_failure"]
+                    }
+                    mutate {
+                        add_field => { 
+                            "[Server][Event][Type]" => "Skipped server frame"
+                        }
+                    }
+                } else if [message] == "Stat submission successful" {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Successful stat submission" }
+                    }
+                } else if "game server status update" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Game server status update" }
+                    }
+                } else if "Sent heartbeat" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Sent heartbeat to chat server" }
+                    }
+                } else if "Connection to chat server terminated" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Chat server connection terminated." }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "Connected to chat server." in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Connected to chat server" }
+                        add_field => { "[Server][Event][Severity]" => "OK" }
+                    }
+                } else if "Exceeded MAX_PACKET_SIZE" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "DDOS" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if [message] =~ /Client #\d+ is flooding/ {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "DDOS culprit" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "Server port is unreachable" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Game server port unavailable" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "invalid session cookie" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Invalid session cookie" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if "New session cookie" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Obtained session cookie" }
+                    }
+                } else if [message] =~ /^Name:.*/ {
+                    grok {
+                        match => [ "message","^Name: %{GREEDYDATA:[Match][Player][Name]}"]
+                        tag_on_failure => ["_console_connection_name_grok_failure"]
+                    }
+                    mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
+                } else if [message] =~ /^IP:.*/  {
+                    grok {
+                        match => [ "message","^IP: %{GREEDYDATA:[Server][Event][Connection][IP]}" ]
+                        tag_on_failure => ["_console_connection_ip_grok_failure"]
+                    }
+                } else if [message] =~ /Client.*disconnected:/ {
+                    mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
+                } else if [message] =~ /Client Reconnected/ {
+                    mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
+                } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
+                    mutate {
+                        add_tag => "match_started"
+                    }
+                } else if "EndGame" in [message] or [Match][Event][Type] == "GAME_END" {
+                    mutate {
+                        add_tag => "match_ended"
+                    }
+                }
+            }
+            
+            # Retrieving mapped values
+            aggregate {
+                task_id => "%{[Match][ID]}"
+                # Safeguarding field retrieval with conditional checks to avoid null pointer issues
+                code => "
+                    player_id = event.get('[Match][Player][ID]')
+                    player_info = map['player'][player_id] if map['player']
+
+                    event.set('[Match][Player][Name]', player_info['name']) if player_info && player_info['name']
+                    event.set('[Match][Player][Team]', player_info['team']) if player_info && player_info['team']
+                    event.set('[Match][Player][Hero]', player_info['hero']) if player_info && player_info['hero']
+                    event.set('[Match][Mode]', map['match_mode']) if map['match_mode']
+                    event.set('[Match][Options]', map['match_options']) if map['match_options']
+                    event.set('[Match][Map]', map['match_map']) if map['match_map']
+                "
             }
         }
 
