@@ -34,6 +34,15 @@
                         }
                     }
                 },
+                "discord_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
                 "instance_id": {
                     "type": "integer"
                 },
@@ -46,9 +55,6 @@
                         }
                     }
                 },
-                "players.ip": {
-                    "type": "ip"
-                },
                 "svr_ip": {
                     "type": "ip"
                 },
@@ -58,6 +64,177 @@
                         "keyword": {
                             "type": "keyword",
                             "ignore_above": 256
+                        }
+                    }
+                },
+                "client": {
+                    "properties": {
+                        "geo": {
+                            "properties": {
+                                "location": {
+                                "type": "geo_point"
+                                }
+                            }
+                        }
+                    }
+                },
+                "host": {
+                    "properties": {
+                        "geo": {
+                            "properties": {
+                                "location": {
+                                "type": "geo_point"
+                                }
+                            }
+                        }
+                    }
+                },
+                "Server": {
+                    "properties": {
+                        "Name": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "IP": {
+                            "type": "ip"
+                        },
+                        "Public_IP": {
+                            "type": "ip"
+                        },
+                        "Location": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "Instance": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "Instance_ID": {
+                            "type": "integer"
+                        },
+                        "Admin": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        }
+                    }
+                },
+                "Match": {
+                    "properties": {
+                        "ID": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },  
+                        "Player": {
+                            "properties": {
+                                "IP" : {
+                                    "type": "ip"
+                                },
+                                "Min_Ping": {
+                                    "type": "integer"
+                                },
+                                "Avg_Ping": {
+                                    "type": "integer"
+                                },
+                                "Max_Ping": {
+                                    "type": "integer"
+                                },
+                                "Name": {
+                                    "type": "text",
+                                    "fields": {
+                                        "keyword": {
+                                            "type": "keyword",
+                                            "ignore_above": 256
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "players": {
+                    "properties": {
+                        "ip": {
+                            "type": "ip"
+                        },
+                        "minping": {
+                            "type": "integer"
+                        },
+                        "avgping": {
+                            "type": "integer"
+                        },
+                        "maxping": {
+                            "type": "integer"
+                        },
+                        "name": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "account_id": {
+                            "type": "integer"
+                        },
+                        "location": {
+                            "type": "text",
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "geo": {
+                            "properties": {
+                                "continent_name": {
+                                    "type": "keyword"
+                                },
+                                "region_iso_code": {
+                                    "type": "keyword"
+                                },
+                                "city_name": {
+                                    "type": "keyword"
+                                },
+                                "country_iso_code": {
+                                    "type": "keyword"
+                                },
+                                "country_name": {
+                                    "type": "keyword"
+                                },
+                                "region_name": {
+                                    "type": "keyword"
+                                },
+                                "location": {
+                                    "type": "geo_point"
+                                }
+                            }
                         }
                     }
                 }
