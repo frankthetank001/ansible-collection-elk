@@ -103,7 +103,7 @@ filter {
                 grok {
                     patterns_dir => ["/etc/logstash/patterns"]
                     match => [
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA$"
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA$",
                     ]
                     match => [
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
