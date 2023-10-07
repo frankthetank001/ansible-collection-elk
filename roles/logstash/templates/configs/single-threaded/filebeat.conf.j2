@@ -163,6 +163,7 @@ filter {
                             map['match_mode'] = event.get('[Match][Mode]')
                             map['match_options'] = event.get('[Match][Options]')
                         "
+                        timeout => 3600
                     }
                 } else if [Match][Event][Type] == "INFO_MAP" {
                     grok {
@@ -179,6 +180,7 @@ filter {
                         task_id => "%{[Match][ID]}"
                         code => "map['match_map'] = event.get('[Match][Map]')"
                     }
+                    timeout => 3600
                 } else if [Match][Event][Type] == "PLAYER_CONNECT" {
                     grok {
                         match => [ "message","^%{GREEDYDATA}name:\"%{GREEDYDATA:[Match][Player][Name]}\"%{GREEDYDATA}id:%{NUMBER:[Match][Player][Global_ID]}%{GREEDYDATA}psr:%{NUMBER:[Match][Player][PSR]}$"]
@@ -190,6 +192,7 @@ filter {
                             map['player'] ||= {}
                             map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]')}
                         "
+                        timeout => 3600
                     }
                 } else if [Match][Event][Type] == "PLAYER_CHAT" {
                 } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
@@ -202,6 +205,7 @@ filter {
                             
                             map['player'][player_id]['team'] = event.get('[Match][Player][Team]') if event.get('[Match][Player][Team]')
                         "
+                        timeout => 3600
                     }
                 } else if [Match][Event][Type] == "PLAYER_SELECT" {
                     grok {
@@ -215,6 +219,7 @@ filter {
                             map['player'][event.get('[Match][Player][ID]')] ||= {}
                             map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
                         "
+                        timeout => 3600
                     }
                 } else if [Match][Event][Type] == "PLAYER_SWAP" {
                     grok {
@@ -228,6 +233,7 @@ filter {
                             map['player'][event.get('[Match][Player][ID]')] ||= {}
                             map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
                         "
+                        timeout => 3600
                     }
                 } else {
                     drop { }
