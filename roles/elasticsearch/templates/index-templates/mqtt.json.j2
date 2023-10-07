@@ -213,6 +213,31 @@
                                     "ignore_above": 256
                                 }
                             }
+                        },
+                        "geo": {
+                            "properties": {
+                                "continent_name": {
+                                    "type": "keyword"
+                                },
+                                "region_iso_code": {
+                                    "type": "keyword"
+                                },
+                                "city_name": {
+                                    "type": "keyword"
+                                },
+                                "country_iso_code": {
+                                    "type": "keyword"
+                                },
+                                "country_name": {
+                                    "type": "keyword"
+                                },
+                                "region_name": {
+                                    "type": "keyword"
+                                },
+                                "location": {
+                                    "type": "geo_point"
+                                }
+                            }
                         }
                     }
                 }
