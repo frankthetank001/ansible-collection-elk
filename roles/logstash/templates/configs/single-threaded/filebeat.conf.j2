@@ -399,19 +399,10 @@ filter {
 
 output {
     if [type] == "beats" and [@metadata][beat] == "filebeat" {
-        # Determine the index name suffix based on Log_Type
-        if [Log_Type] == "console" or [Log_Type] == "match" {
-            mutate { add_field => { "[@metadata][index_suffix]" => "server" } }
-        } else if [Log_Type] == "honfigurator" {
-            mutate { add_field => { "[@metadata][index_suffix]" => "honfigurator" } }
-        } else if [Log_Type] == "diagnostic" {
-            mutate { add_field => { "[@metadata][index_suffix]" => "diag" } }
-        }
-
         elasticsearch {
             hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
             pipeline => "geoip-info"
-            index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{[server][name][lc]}-%{[@metadata][index_suffix]}"
+            index => "%{[@metadata][beat]}-%{[@metadata][version]}-%{[Log_Type]}"
             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
             user => "${ES_USER}"
             password => "${ES_PWD}"
