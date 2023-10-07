@@ -239,19 +239,6 @@ filter {
                         add_field => { "[Match][Player][ID-Match]" => "%{[Match][Player][ID]}-%{[Match][ID]}" }
                     }
                 }
-
-                # Translate team IDs to human-readable names
-                translate {
-                    source => "[Match][Player][Team]"
-                    target => "[Match][Player][Team]"
-                    dictionary => {
-                        "0" => "No_team"
-                        "1" => "Legion"
-                        "2" => "Hellbourne"
-                    }
-                    fallback => "No_team"
-                    override => true
-                }
             } else if [Log_Type] in ["console", "k2 console"] {
                 ## THIS ENTIRE SECTION TO BE DEPRECATED ##
                 grok {
@@ -378,6 +365,20 @@ filter {
                     event.set('[Match][Options]', map['match_options']) if map['match_options']
                     event.set('[Match][Map]', map['match_map']) if map['match_map']
                 "
+            }
+            
+
+            # Translate team IDs to human-readable names
+            translate {
+                source => "[Match][Player][Team]"
+                target => "[Match][Player][Team]"
+                dictionary => {
+                    "0" => "No_team"
+                    "1" => "Legion"
+                    "2" => "Hellbourne"
+                }
+                fallback => "No_team"
+                override => true
             }
         }
 
