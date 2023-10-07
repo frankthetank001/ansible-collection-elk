@@ -34,6 +34,18 @@
         "Match.Players_Connected": {
           "type": "integer"
         },
+        "Match.Player.Name": {
+          "type": "text",
+          "fields": {
+              "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+              }
+          }
+        },
+        "Match.Player.IP": {
+          "type": "ip"
+        },
         "Diagnostics": {
           "properties": {
             "ping": {

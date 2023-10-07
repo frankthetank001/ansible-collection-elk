@@ -92,6 +92,12 @@ filter {
                     ]
                     tag_on_failure => ["_diagnostic_grok_failure"]
                 }
+                mutate {
+                    copy => {
+                        "[Diagnostics][client_name]" => "[Match][Player][Name]"
+                        "[Diagnostics][client_ip]" => "[Match][Player][IP]"
+                    }
+                }
             } else if [Log_Type] in ["console", "k2 console"] {
                 ## THIS ENTIRE SECTION TO BE DEPRECATED ##
                 grok {
