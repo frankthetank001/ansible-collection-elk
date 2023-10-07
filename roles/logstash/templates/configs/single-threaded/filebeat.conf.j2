@@ -43,7 +43,7 @@ filter {
         if [@metadata][beat] == "filebeat" {
             #Determine the Server Instance number
             if [Server][Launcher] == "HoNfigurator" {
-                if [Log_Type] != "match" { # match logs dont contain the Slave ID
+                if [Log_Type] not in ["match", "diagnostic"] { # match logs dont contain the Slave ID
                     grok {
                         match => ["[log][file][path]",".+?(?=Hon)Hon_Server_%{NUMBER:temp}%{GREEDYDATA}"]
                         match => ["[log][file][path]",".+?(?=Slave)Slave%{NUMBER:temp}%{GREEDYDATA}"]

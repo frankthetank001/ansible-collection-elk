@@ -28,23 +28,56 @@
       "dynamic_templates": [],
       "date_detection": true,
       "properties": {
-        "Match.Stats.Exp_Earned": {
-          "type": "float"
-        },
-        "Match.Players_Connected": {
-          "type": "integer"
-        },
-        "Match.Player.Name": {
-          "type": "text",
-          "fields": {
-              "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
+        "Match": {
+          "properties": {
+            "Stats": {
+              "properties": {
+                "Exp_Earned": {
+                  "type": "float"
+                },
+                "Damage": {
+                  "properties": {
+                    "Dealt": {
+                      "type": "float"
+                    }
+                  }
+                },
+                "Gold_Earned": {
+                  "type": "float"
+                }
               }
+            },
+            "Players_Connected": {
+              "type": "integer"
+            },
+            "Player": {
+              "properties": {
+                "Name": {
+                  "type": "text",
+                  "fields": {
+                    "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                    }
+                  }
+                },
+                "IP": {
+                  "type": "ip"
+                },
+                "PSR": {
+                  "coerce": true,
+                  "index": true,
+                  "ignore_malformed": false,
+                  "store": false,
+                  "type": "float",
+                  "doc_values": true
+                }
+              }
+            },
+            "In_Progress": {
+              "type": "boolean"
+            }
           }
-        },
-        "Match.Player.IP": {
-          "type": "ip"
         },
         "Diagnostics": {
           "properties": {
@@ -95,79 +128,93 @@
             }
           }
         },
-        "geo.client.location": {
-          "type": "geo_point"
+        "geo": {
+          "properties": {
+            "client": {
+              "properties": {
+                "location": {
+                  "type": "geo_point"
+                }
+              }
+            },
+            "host": {
+              "properties": {
+                "location": {
+                  "type": "geo_point"
+                }
+              }
+            }
+          }
         },
-        "Match.Stats.Damage.Dealt": {
-          "type": "float"
+        "Server": {
+          "properties": {
+            "Public_IP": {
+              "type": "ip"
+            },
+            "Event": {
+              "properties": {
+                "Connection": {
+                  "properties": {
+                    "IP": {
+                      "type": "ip"
+                    }
+                  }
+                }
+              }
+            },
+            "Connected": {
+              "type": "boolean"
+            }
+          }
         },
-        "Server.Public_IP": {
-          "type": "ip"
+        "client": {
+          "properties": {
+            "ip": {
+              "type": "ip"
+            },
+            "geo": {
+              "properties": {
+                "location": {
+                  "ignore_malformed": false,
+                  "type": "geo_point",
+                  "ignore_z_value": true
+                }
+              }
+            }
+          }
         },
-        "test.client.geo.location": {
-          "type": "geo_point"
+        "host": {
+          "properties": {
+            "ip": {
+              "type": "ip"
+            },
+            "geo": {
+              "properties": {
+                "location": {
+                  "type": "geo_point"
+                }
+              }
+            }
+          }
         },
-        "Server.Event.Connection.IP": {
-          "type": "ip"
-        },
-        "Match.Stats.Gold_Earned": {
-          "type": "float"
-        },
-        "client.ip": {
-          "type": "ip"
-        },
-        "HoNfigurator.Disable_Bots": {
-          "type": "boolean"
-        },
-        "Server.Connected": {
-          "type": "boolean"
-        },
-        "HoNfigurator.Auto-Update": {
-          "type": "boolean"
-        },
-        "Match.In_Progress": {
-          "type": "boolean"
-        },
-        "host.ip": {
-          "type": "ip"
-        },
-        "client.geo.location": {
-          "ignore_malformed": false,
-          "type": "geo_point",
-          "ignore_z_value": true
-        },
-        "geoip.location": {
-          "type": "geo_point"
-        },
-        "testgeo.location": {
-          "ignore_malformed": false,
-          "type": "geo_point",
-          "ignore_z_value": true
-        },
-        "Match.Player.PSR": {
-          "coerce": true,
-          "index": true,
-          "ignore_malformed": false,
-          "store": false,
-          "type": "float",
-          "doc_values": true
-        },
-        "HoNfigurator.Proxy_Enabled": {
-          "type": "boolean"
-        },
-        "HoNfigurator.Bots_Running": {
-          "type": "boolean"
-        },
-        "geo.host.location": {
-          "ignore_malformed": false,
-          "type": "geo_point",
-          "ignore_z_value": true
-        },
-        "host.geo.location": {
-          "type": "geo_point"
-        },
-        "HoNfigurator.Use_Static_IP": {
-          "type": "boolean"
+        "HoNfigurator": {
+          "properties": {
+            "Disable_Bots": {
+              "type": "boolean"
+            },
+            "Auto-Update": {
+              "type": "boolean"
+            },
+            "Proxy_Enabled": {
+              "type": "boolean"
+            },
+            "Bots_Running": {
+              "type": "boolean"
+            },
+            "Use_Static_IP": {
+              "type": "boolean"
+            }
+          }
         }
       }
     }
