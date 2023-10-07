@@ -73,6 +73,28 @@
                         }
                     }
                 },
+                "client": {
+                    "properties": {
+                        "geo": {
+                            "properties": {
+                                "location": {
+                                "type": "geo_point"
+                                }
+                            }
+                        }
+                    }
+                },
+                "host": {
+                    "properties": {
+                        "geo": {
+                            "properties": {
+                                "location": {
+                                "type": "geo_point"
+                                }
+                            }
+                        }
+                    }
+                },
                 "Server": {
                     "properties": {
                         "Name": {
@@ -87,6 +109,9 @@
                         "IP": {
                             "type": "ip"
                         },
+                        "Public_IP": {
+                            "type": "ip"
+                        }
                         "Location": {
                             "type": "text",
                             "fields": {
