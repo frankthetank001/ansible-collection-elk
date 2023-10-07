@@ -105,6 +105,7 @@ filter {
                     match => [
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][Flooding_ID]} %{GREEDYDATA:[@metadata][message]}$",
                         "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
                     ]
                     tag_on_failure => ["_console_generic_grok_failure"]
@@ -154,6 +155,11 @@ filter {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Connected to chat server" }
                         add_field => { "[Server][Event][Severity]" => "OK" }
+                    }
+                } else if "Exceeded MAX_PACKET_SIZE" in [message] {
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "DDOS" }
+                        add_field => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if "Server port is unreachable" in [message] {
                     mutate {
