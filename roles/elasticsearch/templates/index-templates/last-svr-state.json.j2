@@ -237,6 +237,18 @@
                             }
                         }
                     }
+                },
+                "player_ip": {
+                    "type": "ip"
+                },
+                "player_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
                 }
             }
         }
