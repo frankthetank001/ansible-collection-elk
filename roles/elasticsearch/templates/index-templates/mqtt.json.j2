@@ -61,6 +61,9 @@
                 "svr_ip": {
                     "type": "ip"
                 },
+                "current_match_id": {
+                    "type": "integer"
+                },
                 "current_match_id_text": {
                     "type": "text",
                     "fields": {
@@ -174,6 +177,40 @@
                                             "ignore_above": 256
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                },
+                "match_info": {
+                    "properties": {
+                        "match_id": {
+                            "type": "integer"
+                        },
+                        "mode": {
+                            "type": "text"
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "map": {
+                            "type": "text"
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
+                                }
+                            }
+                        },
+                        "name": {
+                            "type": "text"
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword",
+                                    "ignore_above": 256
                                 }
                             }
                         }
