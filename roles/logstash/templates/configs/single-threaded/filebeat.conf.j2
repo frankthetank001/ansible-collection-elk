@@ -80,7 +80,7 @@ filter {
 
             if [Log_Type] == "honfigurator" {
                 grok {
-                    match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{DATA:[HoNfigurator][Log_Level]} - %{DATA:[HoNfigurator][Filename]}:%{INT:[HoNfigurator][Line_Number]} - %{GREEDYDATA:message}" }
+                    match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{DATA:[HoNfigurator][Log_Level]} - %{DATA:[HoNfigurator][Filename]}:%{INT:[HoNfigurator][Line_Number]} - %{GREEDYDATA:[@metadata][message]}" }
                     tag_on_failure => ["_honfigurator_log_grok_failure"]
                 }
             } else if [Log_Type] == "diagnostic" {
@@ -270,10 +270,10 @@ filter {
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}$"
                     ]
                     match => [
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:message}$",
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:message}$",
-                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:message}$",
-                        "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:message}$"
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$",
+                        "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
                     ]
                     tag_on_failure => ["_console_generic_grok_failure"]
                 }
@@ -432,6 +432,7 @@ filter {
             add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
         }
         mutate {
+            rename => {"[@metadata][message]" => "[message]"}
             lowercase => ["[server][name][lc]"]
             uppercase => ["[Match][Chat][Type]"]
         }
