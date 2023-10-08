@@ -103,7 +103,7 @@ filter {
                 grok {
                     match => [
                         "message","^%{WORD:[Match][Event][Type]} time:%{NUMBER} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
-                        "message","^%{WORD:[Match][Event][Type]} player:%{NUMBER:[Match][Player][ID]}",
+                        "message","^%{WORD:[Match][Event][Type]} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
                         "message","^%{WORD:[Match][Event][Type]}%{GREEDYDATA}$"
                     ]
                     tag_on_failure => ["_match_generic_grok_failure"]
@@ -251,8 +251,7 @@ filter {
                     }
                 } else if [Match][Event][Type] == "PLAYER_CHAT" {
                     grok {
-                        match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"],
-                        match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
+                        match => ["message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
                     }
                 } else if [Match][Event][Type] in ["GAME_CONCEDE", "GAME_END"] {
                 } else {
