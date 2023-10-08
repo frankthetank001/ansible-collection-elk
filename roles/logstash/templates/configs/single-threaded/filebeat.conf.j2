@@ -204,7 +204,7 @@ filter {
                             map['player'][player_id]['team'] = event.get('[Match][Player][Team]') if event.get('[Match][Player][Team]')
                         "
                     }
-                } else if [Match][Event][Type] == "PLAYER_SELECT" {
+                } else if [Match][Event][Type] in ["PLAYER_SELECT","PLAYER_RANDOM"] {
                     grok {
                         match => [ "message","^%{GREEDYDATA}hero:\"%{DATA}_%{DATA:[Match][Player][Hero]}\"$"]
                         tag_on_failure => ["_match_player_select_grok_failure"]
@@ -241,7 +241,8 @@ filter {
                 } else if [Match][Event][Type] == "HERO_DEATH" {
                     grok {
                         match => [
-                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Kill][Source][ID]}$"
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Kill][Source][ID]}$",
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\"$
                         ]
                         tag_on_failure => ["_match_hero_death_grok_failure"]
                     }
