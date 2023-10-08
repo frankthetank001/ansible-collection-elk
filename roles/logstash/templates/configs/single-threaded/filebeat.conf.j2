@@ -316,32 +316,41 @@ filter {
                 } else if "Connection to chat server terminated" in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Chat server connection terminated." }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if "Connected to chat server." in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Connected to chat server" }
-                        add_field => { "[Server][Event][Severity]" => "OK" }
                     }
                 } else if "Exceeded MAX_PACKET_SIZE" in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "DDOS" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if [message] =~ /Client #\d+ is flooding/ {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if [message] =~ "^>" {
+                    grok {
+                        "match" [
+                            "message","^>%{GREEDYDATA:[Server][Command]}"
+                        ]
+                    }
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Command" }
+                        replace => { "[Server][Event][Severity]" => "WARNING" }
                     }
                 } else if "Server port is unreachable" in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Game server port unavailable" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if "invalid session cookie" in [message] {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Invalid session cookie" }
-                        add_field => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if "New session cookie" in [message] {
                     mutate {
