@@ -254,8 +254,7 @@ filter {
                         match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"],
                         match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
                     }
-                }
-                } else if [Match][Event][Type] in ["GAME_CONCEDE", "GAME_END", "PLAYER_CHAT"] {
+                } else if [Match][Event][Type] in ["GAME_CONCEDE", "GAME_END"] {
                 } else {
                     drop { }
                 }
