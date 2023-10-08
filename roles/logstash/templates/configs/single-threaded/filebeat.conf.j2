@@ -242,7 +242,7 @@ filter {
                     grok {
                         match => [
                             "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Kill][Source][ID]}$",
-                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\"$
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\"$"
                         ]
                         tag_on_failure => ["_match_hero_death_grok_failure"]
                     }
