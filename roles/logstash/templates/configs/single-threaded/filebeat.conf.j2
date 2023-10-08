@@ -101,50 +101,44 @@ filter {
             } else if [Log_Type] == "match" {
                 # Extracting basic event details
                 grok {
-                    match => [ "message","^%{WORD:[Match][Event][Type]} time:%{NUMBER} player:%{NUMBER:[Match][Player][ID]} target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
-                    match => [ "message","^%{WORD:[Match][Event][Type]} player:%{NUMBER:[Match][Player][ID]} target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
-                    match => [ "message","^%{WORD:[Match][Event][Type]} %{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]} %{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}%{GREEDYDATA}$"]
-                    match => [ "message","^%{WORD:[Match][Event][Type]} %{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}%{GREEDYDATA}$"]
-                    match => [ "message","^%{WORD:[Match][Event][Type]} %{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$"]
-                    match => [ "message","^%{WORD:[Match][Event][Type]}%{GREEDYDATA}$"]
+                    match => [
+                        "message","^%{WORD:[Match][Event][Type]} time:%{NUMBER} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
+                        "message","^%{WORD:[Match][Event][Type]} player:%{NUMBER:[Match][Player][ID]}",
+                        "message","^%{WORD:[Match][Event][Type]}%{GREEDYDATA}$"
+                    ]
                     tag_on_failure => ["_match_generic_grok_failure"]
                 }
 
                 # Additional extraction and logic depending on the specific event type
-                if [Match][Event][Type] == "KILL" {
+                if [Match][Event][Type] == "EXP_EARNED" {
                     grok {
-                        match => { "message" => "^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}%{GREEDYDATA}target:\"%{DATA:[Match][Stats][Kill][Target_Type]}_%{DATA:[Match][Stats][Kill][Target]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source_Type]}_%{DATA:[Match][Stats][Kill][Source]}\"%{GREEDYDATA}$" }
-                        tag_on_failure => ["_match_kill_grok_failure"]
-                    }
-                } else if [Match][Event][Type] == "EXP_EARNED" {
-                    grok {
-                        match => { "message" => "^%{GREEDYDATA}experience:%{NUMBER:[Match][Stats][Exp_Earned]}%{GREEDYDATA}$" }
+                        match => { "message" => "^%{GREEDYDATA}experience:%{NUMBER:[Match][Stats][EXP][Earned]}%{GREEDYDATA}$" }
                         tag_on_failure => ["_match_exp_earned_grok_failure"]
                     }
                 } else if [Match][Event][Type] == "GOLD_EARNED" {
                     grok {
-                        match => { "message" => "^%{GREEDYDATA}gold:%{NUMBER:[Match][Stats][Gold_Earned]}%{GREEDYDATA}$" }
+                        match => { "message" => "^%{GREEDYDATA}gold:%{NUMBER:[Match][Stats][Gold][Earned]}%{GREEDYDATA}$" }
                         tag_on_failure => ["_match_gold_earned_grok_failure"]
                     }
                 } else if [Match][Event][Type] == "DAMAGE" { # Handling damage numbers and inflictors
                     grok {
                         patterns_dir => ["/etc/logstash/patterns"]
-                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA}_%{DATA:[Match][Stats][Damage][Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
-                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{LETTERS}%{NUMBER:[Match][Stats][Damage][Ability_Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
-                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA:[Match][Stats][Damage][Item_Source]}\" target:\"%{DATA:[Match][Stats][Damage][Target_Type]}_%{DATA:[Match][Stats][Damage][Target]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA}_%{DATA:[Match][Stats][Damage][Source][Name]}\" target:\"%{DATA:[Match][Stats][Damage][Target][Type]}_%{DATA:[Match][Stats][Damage][Target][Name]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{LETTERS}%{NUMBER:[Match][Stats][Damage][Source][Ability]}\" target:\"%{DATA:[Match][Stats][Damage][Target][Type]}_%{DATA:[Match][Stats][Damage][Target][Name]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
+                        match => [ "message","^%{GREEDYDATA}inflictor:\"%{DATA:[Match][Stats][Damage][Type]}_%{DATA:[Match][Stats][Damage][Source][Item]}\" target:\"%{DATA:[Match][Stats][Damage][Target][Type]}_%{DATA:[Match][Stats][Damage][Target][Name]}\" damage:%{NUMBER:[Match][Stats][Damage][Dealt]}%{GREEDYDATA}$"]
                         tag_on_failure => ["_match_damage_grok_failure"]
                     }
                     if [Match][Stats][Damage][Type] == "Hero" {
                         mutate { replace => { "[Match][Stats][Damage][Type]" => "Melee" }}
-                        if ![Match][Stats][Damage][Source] {
-                            mutate { add_field => { "[Match][Stats][Damage][Source]" => "Attack" }}
+                        if ![Match][Stats][Damage][Source][Type] {
+                            mutate { add_field => { "[Match][Stats][Damage][Source][Type]" => "Attack" }}
                         }
-                    } else if [Match][Stats][Damage][Type] == "Projectile" and ![Match][Stats][Damage][Source] {
-                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "Attack" } }
-                    } else if [Match][Stats][Damage][Type] == "Item" and ![Match][Stats][Damage][Source] {
-                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "%{[Match][Stats][Damage][Item_Source]}" } }
-                    } else if [Match][Stats][Damage][Type] == "Ability" and ![Match][Stats][Damage][Source] {
-                        mutate { add_field => { "[Match][Stats][Damage][Source]" => "Ability%{[Match][Stats][Damage][Ability_Source]}" } }
+                    } else if [Match][Stats][Damage][Type] == "Projectile" and ![Match][Stats][Damage][Source][Type] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source][Type]" => "Attack" } }
+                    } else if [Match][Stats][Damage][Type] == "Item" and ![Match][Stats][Damage][Source][Type] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source][Type]" => "%{[Match][Stats][Damage][Source][Item]}" } }
+                    } else if [Match][Stats][Damage][Type] == "Ability" and ![Match][Stats][Damage][Source][Type] {
+                        mutate { add_field => { "[Match][Stats][Damage][Source][Type]" => "Ability%{[Match][Stats][Damage][Source][Ability]}" } }
                     }
                 } else if [Match][Event][Type] == "INFO_SETTINGS" { # Handling 'INFO_SETTINGS' events to extract and aggregate match mode
                     grok {
@@ -193,6 +187,10 @@ filter {
                         "
                     }
                 } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
+                    grok {
+                        match => ["message", "^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}$"]
+                        tag_on_failure => ["_match_player_team_change_grok_failure"]
+                    }
                     aggregate {
                         task_id => "%{[Match][ID]}"
                         code => "
@@ -232,25 +230,31 @@ filter {
                 } else if [Match][Event][Type] == "KILL" {
                     grok {
                         match => [
-                            "message","^%{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]}%{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} team:%{NUMBER:[Match][Player][Team]} target:\"%{DATA:[Match][Stats][Kill][Target][Type]}_%{DATA:[Match][Stats][Kill][Target][Name]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Target][ID]}$",
-                            "message","^%{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]}%{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} team:%{NUMBER:[Match][Player][Team]} target:\"%{DATA:[Match][Stats][Kill][Target][Type]}_%{DATA:[Match][Stats][Kill][Target][Name]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\"%{GREEDYDATA}$"
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} target:\"%{DATA:[Match][Stats][Kill][Target][Type]}_%{DATA:[Match][Stats][Kill][Target][Name]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Target][ID]}$",
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} target:\"%{DATA:[Match][Stats][Kill][Target][Type]}_%{DATA:[Match][Stats][Kill][Target][Name]}\" attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\"%{GREEDYDATA}$"
                         ]
                         tag_on_failure => ["_match_kill_grok_failure"]
                     }
                 } else if [Match][Event][Type] == "HERO_DEATH" {
                     grok {
                         match => [
-                            "message","^%{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]}%{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Kill][Source][ID]}$"
+                            "message","^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]} attacker:\"%{DATA:[Match][Stats][Kill][Source][Type]}_%{DATA:[Match][Stats][Kill][Source][Name]}\" owner:%{DATA:[Match][Stats][Kill][Source][ID]}$"
                         ]
                         tag_on_failure => ["_match_hero_death_grok_failure"]
                     }
                 } else if [Match][Event][Type] == "PLAYER_CALL_VOTE" {
                     grok {
                         match => [
-                            "message","^%{GREEDYDATA}time:%{NUMBER:[Match][Event][Time]}%{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]} type:%{DATA:[Match][Vote_Type]}$"
+                            "message","^%{GREEDYDATA}type:%{DATA:[Match][Vote_Type]}$"
                         ]
                         tag_on_failure => ["_match_player_vote_grok_failure"]
                     }
+                } else if [Match][Event][Type] == "PLAYER_CHAT" {
+                    grok {
+                        match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"],
+                        match => [ "message","^%{GREEDYDATA}target:\"%{WORD:[Match][Chat][Type]}\" msg:\"%{GREEDYDATA:[Match][Chat][Message]}\"%{GREEDYDATA}$"]
+                    }
+                }
                 } else if [Match][Event][Type] in ["GAME_CONCEDE", "GAME_END", "PLAYER_CHAT"] {
                 } else {
                     drop { }
