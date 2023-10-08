@@ -96,6 +96,17 @@ filter {
         "host" => "hostname"
       }
     }
+    mutate {
+        add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+    }
+    mutate {
+        lowercase => ["[server][name][lc]"]
+    }
+    mutate {
+      gsub => [
+        "[server][name][lc]", "[\"\ .]", "-"
+      ]
+    }
   }
 }
 
@@ -103,7 +114,7 @@ output {
   if [type] == "mqtt" {
     elasticsearch {
       hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
-      index => "mqtt"
+      index => "mqtt-%{[server][name][lc]}"
       pipeline => "geoip-info"
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"
