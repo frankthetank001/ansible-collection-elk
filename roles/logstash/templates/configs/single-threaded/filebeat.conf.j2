@@ -102,8 +102,8 @@ filter {
                 # Extracting basic event details
                 grok {
                     match => [
-                        "message","^%{WORD:[Match][Event][Type]} time:%{NUMBER} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
-                        "message","^%{WORD:[Match][Event][Type]} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
+                        "message","^%{WORD:[Match][Event][Type]} time:%{NUMBER:[Match][Event][Time]} player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
+                        "message","^%{WORD:[Match][Event][Type]}%{GREEDYDATA}player:%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$",
                         "message","^%{WORD:[Match][Event][Type]}%{GREEDYDATA}$"
                     ]
                     tag_on_failure => ["_match_generic_grok_failure"]
