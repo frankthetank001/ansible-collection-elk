@@ -332,7 +332,7 @@ filter {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
                         replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
-                } else if [message] =~ "^>" {
+                } else if [message] =~ /^>/ {
                     grok {
                         match => [ "message","^>%{GREEDYDATA:[Server][Command]}"]
                         tag_on_failure => [ "_console_command_match_grok_failure" ]
