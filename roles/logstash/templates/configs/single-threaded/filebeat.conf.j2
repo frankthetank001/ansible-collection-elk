@@ -334,9 +334,8 @@ filter {
                     }
                 } else if [message] =~ "^>" {
                     grok {
-                        "match" [
-                            "message","^>%{GREEDYDATA:[Server][Command]}"
-                        ]
+                        match => [ "message","^>%{GREEDYDATA:[Server][Command]}"]
+                        tag_on_failure => [ "_console_command_match_grok_failure" ]
                     }
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Command" }
