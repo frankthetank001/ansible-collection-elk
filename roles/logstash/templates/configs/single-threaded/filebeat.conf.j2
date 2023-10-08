@@ -327,7 +327,7 @@ filter {
                         add_field => { "[Server][Event][Type]" => "DDOS" }
                         replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
-                } else if [message] =~ /Client #\d+ is flooding/ {
+                } else if [@metadata][message] =~ /Client #\d+ is flooding/ {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
                         replace => { "[Server][Event][Severity]" => "ERROR" }
@@ -355,20 +355,20 @@ filter {
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Obtained session cookie" }
                     }
-                } else if [message] =~ /^Name:.*/ {
+                } else if [@metadata][message] =~ /^Name:.*/ {
                     grok {
                         match => [ "message","^Name: %{GREEDYDATA:[Match][Player][Name]}"]
                         tag_on_failure => ["_console_connection_name_grok_failure"]
                     }
                     mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
-                } else if [message] =~ /^IP:.*/  {
+                } else if [@metadata] =~ /^IP:.*/  {
                     grok {
                         match => [ "message","^IP: %{GREEDYDATA:[Server][Event][Connection][IP]}" ]
                         tag_on_failure => ["_console_connection_ip_grok_failure"]
                     }
-                } else if [message] =~ /Client.*disconnected:/ {
+                } else if [@metadata] =~ /Client.*disconnected:/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
-                } else if [message] =~ /Client Reconnected/ {
+                } else if [@metadata] =~ /Client Reconnected/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
                 } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
                     mutate {
