@@ -103,6 +103,15 @@
             "In_Progress": {
               "type": "boolean"
             },
+            "ID": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
             "Event": {
               "properties": {
                 "Type": {
