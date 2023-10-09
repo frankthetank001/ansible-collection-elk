@@ -15,7 +15,7 @@ filter {
     if [type] == "beats" {
 
         # Drop all unknown events
-        if [Log_Type] not in ["honfigurator","console","diagnostic","match"] {
+        if [Log_Type] not in ["honfigurator","console","diagnostic","match","proxy"] {
             drop { }
         }
 

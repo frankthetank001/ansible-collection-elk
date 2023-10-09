@@ -26,6 +26,11 @@ filter {
       target => "@timestamp"
       tag_on_failure => "_dateparsefailure"
     }
+    date {
+      match => ["[match_info][start_time]", "UNIX"]
+      target => "[match_info][start_time]"
+      tag_on_failure => "_dateparsefailure"
+    }
     mutate {
       remove_field => ["message", "timestamp"]
     }
