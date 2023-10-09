@@ -305,6 +305,21 @@
                         }
                     }
                 },
+                "chatsv_state": {
+                    "type": "boolean"
+                },
+                "mastersv_state": {
+                    "type": "boolean"
+                },
+                "info": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
                 "Phase": {
                     "type": "alias",
                     "path": "game_phase_desc.keyword"
