@@ -44,6 +44,32 @@
                 },
                 "Gold_Earned": {
                   "type": "float"
+                },
+                "Kill": {
+                  "properties": {
+                    "Source": {
+                      "properties": {
+                        "Name": {
+                          "type": "text",
+                          "fields": {
+                            "keyword": {
+                              "type": "keyword",
+                              "ignore_above": 256
+                            }
+                          }
+                        },
+                        "Type": {
+                          "type": "text",
+                          "fields": {
+                            "keyword": {
+                              "type": "keyword",
+                              "ignore_above": 256
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -76,6 +102,19 @@
             },
             "In_Progress": {
               "type": "boolean"
+            },
+            "Event": {
+              "properties": {
+                "Type": {
+                  "type": "text",
+                  "fields": {
+                    "keyword": {
+                      "type": "keyword",
+                      "ignore_above": 256
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -239,11 +278,11 @@
         },
         "Match_Event": {
           "type": "alias",
-          "path": "Match.ID.keyword"
+          "path": "Match.Event.Type.keyword"
         },
         "Killed_By": {
           "type": "alias",
-          "path": "Match.Stats.Kill.Source.Name"
+          "path": "Match.Stats.Kill.Source.Name.keyword"
         }
       }
     }
