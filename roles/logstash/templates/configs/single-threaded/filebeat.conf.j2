@@ -273,13 +273,12 @@ filter {
                 ## THIS ENTIRE SECTION TO BE DEPRECATED ##
                 grok {
                     patterns_dir => ["/etc/logstash/patterns"]
-                    match => [
-                        "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}$"
-                    ]
+                    #match => [
+                    #    "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA}$"
+                    #]
                     match => [
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{NUMBER} \[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
                         "message","^\[%{HONTIME:timestamp}\](.+?(?=\[))\[%{TIME}\] %{GREEDYDATA:[@metadata][message]}$",
-                        "message","^\[%{HONTIME:timestamp}\] Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$",
                         "message","^\[%{HONTIME:timestamp}\] %{GREEDYDATA:[@metadata][message]}$"
                     ]
                     tag_on_failure => ["_console_generic_grok_failure"]
@@ -335,6 +334,9 @@ filter {
                         replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
                 } else if [@metadata][message] =~ /Client #\d+ is flooding/ {
+                    grok {
+                        match => ["message","^%{GREEDYDATA}Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$"
+                    }
                     mutate {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
                         replace => { "[Server][Event][Severity]" => "ERROR" }
