@@ -364,15 +364,23 @@ filter {
                     }
                 } else if [@metadata][message] =~ /^Name:.*/ {
                     grok {
-                        match => [ "message","^Name: %{GREEDYDATA:[Match][Player][Name]}"]
+                        match => [ "message","%{GREEDYDATA}Name: %{GREEDYDATA:[Match][Player][Name]}"]
                         tag_on_failure => ["_console_connection_name_grok_failure"]
                     }
-                    mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
-                } else if [@metadata] =~ /^IP:.*/  {
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "map['connection_from'] = event.get('[Match][Player][Name]');
+                    }
+                } else if [@metadata][message] =~ /^IP:.*/  {
                     grok {
-                        match => [ "message","^IP: %{GREEDYDATA:[Server][Event][Connection][IP]}" ]
+                        match => [ "message","%{GREEDYDATA}IP: %{IP:[Match][Player][IP]}" ]
                         tag_on_failure => ["_console_connection_ip_grok_failure"]
                     }
+                    aggregate {
+                        task_id => "%{[Match][ID]}"
+                        code => "event.set('[Match][Player][Name]', map['connection_from'])"
+                    }
+                    mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
                 } else if [@metadata] =~ /Client.*disconnected:/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
                 } else if [@metadata] =~ /Client Reconnected/ {
