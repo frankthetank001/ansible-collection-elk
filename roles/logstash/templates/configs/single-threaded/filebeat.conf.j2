@@ -15,7 +15,7 @@ filter {
     if [type] == "beats" {
 
         # Drop all unknown events
-        if not [Log_Type] {
+        if [Log_Type] not in ["honfigurator","console","diagnostic","match"] {
             drop { }
         }
 
@@ -23,7 +23,7 @@ filter {
         # # deprecated but still here in case # #
         #
         # remove the hon password for the account in the hon process arguments
-        if  [system][process][cmdline] =~ /man_masterPassword/ {
+        if [system][process][cmdline] =~ /man_masterPassword/ {
             mutate {
             gsub => [
                 "[process][command_line]", "((?<=svr_password\s)([^;]*)|(?<=man_masterPassword\s)([^;]*))", "<password>",
