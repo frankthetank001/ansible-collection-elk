@@ -13,6 +13,13 @@ input {
 
 filter {
     if [type] == "beats" {
+
+        # Drop all unknown events
+        if not [Log_Type] {
+            drop { }
+        }
+
+
         # # deprecated but still here in case # #
         #
         # remove the hon password for the account in the hon process arguments
