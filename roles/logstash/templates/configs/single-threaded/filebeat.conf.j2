@@ -373,7 +373,7 @@ filter {
                     }
                 } else if [@metadata][message] =~ /^IP:.*/  {
                     grok {
-                        match => [ "message","^%{GREEDYDATA}IP: %{IP:[Match][Player][IP]}$" ]
+                        match => [ "message","^%{GREEDYDATA}IP: %{GREEDYDATA:[Match][Player][IP]}$" ]
                         tag_on_failure => ["_console_connection_ip_grok_failure"]
                     }
                     aggregate {
