@@ -335,7 +335,7 @@ filter {
                     }
                 } else if [@metadata][message] =~ /Client #\d+ is flooding/ {
                     grok {
-                        match => ["message","^%{GREEDYDATA}Client #%{NUMBER:[Match][Player][ID]} %{GREEDYDATA:[@metadata][message]}$"]
+                        match => ["message","^%{GREEDYDATA}Client #%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$"]
                     }
                     mutate {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
@@ -343,7 +343,7 @@ filter {
                     }
                 } else if [@metadata][message] =~ /^>.*/ {
                     grok {
-                        match => [ "message","^>%{GREEDYDATA:[Server][Command]}"]
+                        match => [ "message","%{GREEDYDATA}>%{GREEDYDATA:[Server][Command]}$"]
                         tag_on_failure => [ "_console_command_match_grok_failure" ]
                     }
                     mutate {
