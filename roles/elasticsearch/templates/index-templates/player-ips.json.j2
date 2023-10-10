@@ -1,0 +1,28 @@
+{
+    "template": "player_ips",
+    "settings": {
+        "refresh_interval": "5s",
+        "number_of_shards": "{{ elasticsearch_hosts | length }}",
+        "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+    },
+    "mappings": {
+        "properties": {
+            "Match": {
+                "properties": {
+                    "Player": {
+                        "properties": {
+                        "Name": {
+                            "type": "keyword"
+                        },
+                        "IP": {
+                            "type": "ip"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "index_patterns": [
+        "player_ips*"
+    ]
+}

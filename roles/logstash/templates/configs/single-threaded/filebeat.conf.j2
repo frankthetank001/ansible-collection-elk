@@ -497,8 +497,6 @@ output {
                 document_id => "%{[Player][Name]}"  # Prevent duplicates by using player name as document ID
                 # Use a document template to only send the player name and IP
                 document_type => "doc"
-                template => "/etc/logstash/templates/template.json"
-                template_name => "player_ips"
             }
         }
     }
