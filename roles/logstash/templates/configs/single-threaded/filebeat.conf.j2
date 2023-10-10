@@ -401,6 +401,8 @@ filter {
                         add_field => {
                             "sanitized_client_name" => "%{[Diagnostics][client_name]}"
                         }
+                    }
+                    mutate {
                         gsub => [
                             "[sanitized_client_name]", "[\\[\\]:]", "\\\\\\\\$&"
                         ]
