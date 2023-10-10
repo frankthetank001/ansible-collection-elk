@@ -404,7 +404,7 @@ filter {
                     }
                     mutate {
                         gsub => [
-                            "[sanitized_client_name]", "[\\[\\]:]", "\\\\\\\\$&"
+                            "[sanitized_client_name]", "[\\[\\]]", "\\\\\\\\$&"
                         ]
                     }
 
