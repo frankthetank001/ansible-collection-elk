@@ -397,13 +397,22 @@ filter {
                     }
                 }
                 if [Diagnostics][client_name] {
+                    mutate {
+                        add_field => {
+                            "sanitized_client_name" => "%{[Diagnostics][client_name]}"
+                        }
+                        gsub => [
+                            "[sanitized_client_name]", "[\\[\\]:]", "\\\\\\\\$&"
+                        ]
+                    }
+
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "player_ips"
-                        query => "Match.Player.Name:%{[Diagnostics][client_name]}"
+                        query => "Match.Player.Name:%{sanitized_client_name}"
                         fields => { 
                             "Match.Player.IP" => "[Match][Player][IP]"
                         }
