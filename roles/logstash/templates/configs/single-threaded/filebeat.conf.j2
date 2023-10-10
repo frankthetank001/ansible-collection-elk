@@ -90,21 +90,6 @@ filter {
                     match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{DATA:[HoNfigurator][Log_Level]} - %{DATA:[HoNfigurator][Filename]}:%{INT:[HoNfigurator][Line_Number]} - %{GREEDYDATA:[@metadata][message]}" }
                     tag_on_failure => ["_honfigurator_log_grok_failure"]
                 }
-            } else if [Log_Type] == "diagnostic" {
-                grok {
-                    patterns_dir => ["/etc/logstash/patterns"]
-                    match => [
-                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} %{DATA:[Diagnostics][client_name]} ip: %{IP:[Diagnostics][client_ip]} ping: %{NUMBER:[Diagnostics][ping]} reliable_sv_sent: %{NUMBER:[Diagnostics][reliable_sv_sent]} reliable_cl_ack: %{NUMBER:[Diagnostics][reliable_cl_ack]} reliable_cl_sent: %{NUMBER:[Diagnostics][reliable_cl_sent]} reliable_sv_ack: %{NUMBER:[Diagnostics][reliable_sv_ack]} unreliable_sv_sent: %{NUMBER:[Diagnostics][unreliable_sv_sent]} unreliable_cl_recv: %{NUMBER:[Diagnostics][unreliable_cl_recv]} unreliable_cl_sent: %{NUMBER:[Diagnostics][unreliable_cl_sent]} unreliable_sv_recv: %{NUMBER:[Diagnostics][unreliable_sv_recv]}",
-                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} clients_connected: %{NUMBER:[Diagnostics][clients_connected]} average_ping: %{NUMBER:[Diagnostics][average_ping]} load_average: %{BASE10NUM:[Diagnostics][load_average]} total_long_server_frames: %{NUMBER:[Diagnostics][total_long_server_frames]}"
-                    ]
-                    tag_on_failure => ["_diagnostic_grok_failure"]
-                }
-                mutate {
-                    copy => {
-                        "[Diagnostics][client_name]" => "[Match][Player][Name]"
-                        "[Diagnostics][client_ip]" => "[Match][Player][IP]"
-                    }
-                }
             } else if [Log_Type] == "match" {
                 # Extracting basic event details
                 grok {
@@ -396,6 +381,34 @@ filter {
                         add_tag => "match_ended"
                     }
                 }
+            } else if [Log_Type] == "diagnostic" {
+                grok {
+                    patterns_dir => ["/etc/logstash/patterns"]
+                    match => [
+                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} %{DATA:[Diagnostics][client_name]} ip: %{IP:[Diagnostics][client_ip]} ping: %{NUMBER:[Diagnostics][ping]} reliable_sv_sent: %{NUMBER:[Diagnostics][reliable_sv_sent]} reliable_cl_ack: %{NUMBER:[Diagnostics][reliable_cl_ack]} reliable_cl_sent: %{NUMBER:[Diagnostics][reliable_cl_sent]} reliable_sv_ack: %{NUMBER:[Diagnostics][reliable_sv_ack]} unreliable_sv_sent: %{NUMBER:[Diagnostics][unreliable_sv_sent]} unreliable_cl_recv: %{NUMBER:[Diagnostics][unreliable_cl_recv]} unreliable_cl_sent: %{NUMBER:[Diagnostics][unreliable_cl_sent]} unreliable_sv_recv: %{NUMBER:[Diagnostics][unreliable_sv_recv]}",
+                        "message", "%{TIMESTAMP:timestamp} %{WORD:[Diagnostics][entity_tag]} clients_connected: %{NUMBER:[Diagnostics][clients_connected]} average_ping: %{NUMBER:[Diagnostics][average_ping]} load_average: %{BASE10NUM:[Diagnostics][load_average]} total_long_server_frames: %{NUMBER:[Diagnostics][total_long_server_frames]}"
+                    ]
+                    tag_on_failure => ["_diagnostic_grok_failure"]
+                }
+                mutate {
+                    copy => {
+                        "[Diagnostics][client_name]" => "[Match][Player][Name]"
+                        "[Diagnostics][client_ip]" => "[Match][Player][IP]"
+                    }
+                }
+                if [Diagnostics][client_name] {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "player_ips"
+                        query => "Match.Player.Name:%{[Diagnostics][client_name]}"
+                        fields => { 
+                            "Match.Player.IP" => "[Match][Player][IP]"
+                        }
+                    }
+                }
             }
             
             # Retrieving mapped values
@@ -465,13 +478,28 @@ filter {
 output {
     if [type] == "beats" and [@metadata][beat] == "filebeat" {
         elasticsearch {
-            hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
             pipeline => "geoip-info"
             index => "%{[@metadata][beat]}-%{[server][name][lc]}-%{[Log_Type]}"
+            hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
             user => "${ES_USER}"
             password => "${ES_PWD}"
             action => "create"
+        }
+
+        if [Match][Player][Name] and [Match][Player][IP] and [Log_Type] == "console" {
+            elasticsearch {
+                hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                user => "${ES_USER}"
+                password => "${ES_PWD}"
+                index => "player_ips"
+                document_id => "%{[Player][Name]}"  # Prevent duplicates by using player name as document ID
+                # Use a document template to only send the player name and IP
+                document_type => "doc"
+                template => "/etc/logstash/templates/template.json"
+                template_name => "player_ips"k
+            }
         }
     }
 }
