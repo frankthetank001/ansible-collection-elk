@@ -401,23 +401,23 @@ filter {
                     ]
                     tag_on_failure => ["_diagnostic_grok_failure"]
                 }
-                mutate {
-                    copy => {
-                        "[Diagnostics][client_name]" => "[Match][Player][Name]"
-                        # "[Diagnostics][client_ip]" => "[Match][Player][IP]"
-                    }
-                }
-                mutate {
-                    add_field => {
-                        "sanitized_client_name" => "%{[Diagnostics][client_name]}"
-                    }
-                }
-                mutate {
-                    gsub => [
-                        "[sanitized_client_name]", "-", "\\-"
-                    ]
-                }
                 if [Diagnostics][client_name] {
+                    mutate {
+                        copy => {
+                            "[Diagnostics][client_name]" => "[Match][Player][Name]"
+                            # "[Diagnostics][client_ip]" => "[Match][Player][IP]"
+                        }
+                    }
+                    mutate {
+                        add_field => {
+                            "sanitized_client_name" => "%{[Diagnostics][client_name]}"
+                        }
+                    }
+                    mutate {
+                        gsub => [
+                            "[sanitized_client_name]", "-", "\\-"
+                        ]
+                    }
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
