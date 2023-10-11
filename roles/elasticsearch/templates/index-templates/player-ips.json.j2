@@ -8,7 +8,14 @@
         },
         "mappings": {
             "dynamic": "strict",  # Add this line to prevent unknown fields
+            "dynamic_date_formats": [
+                "strict_date_optional_time",
+                "yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"
+            ],
             "properties": {
+                "@timestamp": {
+                    "type": "date"
+                },
                 "Match": {
                     "properties": {
                         "Player": {
