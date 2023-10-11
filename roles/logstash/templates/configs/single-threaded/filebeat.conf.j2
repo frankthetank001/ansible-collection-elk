@@ -404,11 +404,13 @@ filter {
                 mutate {
                     copy => {
                         "[Diagnostics][client_name]" => "[Match][Player][Name]"
-                        "[Diagnostics][client_name]" => "[sanitised_client_name]"
                         "[Diagnostics][client_ip]" => "[Match][Player][IP]"
                     }
                 }
                 mutate {
+                    add_field => {
+                        "sanitized_client_name" => "%{[Diagnostics][client_name]}"
+                    }
                     gsub => [
                         "[sanitized_client_name]", "-", "\\-"
                     ]
