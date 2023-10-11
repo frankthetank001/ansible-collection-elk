@@ -404,8 +404,14 @@ filter {
                 mutate {
                     copy => {
                         "[Diagnostics][client_name]" => "[Match][Player][Name]"
+                        "[Diagnostics][client_name]" => "[sanitised_client_name]"
                         "[Diagnostics][client_ip]" => "[Match][Player][IP]"
                     }
+                }
+                mutate {
+                    gsub => [
+                        "[sanitized_client_name]", "-", "\\-"
+                    ]
                 }
                 if [Diagnostics][client_name] {
                     elasticsearch {
@@ -414,7 +420,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "player_ips"
-                        query => "Match.Player.Name:%{[Match][Player][Name]}"
+                        query => "Match.Player.Name:%{[sanitized_client_name]}"
                         fields => { 
                             "Match.Player.IP" => "[Match][Player][IP]"
                         }
