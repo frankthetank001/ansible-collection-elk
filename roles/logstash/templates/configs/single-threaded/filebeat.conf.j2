@@ -404,7 +404,7 @@ filter {
                 mutate {
                     copy => {
                         "[Diagnostics][client_name]" => "[Match][Player][Name]"
-                        "[Diagnostics][client_ip]" => "[Match][Player][IP]"
+                        # "[Diagnostics][client_ip]" => "[Match][Player][IP]"
                     }
                 }
                 mutate {
@@ -516,7 +516,7 @@ output {
                 user => "${ES_USER}"
                 password => "${ES_PWD}"
                 index => "player_ips"
-                #document_id => "%{[Match][Player][Name]}"  # Prevent duplicates by using player name as document ID
+                document_id => "%{[Match][Player][Name]}"  # Prevent duplicates by using player name as document ID
                 # Use a document template to only send the player name and IP
                 #document_type => "doc"
             }
