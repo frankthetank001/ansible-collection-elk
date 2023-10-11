@@ -7,20 +7,13 @@
             "number_of_replicas": {{ [elasticsearch_hosts | length - 1, 0] | max }}
         },
         "mappings": {
+            "dynamic": "strict",  # Add this line to prevent unknown fields
             "properties": {
-                "Match": {
-                    "properties": {
-                        "Player": {
-                            "properties": {
-                                "Name": {
-                                    "type": "keyword"
-                                },
-                                "IP": {
-                                    "type": "ip"
-                                }
-                            }
-                        }
-                    }
+                "player_name": {
+                    "type": "keyword"
+                },
+                "player_ip": {
+                    "type": "ip"
                 }
             }
         }
