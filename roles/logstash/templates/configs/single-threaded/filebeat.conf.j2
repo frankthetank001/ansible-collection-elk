@@ -370,6 +370,9 @@ filter {
                         match => [ "message","^%{GREEDYDATA}IP: %{GREEDYDATA:[Match][Player][IP]}$" ]
                         tag_on_failure => ["_console_connection_ip_grok_failure"]
                     }
+                    mutate {
+                      add_field => { "player_ip" => "%{[Match][Player][IP]}" }
+                    }
                     aggregate {
                         task_id => "%{[Match][ID]}"
                         code => "
@@ -426,7 +429,7 @@ filter {
                         index => "player_ips"
                         query => "Match.Player.Name:%{[sanitized_client_name]}"
                         fields => { 
-                            "Match.Player.IP" => "[Match][Player][IP]"
+                            "player_ip" => "[Match][Player][IP]"
                         }
                     }
                 }
@@ -517,8 +520,6 @@ output {
                 password => "${ES_PWD}"
                 index => "player_ips"
                 document_id => "%{[Match][Player][Name]}"  # Prevent duplicates by using player name as document ID
-                # Use a document template to only send the player name and IP
-                #document_type => "doc"
             }
         }
     }
