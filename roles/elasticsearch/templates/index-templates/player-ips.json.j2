@@ -9,8 +9,19 @@
         "mappings": {
             "dynamic": "strict",  # Add this line to prevent unknown fields
             "properties": {
-                "player_name": {
-                    "type": "keyword"
+                "Match": {
+                    "properties": {
+                        "Player": {
+                            "properties": {
+                                "Name": {
+                                    "type": "keyword"
+                                },
+                                "IP": {
+                                    "type": "ip"
+                                }
+                            }
+                        }
+                    }
                 },
                 "player_ip": {
                     "type": "ip"
