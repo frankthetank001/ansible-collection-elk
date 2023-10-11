@@ -372,8 +372,10 @@ filter {
                     }
                     aggregate {
                         task_id => "%{[Match][ID]}"
-                        code => "event.set('[Match][Player][Name]', map['connection_from'])"
-                        code => "event.set('[Match][Player][Clan]', map['connection_from_clan'])"
+                        code => "
+                            event.set('[Match][Player][Name]', map['connection_from']);
+                            event.set('[Match][Player][Clan]', map['connection_from_clan']);
+                        "
                     }
                     mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
                 } else if [@metadata] =~ /Client.*disconnected:/ {
