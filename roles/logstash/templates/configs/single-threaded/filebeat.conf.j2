@@ -387,7 +387,15 @@ filter {
                     }
                     mutate {
                         add_field => { "[Server][Event][Type]" => "Player timeout" }
-                        replace => { "[Server][Event][Severity]" => "ERROR" }
+                        replace => { "[Server][Event][Severity]" => "WARNING" }
+                    }
+                } else if [@metadata][message] =~ /Client #\d+ disconnected: disconnect_timed_out/ {
+                    grok {
+                        match => ["message","^%{GREEDYDATA}Client #%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$"]
+                    }
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Player disconnected, timeout" }
+                        replace => { "[Server][Event][Severity]" => "WARNING" }
                     }
                 } else if [@metadata][message] =~ /Client.*disconnected:/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
