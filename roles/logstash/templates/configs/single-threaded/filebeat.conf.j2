@@ -381,9 +381,17 @@ filter {
                         "
                     }
                     mutate { add_field => { "[Server][Event][Type]" => "Player connection"}}
-                } else if [@metadata] =~ /Client.*disconnected:/ {
+                } else if [@metadata][message] =~ /Client #\d+ timing out/ {
+                    grok {
+                        match => ["message","^%{GREEDYDATA}Client #%{NUMBER:[Match][Player][ID]}%{GREEDYDATA}$"]
+                    }
+                    mutate {
+                        add_field => { "[Server][Event][Type]" => "Player timeout" }
+                        replace => { "[Server][Event][Severity]" => "ERROR" }
+                    }
+                } else if [@metadata][message] =~ /Client.*disconnected:/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player disconnection"}}
-                } else if [@metadata] =~ /Client Reconnected/ {
+                } else if [@metadata][message] =~ /Client Reconnected/ {
                     mutate { add_field => { "[Server][Event][Type]" => "Player reconnected"}}
                 } else if [message] == "StartMatch" or [Match][Event][Type] == "GAME_START" {
                     mutate {
