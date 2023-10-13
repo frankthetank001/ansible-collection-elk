@@ -256,7 +256,7 @@ filter {
                 }
 
                 if [Match][Event][Type] != "PLAYER_CONNECT" {
-                    if [Match][Player][ID] and not [Match][Player][Name] {
+                    if [Match][Player][ID] and ![Match][Player][Name] {
                         elasticsearch {
                             hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
