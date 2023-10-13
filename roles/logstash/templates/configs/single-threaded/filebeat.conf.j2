@@ -265,7 +265,8 @@ filter {
                             index => "match_info"
                             query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]}"
                             fields => { 
-                                "Match.Player.Name" => "[Match][Player][Name]"
+                                "player_name" => "[Match][Player][Name]"
+                                "player_hero" => "[Match][Player][Hero]"
                             }
                         }
                     }
@@ -507,12 +508,6 @@ filter {
             #         event.set('[Match][Map]', map['match_map']) if map['match_map']
             #     "
             # }
-            mutate {
-                copy => {
-                    "[Match][Player][ID]" => "player_id"
-                    "[Match][Player][Name]" => "player_name"
-                }
-            }
 
             # Translate team IDs to human-readable names
             translate {
@@ -545,6 +540,11 @@ filter {
         # Perform multiple mutate operations in a single block
         mutate {
             add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+            copy => {
+                "[Match][Player][ID]" => "player_id"
+                "[Match][Player][Name]" => "player_name"
+                "[Match][Player][Hero]" => "player_hero"
+            }
         }
         mutate {
             rename => {"[@metadata][message]" => "[message]"}
