@@ -293,6 +293,43 @@ filter {
                             }
                         }
                     }
+                } else if [Match][Event][Type] != "INFO_MAP" {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "match_info"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MAP'"
+                        fields => { 
+                            "match_map" => "[Match][Map]"
+                        }
+                    }
+                } else if [Match][Event][Type] != "INFO_MATCH" {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "match_info"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MATCH'"
+                        fields => { 
+                            "match_name" => "[Match][Name]"
+                        }
+                    }
+                } else if [Match][Event][Type] != "INFO_SETTINGS" {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "match_info"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_SETTINGS'"
+                        fields => { 
+                            "match_mode" => "[Match][Name]"
+                            "match_options" => "[Match][Options]"
+                        }
+                    }
                 }
                 
             } else if [Log_Type] in ["console", "k2 console"] {
@@ -544,6 +581,9 @@ filter {
                 "[Match][Player][ID]" => "player_id"
                 "[Match][Player][Name]" => "player_name"
                 "[Match][Player][Hero]" => "player_hero"
+                "[Match][Name]" => "match_name"
+                "[Match][Map]" => "match_map"
+                "[Match][Mode]" => "match_mode"
             }
         }
         mutate {
@@ -584,7 +624,7 @@ output {
             }
         }
 
-        if [Log_Type] == "match" and [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
+        if [Log_Type] == "match" and [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM", "INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
             elasticsearch {
                 hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
