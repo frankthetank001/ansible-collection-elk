@@ -282,20 +282,20 @@ filter {
                         index => "match_info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_SETTINGS'"
                         fields => {
-                            "match_mode" => "[Match][Name]"
+                            "match_mode" => "[Match][Mode]"
                             "match_options" => "[Match][Options]"
                         }
                     }
                 }
 
-                if [Match][Event][Type] not in ["PLAYER_SELECT","PLAYER_RANDOM"] {
+                if [Match][Event][Type] not in ["PLAYER_SELECT","PLAYER_RANDOM"] and [Match][Player][ID] {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "match_info"
-                        query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type:'PLAYER_SELECT' OR Match.Event.Type:'PLAYER_RANDOM')"
+                        query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type:'PLAYER_SELECT' OR Match.Event.Type:'PLAYER_RANDOM') AND Match.Player.ID:%{[Match][Player][ID]}"
                         fields => {
                             "player_hero" => "[Match][Player][Hero]"
                         }
