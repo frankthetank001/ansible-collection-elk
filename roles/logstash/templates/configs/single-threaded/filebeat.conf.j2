@@ -317,7 +317,7 @@ filter {
                             "match_name" => "[Match][Name]"
                         }
                     }
-                } else if [Match][Event][Type] != "INFO_SETTINGS" {
+                } else if [Match][Event][Type] not in ["INFO_SETTINGS","PLAYER_SELECT","PLAYER_RANDOM"] {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -325,7 +325,7 @@ filter {
                         password => "${ES_PWD}"
                         index => "match_info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_SETTINGS'"
-                        fields => { 
+                        fields => {
                             "match_mode" => "[Match][Name]"
                             "match_options" => "[Match][Options]"
                         }
@@ -613,7 +613,7 @@ output {
             action => "create"
         }
 
-        if [Match][Player][Name] and [Match][Player][IP] and [Log_Type] == "console" {
+        if [Match][Player][Name] and [Match][Player][IP] and [Server][Event][Type] == "Player connection" and [Log_Type] == "console" {
             elasticsearch {
                 hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -625,19 +625,17 @@ output {
             }
         }
 
-        if [Log_Type] == "match" and [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
-            elasticsearch {
-                hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
-                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                user => "${ES_USER}"
-                password => "${ES_PWD}"
-                index => "match_info"
-                pipeline => "geoip-info"
-                document_id => "%{[Match][ID]}-Player-%{[Match][Player][ID]}"
-                doc_as_upsert => true
+        if [Log_Type] == "match" {
+            if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
+                mutate {
+                    add_field => { "doc_id_schema" => "%{[Match][ID]}-Player-%{[Match][Player][ID]}" }
+                }
+            } elif [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
+                mutate {
+                    add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}" }
+                }
             }
-        }
-        if [Log_Type] == "match" and [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
+
             elasticsearch {
                 hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -645,7 +643,7 @@ output {
                 password => "${ES_PWD}"
                 index => "match_info"
                 pipeline => "geoip-info"
-                document_id => "%{[Match][ID]}-%{[Match][Event][Type]}"
+                document_id => "%{doc_id_schema}"
                 doc_as_upsert => true
             }
         }
