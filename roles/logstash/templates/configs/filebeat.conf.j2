@@ -143,86 +143,37 @@ filter {
                             add_tag => ["_info_settings_extraction_failure"]
                         }
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "
-                    #         map['match_mode'] = event.get('[Match][Mode]')
-                    #         map['match_options'] = event.get('[Match][Options]')
-                    #     "
-                    #     timeout => 3600
-                    # }
                 } else if [Match][Event][Type] == "INFO_MAP" {
                     grok {
                         match => { "message" => "^%{GREEDYDATA}name:\"%{WORD:[Match][Map]}\"%{GREEDYDATA}$" }
                         tag_on_failure => ["_match_info_map_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "map['match_map'] = event.get('[Match][Map]')"
-                    # }
                 } else if [Match][Event][Type] == "INFO_MATCH" {
                     grok {
                         match => { "message" => "^%{GREEDYDATA}name:\"%{WORD:[Match][Name]}\"%{GREEDYDATA}$" }
                         tag_on_failure => ["_match_info_match_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "map['match_name'] = event.get('[Match][Name]')"
-                    # }
                 } else if [Match][Event][Type] == "PLAYER_CONNECT" {
                     grok {
                         match => [ "message","^%{GREEDYDATA}name:\"\[%{GREEDYDATA:[Match][Player][Clan]}\]%{GREEDYDATA:[Match][Player][Name]}\"%{GREEDYDATA}id:%{NUMBER:[Match][Player][Global_ID]}%{GREEDYDATA}psr:%{NUMBER:[Match][Player][PSR]}$"]
                         match => [ "message","^%{GREEDYDATA}name:\"%{GREEDYDATA:[Match][Player][Name]}\"%{GREEDYDATA}id:%{NUMBER:[Match][Player][Global_ID]}%{GREEDYDATA}psr:%{NUMBER:[Match][Player][PSR]}$"]
                         tag_on_failure => ["_match_player_connect_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "
-                    #         map['player'] ||= {}
-                    #         map['player'][event.get('[Match][Player][ID]')] = {'name' => event.get('[Match][Player][Name]'), 'team' => event.get('[Match][Player][Team]'), 'clan' => event.get('[Match][Player][Clan]')}
-                    #     "
-                    # }
                 } else if [Match][Event][Type] == "PLAYER_TEAM_CHANGE" {
                     grok {
                         match => ["message", "^%{GREEDYDATA}team:%{NUMBER:[Match][Player][Team]}$"]
                         tag_on_failure => ["_match_player_team_change_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "
-                    #         map['player'] ||= {}
-                    #         player_id = event.get('[Match][Player][ID]')
-                    #         map['player'][player_id] ||= {}
-                            
-                    #         map['player'][player_id]['team'] = event.get('[Match][Player][Team]') if event.get('[Match][Player][Team]')
-                    #     "
-                    # }
                 } else if [Match][Event][Type] in ["PLAYER_SELECT","PLAYER_RANDOM"] {
                     grok {
                         match => [ "message","^%{GREEDYDATA}hero:\"%{DATA}_%{DATA:[Match][Player][Hero]}\"$"]
                         tag_on_failure => ["_match_player_select_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "
-                    #         map['player'] ||= {}
-                    #         map['player'][event.get('[Match][Player][ID]')] ||= {}
-                    #         map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
-                    #     "
-                    # }
                 } else if [Match][Event][Type] == "PLAYER_SWAP" {
                     grok {
                         match => [ "message","^%{GREEDYDATA}newhero:\"%{DATA}_%{DATA}:[Match][Player][Hero]}\"$"]
                         tag_on_failure => ["_match_player_swap_grok_failure"]
                     }
-                    # aggregate {
-                    #     task_id => "%{[Match][ID]}"
-                    #     code => "
-                    #         map['player'] ||= {}
-                    #         map['player'][event.get('[Match][Player][ID]')] ||= {}
-                    #         map['player'][event.get('[Match][Player][ID]')]['hero'] = event.get('[Match][Player][Hero]')
-                    #     "
-                    # }
                 } else if [Match][Event][Type] == "KILL" {
                     grok {
                         match => [
@@ -263,10 +214,9 @@ filter {
                             user => "${ES_USER}"
                             password => "${ES_PWD}"
                             index => "match_info"
-                            query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]}"
+                            query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
                             fields => { 
                                 "player_name" => "[Match][Player][Name]"
-                                "player_hero" => "[Match][Player][Hero]"
                             }
                         }
                     }
@@ -293,7 +243,9 @@ filter {
                             }
                         }
                     }
-                } else if [Match][Event][Type] != "INFO_MAP" {
+                }
+                
+                if [Match][Event][Type] != "INFO_MAP" {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -305,7 +257,9 @@ filter {
                             "match_map" => "[Match][Map]"
                         }
                     }
-                } else if [Match][Event][Type] != "INFO_MATCH" {
+                }
+                
+                if [Match][Event][Type] != "INFO_MATCH" {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -317,7 +271,9 @@ filter {
                             "match_name" => "[Match][Name]"
                         }
                     }
-                } else if [Match][Event][Type] not in ["INFO_SETTINGS","PLAYER_SELECT","PLAYER_RANDOM"] {
+                }
+                
+                if [Match][Event][Type] != "INFO_SETTINGS" {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
@@ -332,14 +288,42 @@ filter {
                     }
                 }
 
+                if [Match][Event][Type] not in ["PLAYER_SELECT","PLAYER_RANDOM"] {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "match_info"
+                        query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type:'PLAYER_SELECT' OR Match.Event.Type:'PLAYER_RANDOM')"
+                        fields => {
+                            "player_hero" => "[Match][Player][Hero]"
+                        }
+                    }
+                }
+
+                if [Match][Event][Type] != "PLAYER_TEAM_CHANGE" {
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "match_info"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'PLAYER_TEAM_CHANGE'"
+                        fields => {
+                            "player_team" => "[Match][Player][Team]"
+                        }
+                    }
+                }
+
                 # index specific tagging
-                if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
+                if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM","PLAYER_TEAM_CHANGE"] {
                     mutate {
-                        add_field => { "doc_id_schema" => "%{[Match][ID]}-Player-%{[Match][Player][ID]}" }
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}-Player-%{[Match][Player][ID]}" }
                     }
                 } else if [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
                     mutate {
-                        add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}" }
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}-%{[Match][Event][Type]}" }
                     }
                 }
                 
@@ -556,6 +540,18 @@ filter {
             #         event.set('[Match][Map]', map['match_map']) if map['match_map']
             #     "
             # }
+            mutate {
+                copy => {
+                    "[Match][Player][ID]" => "player_id"
+                    "[Match][Player][Name]" => "player_name"
+                    "[Match][Player][Hero]" => "player_hero"
+                    "[Match][Player][Team]" => "player_team"
+                    "[Match][Name]" => "match_name"
+                    "[Match][Map]" => "match_map"
+                    "[Match][Mode]" => "match_mode"
+                    "[Match][Options]" => "match_options"
+                }
+            }
 
             # Translate team IDs to human-readable names
             translate {
@@ -588,15 +584,6 @@ filter {
         # Perform multiple mutate operations in a single block
         mutate {
             add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
-            copy => {
-                "[Match][Player][ID]" => "player_id"
-                "[Match][Player][Name]" => "player_name"
-                "[Match][Player][Hero]" => "player_hero"
-                "[Match][Name]" => "match_name"
-                "[Match][Map]" => "match_map"
-                "[Match][Mode]" => "match_mode"
-                "[Match][Options]" => "match_options"
-            }
         }
         mutate {
             rename => {"[@metadata][message]" => "[message]"}
