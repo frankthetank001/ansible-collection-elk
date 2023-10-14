@@ -541,6 +541,12 @@ filter {
             #     "
             # }
             mutate {
+                gsub => [
+                    "[Match][Mode]", "Mode_", "",
+                    "[Match][Options]", "Option_", ""
+                ]
+            }
+            mutate {
                 copy => {
                     "[Match][Player][ID]" => "player_id"
                     "[Match][Player][Name]" => "player_name"
