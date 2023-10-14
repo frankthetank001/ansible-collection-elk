@@ -347,7 +347,7 @@ filter {
                     start_tag => "match_started"
                     end_tag => "match_ended"
                     unique_id_field => "[Match][ID]"
-                    timeout => "4000"
+                    timeout => "5400"
                 }
                 
                 # Default status
@@ -431,7 +431,7 @@ filter {
                         tag_on_failure => ["_console_connection_name_grok_failure"]
                     }
                     aggregate {
-                        task_id => "%{[Match][ID]}"
+                        task_id => "%{[Log_Type]}-%{[Match][ID]}"
                         code => "
                             map['connection_from'] = event.get('[Match][Player][Name]');
                             map['connection_from_clan'] = event.get('[Match][Player][Clan]');
@@ -446,7 +446,7 @@ filter {
                       add_field => { "player_ip" => "%{[Match][Player][IP]}" }
                     }
                     aggregate {
-                        task_id => "%{[Match][ID]}"
+                        task_id => "%{[Log_Type]}-%{[Match][ID]}"
                         code => "
                             event.set('[Match][Player][Name]', map['connection_from']);
                             event.set('[Match][Player][Clan]', map['connection_from_clan']);
@@ -557,6 +557,14 @@ filter {
                     "[Match][Mode]" => "match_mode"
                     "[Match][Options]" => "match_options"
                 }
+                lowercase => [
+                    "[Match][Mode]",
+                    "[Match][Options],
+                    "[Match][Map]",
+                    "match_mode",
+                    "match_options",
+                    "match_map"
+                ]
             }
 
             # Translate team IDs to human-readable names

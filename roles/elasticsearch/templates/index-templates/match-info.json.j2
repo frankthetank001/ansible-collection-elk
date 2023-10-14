@@ -3,7 +3,7 @@
     "settings": {
       "index": {
         "lifecycle": {
-          "name": "filebeat"
+          "name": "match-info"
         },
         "refresh_interval": "5s",
         "number_of_shards": "{{ elasticsearch_hosts | length }}",
@@ -124,6 +124,33 @@
                   }
                 }
               }
+            },
+            "Name": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            },
+            "Mode": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
+            },
+            "Options": {
+                "type": "text",
+                "fields": {
+                    "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                    }
+                }
             }
           }
         },
@@ -273,42 +300,6 @@
             }
           }
         },
-        "match_name": {
-            "type": "text",
-            "fields": {
-                "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                }
-            }
-        },
-        "match_mode": {
-            "type": "text",
-            "fields": {
-                "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                }
-            }
-        },
-        "match_map": {
-            "type": "text",
-            "fields": {
-                "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                }
-            }
-        },
-        "match_options": {
-            "type": "text",
-            "fields": {
-                "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                }
-            }
-        },
         "Player": {
           "type": "alias",
           "path": "Match.Player.Name.keyword"
@@ -333,7 +324,7 @@
     }
   },
   "index_patterns": [
-    "filebeat*"
+    "match_info"
   ],
   "data_stream": {
     "hidden": false,
