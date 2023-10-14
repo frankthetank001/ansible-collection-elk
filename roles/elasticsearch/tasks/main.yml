@@ -36,4 +36,5 @@
     - setup_index_templates.yml
     - setup_transforms.yml
     - setup_index_lifecycles.yml
+    - setup_index_aliases.yml
   tags: elkindexes,elasticsearch

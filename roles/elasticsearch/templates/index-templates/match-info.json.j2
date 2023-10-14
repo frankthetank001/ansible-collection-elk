@@ -3,11 +3,17 @@
     "settings": {
       "index": {
         "lifecycle": {
-          "name": "match-info"
+          "name": "match-info",
+          "rollover_alias": "alias-match-info" 
         },
         "refresh_interval": "5s",
         "number_of_shards": "{{ elasticsearch_hosts | length }}",
         "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+      }
+    },
+    "aliases": {
+      "alias-match-info": {
+        "is_write_index": true 
       }
     },
     "mappings": {
@@ -300,6 +306,42 @@
             }
           }
         },
+        "match_name": {
+            "type": "text",
+            "fields": {
+                "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                }
+            }
+        },
+        "match_mode": {
+            "type": "text",
+            "fields": {
+                "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                }
+            }
+        },
+        "match_map": {
+            "type": "text",
+            "fields": {
+                "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                }
+            }
+        },
+        "match_options": {
+            "type": "text",
+            "fields": {
+                "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                }
+            }
+        },
         "Player": {
           "type": "alias",
           "path": "Match.Player.Name.keyword"
@@ -324,11 +366,7 @@
     }
   },
   "index_patterns": [
-    "match_info"
+    "match-info-*"
   ],
-  "data_stream": {
-    "hidden": false,
-    "allow_custom_routing": false
-  },
   "composed_of": []
 }

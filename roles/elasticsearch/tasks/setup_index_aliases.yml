@@ -1,0 +1,33 @@
+- name: Check if index exists for alias template {{ alias_template_item }}
+  uri:
+    url: "{{ virtual_proto }}://localhost:9200/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: GET
+    status_code: 200,404  # 200 if exists, 404 if not
+    return_content: yes
+    validate_certs: no
+  register: index_check
+  ignore_errors: yes  # To proceed even if 404 not found
+  with_fileglob:
+    - "{{ role_path }}/templates/index-aliases/*.json.j2"
+  loop_control:
+    loop_var: alias_template_item
+  delegate_to: localhost
+
+- name: Create index for alias template {{ alias_template_item }} if it does not exist
+  uri:
+    url: "{{ virtual_proto }}://localhost:9200/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: PUT
+    body: "{{ lookup('template', alias_template_item) }}"
+    body_format: json
+    status_code: 200
+    validate_certs: no
+  when: index_check.status == 404  # Only when index does not exist
+  with_fileglob:
+    - "{{ role_path }}/templates/index-aliases/*.json.j2"
+  loop_control:
+    loop_var: alias_template_item
+  delegate_to: localhost
