@@ -331,6 +331,17 @@ filter {
                         }
                     }
                 }
+
+                # index specific tagging
+                if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
+                    mutate {
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-Player-%{[Match][Player][ID]}" }
+                    }
+                } else if [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
+                    mutate {
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}" }
+                    }
+                }
                 
             } else if [Log_Type] in ["console", "k2 console"] {
                 ## THIS ENTIRE SECTION TO BE DEPRECATED ##
@@ -625,17 +636,7 @@ output {
             }
         }
 
-        if [Log_Type] == "match" {
-            if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM"] {
-                mutate {
-                    add_field => { "doc_id_schema" => "%{[Match][ID]}-Player-%{[Match][Player][ID]}" }
-                }
-            } else if [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
-                mutate {
-                    add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}" }
-                }
-            }
-
+        if [Log_Type] == "match" and [doc_id_schema] {
             elasticsearch {
                 hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
