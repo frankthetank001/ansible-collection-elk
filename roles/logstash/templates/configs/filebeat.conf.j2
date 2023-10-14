@@ -213,7 +213,7 @@ filter {
                             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                             user => "${ES_USER}"
                             password => "${ES_PWD}"
-                            index => "match_info"
+                            index => "alias-match-info"
                             query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
                             fields => { 
                                 "player_name" => "[Match][Player][Name]"
@@ -251,7 +251,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "match_info"
+                        index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MAP'"
                         fields => { 
                             "match_map" => "[Match][Map]"
@@ -265,7 +265,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "match_info"
+                        index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MATCH'"
                         fields => { 
                             "match_name" => "[Match][Name]"
@@ -279,7 +279,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "match_info"
+                        index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_SETTINGS'"
                         fields => {
                             "match_mode" => "[Match][Mode]"
@@ -294,7 +294,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "match_info"
+                        index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type:'PLAYER_SELECT' OR Match.Event.Type:'PLAYER_RANDOM') AND Match.Player.ID:%{[Match][Player][ID]}"
                         fields => {
                             "player_hero" => "[Match][Player][Hero]"
@@ -308,7 +308,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "match_info"
+                        index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'PLAYER_TEAM_CHANGE'"
                         fields => {
                             "player_team" => "[Match][Player][Team]"
