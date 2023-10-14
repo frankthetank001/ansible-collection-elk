@@ -29,7 +29,7 @@
     body_format: json
     status_code: 200
     validate_certs: no
-  when: index_check.status == 404  # Only when index does not exist
+  when: index_check.results.0.status == 404  # Only when index does not exist
   with_fileglob:
     - "{{ role_path }}/templates/index-aliases/*.json.j2"
   loop_control:
