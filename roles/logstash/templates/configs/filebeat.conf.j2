@@ -236,7 +236,7 @@ filter {
                             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                             user => "${ES_USER}"
                             password => "${ES_PWD}"
-                            index => "player_ips"
+                            index => "player-ips"
                             query => "Match.Player.Name:%{[sanitized_client_name]}"
                             fields => { 
                                 "player_ip" => "[Match][Player][IP]"
@@ -514,7 +514,7 @@ filter {
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
-                        index => "player_ips"
+                        index => "player-ips"
                         query => "Match.Player.Name:%{[sanitized_client_name]}"
                         fields => { 
                             "player_ip" => "[Match][Player][IP]"
@@ -631,7 +631,7 @@ output {
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                 user => "${ES_USER}"
                 password => "${ES_PWD}"
-                index => "player_ips"
+                index => "player-ips"
                 document_id => "%{[Match][Player][Name]}"  # Prevent duplicates by using player name as document ID
                 pipeline => "geoip-info"
             }
@@ -643,7 +643,7 @@ output {
                 ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                 user => "${ES_USER}"
                 password => "${ES_PWD}"
-                index => "match_info"
+                index => "match-info"
                 pipeline => "geoip-info"
                 document_id => "%{doc_id_schema}"
                 doc_as_upsert => true
