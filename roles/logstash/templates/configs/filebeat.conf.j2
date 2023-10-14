@@ -630,7 +630,7 @@ output {
                 mutate {
                     add_field => { "doc_id_schema" => "%{[Match][ID]}-Player-%{[Match][Player][ID]}" }
                 }
-            } elif [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
+            } else if [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
                 mutate {
                     add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}" }
                 }
