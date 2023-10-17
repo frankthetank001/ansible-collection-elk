@@ -59,3 +59,11 @@ elasticsearch_users:
 elasticsearch_resolv_mode: dns # hosts
 elasticsearch_install_mode: http # local
 elasticsearch_local_tar_path: ''
+
+# http_01, dns_01
+certbot_enrolment_type: 'dns_01'
+
+# DNS provider, reqired when certbot_enrolment_tpe is dns_01
+certbot_dns_provider: 'cloudflare'
+
+certbot_additional_sans: ['logstash.honfigurator.app']
