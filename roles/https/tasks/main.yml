@@ -1,7 +1,7 @@
 ---
 - include_tasks: ../../handlers/main.yml
 
-- include_tasks: ../../roles/elasticsearch/tasks/preflight.yml
+- include_tasks: ../elasticsearch/tasks/preflight.yml
 
 - name: Install certbot (Debian-based systems)
   ansible.builtin.apt:
