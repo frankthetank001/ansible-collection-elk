@@ -1,4 +1,11 @@
 ---
+- hosts: elasticsearch, kibana, logstash
+  role: https
+  when:
+    - elasticsearch_https_enabled
+    # TODO: Security enabled, nodes require TLS regardless of https_enabled?
+    - generateca is not defined or not generateca
+
 - hosts: elasticsearch
   become: yes
   #remote_user: vagrant

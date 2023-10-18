@@ -114,13 +114,6 @@
     file: keystore_setup.yml
   when: elasticsearch_security_enabled
 
-- include_tasks:
-    file: request_https_cert.yml
-  when:
-    - elasticsearch_https_enabled
-    # TODO: Security enabled, nodes require TLS regardless of https_enabled?
-    - generateca is not defined or not generateca
-
 - name: Set vm.max_map_count value
   ansible.posix.sysctl:
     name: vm.max_map_count
