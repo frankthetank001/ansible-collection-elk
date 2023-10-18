@@ -1,6 +1,7 @@
 ---
-- hosts: elasticsearch, kibana, logstash
-  role: https
+- hosts: elasticsearch:kibana:logstash
+  roles:
+    - https
   when:
     - elasticsearch_https_enabled
     # TODO: Security enabled, nodes require TLS regardless of https_enabled?
