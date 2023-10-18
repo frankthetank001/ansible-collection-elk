@@ -1,5 +1,6 @@
 ---
 - hosts: elasticsearch:kibana:logstash
+  become: yes
   tasks:
     - name: Include https role
       include_role:
