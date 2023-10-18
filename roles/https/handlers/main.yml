@@ -1,0 +1,42 @@
+---
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: check if logstash is active
+  command: systemctl is-active logstash
+  register: logstash_check
+  changed_when: false
+  ignore_errors: true
+
+- name: restart logstash
+  ansible.builtin.systemd:
+    name: logstash
+    state: restarted
+  when: logstash_check.rc == 0 and logstash_service is defined and not logstash_service.changed  # rc (return code) is 0 when the service is active
+  
+- name: check if elasticsearch is active
+  command: systemctl is-active elasticsearch
+  register: elasticsearch_check
+  changed_when: false
+  ignore_errors: true
+
+- name: restart elasticsearch
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: restarted
+  when: elasticsearch_check.rc == 0 and elastic_service is defined and not elastic_service.changed # rc (return code) is 0 when the service is active
+
+- name: wait elasticsearch to be ready
+  ansible.builtin.uri:
+    url: "{{ virtual_proto }}://localhost:9200"
+    status_code: 200
+    user: elastic
+    password: "{{ elasticsearch_users['elastic']['password'] }}"
+    method: GET
+    force_basic_auth: yes
+    validate_certs: no
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 20

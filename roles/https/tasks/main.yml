@@ -2,8 +2,6 @@
 - set_fact:
     virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
 
-- import_tasks: ../../handlers/main.yml
-
 - name: Install certbot (Debian-based systems)
   ansible.builtin.apt:
     name: certbot
