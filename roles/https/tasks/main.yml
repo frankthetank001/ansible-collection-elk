@@ -18,6 +18,7 @@
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ inventory_hostname|lower }}/fullchain.pem"
   register: cert_exists
+  become: true
 
 - name: Create dns credentials
   ansible.builtin.template:
