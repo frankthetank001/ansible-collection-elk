@@ -49,7 +49,7 @@
     cmd: "certbot certonly --dns-{{ certbot_dns_provider }} --dns-{{ certbot_dns_provider }}-credentials /tmp/{{ certbot_dns_provider }}.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
   when:
     - not cert_exists.stat.exists
-    - certbot_enrollment_type == 'dns_01'
+    - certbot_enrolment_type == 'dns_01'
     - certbot_dns_provider == 'cloudflare'
   become: true
   register: cert_requested
