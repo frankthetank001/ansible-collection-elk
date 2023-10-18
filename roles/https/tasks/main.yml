@@ -1,7 +1,8 @@
 ---
 - include_tasks: ../../handlers/main.yml
 
-- include_tasks: ../elasticsearch/tasks/preflight.yml
+- set_fact:
+    virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
 
 - name: Install certbot (Debian-based systems)
   ansible.builtin.apt:
