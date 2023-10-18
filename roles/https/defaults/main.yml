@@ -1,3 +1,5 @@
+elasticsearch_https_enabled: yes
+
 # http_01, dns_01
 certbot_enrolment_type: 'dns_01'
 
