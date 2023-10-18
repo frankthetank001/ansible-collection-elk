@@ -46,7 +46,7 @@
 
 - name: DNS_01 | Request HTTPS certificate if not present
   ansible.builtin.command:
-    cmd: "certbot certonly --dns-cloudflare --dns-cloudflare-credentials /tmp/cloudflare.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
+    cmd: "certbot certonly --dns-cloudflare --dns-cloudflare-propagation-seconds 10 --dns-cloudflare-credentials /tmp/cloudflare.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
   when:
     - not cert_exists.stat.exists
     - certbot_enrollment_type == 'dns_01'
