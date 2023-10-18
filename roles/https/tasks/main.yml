@@ -27,7 +27,7 @@
     mode: '0600'
   become: true
   when:
-    - certbot_enrollment_type == 'dns_01'
+    - certbot_enrolment_type == 'dns_01'
     - certbot_dns_provider is defined
 
 - name: DNS_01 | Request HTTPS certificate if not present
@@ -35,7 +35,7 @@
     cmd: "certbot certonly --standalone --dns-{{ certbot_dns_provider }} --dns-{{ certbot_dns_provider }}-credentials /tmp/{{ certbot_dns_provider }}.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
   when:
     - not cert_exists.stat.exists
-    - certbot_enrollment_type == 'dns_01'
+    - certbot_enrolment_type == 'dns_01'
     - certbot_dns_provider is defined
   become: true
   register: cert_requested
@@ -46,7 +46,7 @@
     state: absent
   become: true
   when:
-    - certbot_enrollment_type == 'dns_01'
+    - certbot_enrolment_type == 'dns_01'
     - certbot_dns_provider is defined
 
 - name: HTTP_01 | Request HTTPS certificate if not present
@@ -54,7 +54,7 @@
     cmd: "certbot certonly --standalone -d {{ inventory_hostname|lower }} --register-unsafely-without-email --agree-tos"
   when:
     - not cert_exists.stat.exists
-    - certbot_enrollment_type == 'http_01'
+    - certbot_enrolment_type == 'http_01'
   become: true
   register: cert_requested
 
