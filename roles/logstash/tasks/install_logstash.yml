@@ -62,6 +62,14 @@
     file: keystore_setup.yml
   when: elasticsearch_security_enabled
 
+- include_role:
+    name: https
+  when:
+    - elasticsearch_https_enabled
+    # TODO: Security enabled, nodes require TLS regardless of https_enabled?
+    - generateca is not defined or not generateca
+    - https_complete is defined
+
 - name: Fix directory permission
   ansible.builtin.file:
     path: "{{ item }}"

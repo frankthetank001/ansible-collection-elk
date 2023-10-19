@@ -1,14 +1,4 @@
 ---
-- hosts: elasticsearch:kibana:logstash
-  become: yes
-  tasks:
-    - name: Include https role
-      include_role:
-        name: https
-      when:
-        - elasticsearch_https_enabled
-        - generateca is undefined or not generateca | default(false)
-
 - hosts: elasticsearch
   become: yes
   #remote_user: vagrant

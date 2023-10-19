@@ -3,5 +3,3 @@ certbot_enrollment_type: 'dns_01'
 
 # DNS provider, reqired when certbot_enrolment_tpe is dns_01
 certbot_dns_provider: 'cloudflare'
-
-certbot_additional_sans: ['logstash.honfigurator.app']

@@ -318,3 +318,6 @@
     state: absent
   changed_when: false
   delegate_to: localhost
+
+- set_fact:
+    https_complete: true
