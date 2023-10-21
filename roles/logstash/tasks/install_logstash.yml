@@ -224,7 +224,7 @@
 - name: Copy SSL key to logstash certs directory
   copy:
     src: "/etc/letsencrypt/live/{{ inventory_hostname|lower }}/privkey.pem"
-    dest: "{{ logstash_key_dir }}/{{ logstash_ssl_key_name }}"
+    dest: "{{ logstash_certs_dir }}/{{ logstash_ssl_key_name }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0600
