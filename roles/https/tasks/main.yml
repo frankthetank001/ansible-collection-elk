@@ -49,8 +49,8 @@
   when: cert_exists.stat.exists
 
 - set_fact:
-    existing_san_list: "{{ existing_sans.stdout_lines }}"
-    desired_san_list: ["{{ inventory_hostname|lower }}"] + certbot_additional_sans
+  existing_san_list: "{{ existing_sans.stdout_lines }}"
+  desired_san_list: ["{{ inventory_hostname|lower }}"] + certbot_additional_sans
 
 - name: Compare existing and desired SANs
   set_fact:
