@@ -62,7 +62,7 @@
     src: dnsprovider.ini.j2
     dest: /tmp/{{ certbot_dns_provider }}.ini
     mode: '0600'
-  when_changed: false
+  changed_when: false
   when:
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
@@ -93,7 +93,7 @@
   ansible.builtin.file:
     path: "/tmp/{{ certbot_dns_provider }}.ini"
     state: absent
-  when_changed: false
+  changed_when: false
   when:
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
