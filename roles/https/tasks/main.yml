@@ -81,19 +81,19 @@
     - certbot_dns_provider == 'cloudflare'
   become: true
   register: cert_requested
-  notify:
-    - check if elasticsearch is active
-    - restart elasticsearch
-    - wait elasticsearch to be ready
-    - check if logstash is active
-    - restart logstash
-    - wait logstash to be ready
-    - check if heartbeat is active
-    - reload heartbeat
-    - check if filebeat is active
-    - reload filebeat
-    - check if metricbeat is active
-    - reload metricbeat
+  # notify:
+  #   - check if elasticsearch is active
+  #   - restart elasticsearch
+  #   - wait elasticsearch to be ready
+  #   - check if logstash is active
+  #   - restart logstash
+  #   - wait logstash to be ready
+  #   - check if heartbeat is active
+  #   - reload heartbeat
+  #   - check if filebeat is active
+  #   - reload filebeat
+  #   - check if metricbeat is active
+  #   - reload metricbeat
 
 - name: Remove dns credentials
   ansible.builtin.file:
