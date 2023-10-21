@@ -36,6 +36,26 @@
   register: cert_exists
   become: true
 
+- name: Extract SANs from the existing certificate
+  shell: >
+    openssl x509 -in /etc/letsencrypt/live/{{ inventory_hostname|lower }}/cert.pem -text -noout |
+    grep -A 1 "Subject Alternative Name:" |
+    tail -n 1 |
+    sed 's/DNS://g' |
+    tr -d ' ' |
+    tr ',' '\n'
+  register: existing_sans
+  changed_when: false
+  when: cert_exists.stat.exists
+
+- set_fact:
+    existing_san_list: "{{ existing_sans.stdout_lines }}"
+    desired_san_list: ["{{ inventory_hostname|lower }}"] + certbot_additional_sans
+
+- name: Compare existing and desired SANs
+  set_fact:
+    need_new_cert: "{{ existing_san_list | difference(desired_san_list) | length > 0 }}"
+
 - name: Create dns credentials
   ansible.builtin.template:
     src: dnsprovider.ini.j2
@@ -50,7 +70,7 @@
   ansible.builtin.command:
     cmd: "certbot certonly --dns-cloudflare --dns-cloudflare-propagation-seconds 10 --dns-cloudflare-credentials /tmp/cloudflare.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
   when:
-    - not cert_exists.stat.exists
+    - not cert_exists.stat.exists or need_new_cert
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider == 'cloudflare'
   become: true
