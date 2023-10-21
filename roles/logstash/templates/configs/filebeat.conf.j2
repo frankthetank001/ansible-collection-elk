@@ -596,8 +596,14 @@ filter {
         }
 
         # Perform multiple mutate operations in a single block
-        mutate {
-            add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+        if [Server][Name] {
+            mutate {
+                add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+            }
+        } else if [Name] {
+            mutate {
+                add_field => {"[server][name][lc]" => "%{[Name]}"}
+            }
         }
         mutate {
             rename => {"[@metadata][message]" => "[message]"}
