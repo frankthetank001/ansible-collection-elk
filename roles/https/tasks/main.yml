@@ -7,34 +7,29 @@
     name: certbot
     state: present
   when: ansible_os_family == 'Debian'
-  become: true
 
 - name: Install python3-certbot-dns-cloudflare (Debian-based systems)
   ansible.builtin.apt:
     name: python3-certbot-dns-cloudflare
     state: present
   when: ansible_os_family == 'Debian'
-  become: true
 
 - name: Install certbot (RedHat-based systems)
   ansible.builtin.yum:
     name: certbot
     state: present
   when: ansible_os_family == 'RedHat'
-  become: true
 
 - name: Install python3-certbot-dns-cloudflare (RedHat-based systems)
   ansible.builtin.yum:
     name: python3-certbot-dns-cloudflare
     state: present
   when: ansible_os_family == 'RedHat'
-  become: true
 
 - name: Check if certificate exists
   ansible.builtin.stat:
     path: "/etc/letsencrypt/live/{{ inventory_hostname|lower }}/fullchain.pem"
   register: cert_exists
-  become: true
 
 - name: Extract SANs from the existing certificate
   shell: >
@@ -67,7 +62,7 @@
     src: dnsprovider.ini.j2
     dest: /tmp/{{ certbot_dns_provider }}.ini
     mode: '0600'
-  become: true
+  when_changed: false
   when:
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
@@ -79,7 +74,6 @@
     - not cert_exists.stat.exists or need_new_cert
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider == 'cloudflare'
-  become: true
   register: cert_requested
   notify:
     - check if elasticsearch is active
@@ -99,7 +93,7 @@
   ansible.builtin.file:
     path: "/tmp/{{ certbot_dns_provider }}.ini"
     state: absent
-  become: true
+  when_changed: false
   when:
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
@@ -110,7 +104,6 @@
   when:
     - not cert_exists.stat.exists
     - certbot_enrollment_type == 'http_01'
-  become: true
   register: cert_requested
 
 - name: Local | intermediate exists
@@ -134,7 +127,6 @@
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     flat: yes
-  become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
@@ -259,7 +251,6 @@
       -out /tmp/{{ inventory_hostname|lower }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
   when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists
-  become: true
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (node https)
   ansible.builtin.copy:
@@ -270,7 +261,6 @@
     remote_src: true
     mode: 0644
   when: https_cert_issued_by_local_ca or cert_requested.changed or not elastic_keystore_file.stat.exists
-  become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
@@ -285,7 +275,6 @@
     remote_src: true
     mode: 0644
   when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists
-  become: true
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
@@ -295,13 +284,11 @@
   ansible.builtin.file:
     path: "/tmp/{{ inventory_hostname|lower }}.p12"
     state: absent
-  become: true
 
 - name: Copy the trusted CA to the elasticsearch config directory
   ansible.builtin.copy:
     src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     dest: "{{ elasticsearch_certs_dir }}/{{ elasticsearch_ca_chain_name }}"
-  become: true
 
 - name: Create certbot post renewal hook
   ansible.builtin.copy:
@@ -334,7 +321,6 @@
       systemctl restart elasticsearch
     dest: "/etc/letsencrypt/renewal-hooks/post/elasticsearch-renewal.sh"
     mode: '0755'
-  become: true
 
 # Ensure certbot timer is active and running
 - name: Ensure certbot timer is active and running
@@ -342,7 +328,6 @@
     name: certbot.timer
     state: started
     enabled: true
-  become: true
 
 - name: Local | Cleanup locally created temporary certificates 1/2
   file:
