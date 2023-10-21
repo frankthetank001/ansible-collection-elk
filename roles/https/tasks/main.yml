@@ -66,6 +66,9 @@
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
 
+- debug:
+    var: need_new_cert
+    
 - name: DNS_01 | Request HTTPS certificate if not present
   ansible.builtin.command:
     cmd: "certbot certonly --dns-cloudflare --dns-cloudflare-propagation-seconds 10 --dns-cloudflare-credentials /tmp/cloudflare.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
