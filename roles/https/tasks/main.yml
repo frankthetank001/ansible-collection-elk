@@ -53,10 +53,11 @@
     desired_san_list: "{{ [inventory_hostname|lower] + certbot_additional_sans }}"
 
 - debug:
-    var:
-      - existing_san_list
-      - desired_san_list
-      
+    var: existing_san_list
+
+- debug:
+    var: desired_san_list
+
 - name: Compare existing and desired SANs
   set_fact:
     need_new_cert: "{{ existing_san_list | difference(desired_san_list) | length > 0 }}"
