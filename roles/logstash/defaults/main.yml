@@ -26,6 +26,8 @@ logstash_mqtt_topics:
 
 logstash_beats_tcp_port: 5044
 logstash_tcp_port: 5000
+logstash_ssl_cert_name: cert.pem
+logstash_ssl_key_name: privkey.pem
 
 logstash_jvm_xmx: 512m
 logstash_jvm_xms: 512m

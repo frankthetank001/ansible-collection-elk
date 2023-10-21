@@ -4,8 +4,8 @@ input {
         port => 5044
         ssl_enabled => true
         ssl_certificate_authorities => [{% for cert in lookup('fileglob', logstash_certs_dir + '/ca/*', wantlist=True) %}"{{ cert }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-        ssl_certificate => "{{ logstash_certs_dir }}/cert1.pem"
-        ssl_key => "{{ logstash_certs_dir }}/privkey1.pem"
+        ssl_certificate => "{{ logstash_certs_dir }}/{{ logstash_ssl_cert_name }}"
+        ssl_key => "{{ logstash_certs_dir }}/{{ logstash_ssl_key_name }}"
         ssl_client_authentication => "required"
         type => "beats"
     }
