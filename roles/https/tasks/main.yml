@@ -60,7 +60,7 @@
 
 - name: Compare existing and desired SANs
   set_fact:
-    need_new_cert: "{{ existing_san_list | difference(desired_san_list) | length > 0 }}"
+    need_new_cert: "{{ desired_san_list | difference(existing_san_list) | length > 0 }}"
 
 - name: Create dns credentials
   ansible.builtin.template:
