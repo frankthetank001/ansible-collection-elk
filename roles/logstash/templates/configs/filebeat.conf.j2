@@ -596,9 +596,17 @@ filter {
         }
 
         # Perform multiple mutate operations in a single block
-        mutate {
-            copy => {
-                "[Server][Name]" => "[server][name][lc]"
+        if [Server][Name] {
+            mutate {
+                copy => {
+                    "[Server][Name]" => "[server][name][lc]"
+                }
+            }
+        } else if [Server][0][Name] {
+            mutate {
+                copy => {
+                    "[Server][0][Name]" => "[server][name][lc]"
+                }
             }
         }
         mutate {
