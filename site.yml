@@ -1,5 +1,7 @@
 ---
 - hosts: elasticsearch
+  handlers:
+    - include: handlers/main.yml
   become: yes
   #remote_user: vagrant
   vars_files:
@@ -17,6 +19,8 @@
         name: elasticsearch
 
 - hosts: kibana
+  handlers:
+    - include: handlers/main.yml
   become: yes
   #remote_user: vagrant
   vars_files:
@@ -37,6 +41,8 @@
       when: kibana_use_nginx_proxy
 
 - hosts: logstash
+  handlers:
+    - include: handlers/main.yml
   become: yes
   #remote_user: vagrant
   vars_files:
@@ -54,6 +60,8 @@
         name: logstash
 
 - hosts: elasticsearch
+  handlers:
+    - include: handlers/main.yml
   become: yes
   #remote_user: vagrant
   vars_files:
