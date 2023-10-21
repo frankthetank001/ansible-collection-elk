@@ -15,10 +15,6 @@
     loop_var: alias_template_item
   delegate_to: localhost
 
-- name: debug
-  debug:
-    var: index_check
-
 - name: Create index for alias template {{ alias_template_item }} if it does not exist
   uri:
     url: "{{ virtual_proto }}://localhost:9200/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
