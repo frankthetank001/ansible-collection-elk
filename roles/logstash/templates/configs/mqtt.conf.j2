@@ -101,8 +101,14 @@ filter {
         "host" => "hostname"
       }
     }
-    mutate {
-        add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+    if [Server][Name] {
+      mutate {
+          add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+      }
+    } else if [Name] {
+      mutate {
+          add_field => {"[server][name][lc]" => "%{[Name]}"}
+      }
     }
     mutate {
         lowercase => ["[server][name][lc]"]
