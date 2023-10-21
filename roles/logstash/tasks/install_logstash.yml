@@ -68,7 +68,7 @@
     - elasticsearch_https_enabled
     # TODO: Security enabled, nodes require TLS regardless of https_enabled?
     - generateca is not defined or not generateca
-    - https_complete is defined
+    - https_complete is not defined
 
 - name: Fix directory permission
   ansible.builtin.file:
