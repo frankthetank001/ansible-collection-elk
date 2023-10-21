@@ -200,12 +200,12 @@
 
 - name: Check logstash SSL cert exists
   stat:
-    file: "{{ logstash_certs_dir }}/{{ logstash_ssl_cert_name }}"
+    path: "{{ logstash_certs_dir }}/{{ logstash_ssl_cert_name }}"
   register: logstash_ssl_cert
 
 - name: Check logstash SSL key exists
   stat:
-    file: "{{ logstash_certs_dir }}/{{ logstash_ssl_key_name }}"
+    path: "{{ logstash_certs_dir }}/{{ logstash_ssl_key_name }}"
   register: logstash_ssl_key
 
 - name: Copy SSL cert to logstash certs directory
