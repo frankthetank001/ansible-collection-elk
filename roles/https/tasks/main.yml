@@ -52,6 +52,11 @@
     existing_san_list: "{{ existing_sans.stdout_lines }}"
     desired_san_list: "{{ [inventory_hostname|lower] + certbot_additional_sans }}"
 
+- debug:
+    var:
+      - existing_san_list
+      - desired_san_list
+      
 - name: Compare existing and desired SANs
   set_fact:
     need_new_cert: "{{ existing_san_list | difference(desired_san_list) | length > 0 }}"
@@ -66,9 +71,6 @@
     - certbot_enrollment_type == 'dns_01'
     - certbot_dns_provider is defined
 
-- debug:
-    var: need_new_cert
-    
 - name: DNS_01 | Request HTTPS certificate if not present
   ansible.builtin.command:
     cmd: "certbot certonly --dns-cloudflare --dns-cloudflare-propagation-seconds 10 --dns-cloudflare-credentials /tmp/cloudflare.ini -d {{ inventory_hostname|lower }}{% for san in certbot_additional_sans %} -d {{ san }}{% endfor %} --register-unsafely-without-email --agree-tos"
