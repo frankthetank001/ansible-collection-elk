@@ -406,7 +406,6 @@ filter {
                         index => "alias-match-info"
                         query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Player.Name:*"
                         fields => { 
-                            "player_name" => "player_name",
                             "player_name" => "[Match][Player][Name]"
                         }
                     }
