@@ -214,7 +214,7 @@ filter {
                             user => "${ES_USER}"
                             password => "${ES_PWD}"
                             index => "alias-match-info"
-                            query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
+                            query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type.keyword:'PLAYER_CONNECT'"
                             fields => { 
                                 "player_name" => "[Match][Player][Name]"
                             }
@@ -252,7 +252,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MAP'"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type.keyword:'INFO_MAP'"
                         fields => { 
                             "match_map" => "[Match][Map]"
                         }
@@ -266,7 +266,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_MATCH'"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type.keyword:'INFO_MATCH'"
                         fields => { 
                             "match_name" => "[Match][Name]"
                         }
@@ -280,7 +280,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'INFO_SETTINGS'"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type.keyword:'INFO_SETTINGS'"
                         fields => {
                             "match_mode" => "[Match][Mode]"
                             "match_options" => "[Match][Options]"
@@ -295,7 +295,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type:'PLAYER_SELECT' OR Match.Event.Type:'PLAYER_RANDOM') AND Match.Player.ID:%{[Match][Player][ID]}"
+                        query => "Match.ID:%{[Match][ID]} AND (Match.Event.Type.keyword:'PLAYER_SELECT' OR Match.Event.Type.keyword:'PLAYER_RANDOM') AND Match.Player.ID:%{[Match][Player][ID]}"
                         fields => {
                             "player_hero" => "[Match][Player][Hero]"
                         }
@@ -309,7 +309,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'PLAYER_TEAM_CHANGE'"
+                        query => "Match.ID:%{[Match][ID]} AND Match.Event.Type.keyword:'PLAYER_TEAM_CHANGE'"
                         fields => {
                             "player_team" => "[Match][Player][Team]"
                         }
@@ -404,7 +404,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.Player.ID:%{[Match][Player][ID]} and Match.ID:%{[Match][ID]} and Match.Event.Type:'PLAYER_CONNECT'"
+                        query => "Match.Player.ID:%{[Match][Player][ID]} and Match.ID:%{[Match][ID]} and Match.Event.Type.keyword:'PLAYER_CONNECT'"
                         fields => { 
                             "player_name" => "[Match][Player][Name]"
                         }
