@@ -398,6 +398,17 @@ filter {
                         add_field => { "[Server][Event][Type]" => "DDOS culprit" }
                         replace => { "[Server][Event][Severity]" => "ERROR" }
                     }
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "alias-match-info"
+                        query => "Match.Player.ID:%{[Match][Player][ID]} and Match.ID:%{[Match][ID]} and Match.Event.Type:'PLAYER_CONNECT'"
+                        fields => { 
+                            "player_name" => "[Match][Player][Name]"
+                        }
+                    }
                 } else if [@metadata][message] =~ /^>.*/ {
                     grok {
                         match => [ "message","%{GREEDYDATA}>%{GREEDYDATA:[Server][Command]}$"]
