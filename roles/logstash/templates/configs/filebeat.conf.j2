@@ -328,7 +328,6 @@ filter {
                 }
                 
             } else if [Log_Type] in ["console", "k2 console"] {
-                ## THIS ENTIRE SECTION TO BE DEPRECATED ##
                 grok {
                     patterns_dir => ["/etc/logstash/patterns"]
                     #match => [
@@ -353,6 +352,7 @@ filter {
                 # Default status
                 mutate {
                     add_field => { "[Server][Event][Severity]" => "OK" }
+                    add_field => { "[Severity]" => "OK" }
                 }
 
                 if "skipped" in [message] {
