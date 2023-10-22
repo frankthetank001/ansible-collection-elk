@@ -352,7 +352,11 @@ filter {
                 # Default status
                 mutate {
                     add_field => { "[Server][Event][Severity]" => "OK" }
-                    add_field => { "[Severity]" => "OK" }
+                }
+                if not [Server][Event][Severity] {
+                    mutate {
+                        add_field => { "[Server][0][Event][Severity]" => "OK" }
+                    }
                 }
 
                 if "skipped" in [message] {
