@@ -34,6 +34,9 @@ filter {
     mutate {
       remove_field => ["message", "timestamp"]
     }
+    if [github_branch] {
+      mutate { add_field => { "[HoNfigurator][GitHub_Branch]" => "%{github_branch}" } }
+    }
     if [game_phase] {
       translate {
         source => "game_phase"
