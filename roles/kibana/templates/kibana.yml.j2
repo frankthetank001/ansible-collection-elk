@@ -23,10 +23,15 @@ server.host: 0.0.0.0
 
 # Specifies the public URL at which Kibana is available for end users. If
 # `server.basePath` is configured this URL should end with the same basePath.
+{% if kibana_base_url %}
+server.publicBaseUrl: "{{ kibana_base_url }}"
+{% else %}
 #server.publicBaseUrl: ""
+{% endif %}
+xpack.reporting.roles.enabled: false
 
 # The maximum payload size in bytes for incoming server requests.
-server.maxPayloadBytes: {{ kibana_max_payload_bytes }}
+server.maxPayload: {{ kibana_max_payload_bytes }}
 
 # The Kibana server's name. This is used for display purposes.
 server.name: {{ ansible_hostname|lower }}

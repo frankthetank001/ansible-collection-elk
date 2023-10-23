@@ -90,6 +90,9 @@ filter {
                     match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} - %{DATA:[HoNfigurator][Log_Level]} - %{DATA:[HoNfigurator][Filename]}:%{INT:[HoNfigurator][Line_Number]} - %{GREEDYDATA:[@metadata][message]}" }
                     tag_on_failure => ["_honfigurator_log_grok_failure"]
                 }
+                if [Server][Github_Branch] {
+                    mutate { add_field => { "[HoNfigurator][Github_Branch]" => "%{[Server][Github_Branch]}" } }
+                }
             } else if [Log_Type] == "match" {
                 # Extracting basic event details
                 grok {
