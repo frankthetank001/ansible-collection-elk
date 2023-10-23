@@ -81,7 +81,6 @@
     - wait elasticsearch to be ready
     - check if logstash is active
     - restart logstash
-    - wait logstash to be ready
     - check if heartbeat is active
     - reload heartbeat
     - check if filebeat is active
