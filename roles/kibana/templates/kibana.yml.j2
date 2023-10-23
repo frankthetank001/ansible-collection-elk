@@ -23,7 +23,12 @@ server.host: 0.0.0.0
 
 # Specifies the public URL at which Kibana is available for end users. If
 # `server.basePath` is configured this URL should end with the same basePath.
-server.publicBaseUrl: "{{ kibana_base_url | default('') }}"
+{% if kibana_base_url is defined and kibana_base_url is not none and kibana_base_url|trim != '' %}
+server.publicBaseUrl: "{{ kibana_base_url }}"
+{% else %}
+#server.publicBaseUrl: ""
+{% endif %}
+
 xpack.reporting.roles.enabled: false
 
 # The maximum payload size in bytes for incoming server requests.
