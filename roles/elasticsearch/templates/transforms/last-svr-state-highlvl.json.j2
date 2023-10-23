@@ -1,0 +1,73 @@
+{
+  "id": "last-svr-state-highlvl",
+  "source": {
+    "index": [
+      "mqtt*"
+    ],
+    "query": {
+      "bool": {
+        "filter": [
+          {
+            "bool": {
+              "filter": [
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "exists": {
+                          "field": "svr_name.keyword"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                },
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "exists": {
+                          "field": "svr_name.keyword"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                },
+                {
+                  "bool": {
+                    "should": [
+                      {
+                        "match_phrase": {
+                          "topic": "manager*"
+                        }
+                      }
+                    ],
+                    "minimum_should_match": 1
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "dest": {
+    "index": "last-svr-state-highlvl"
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "svr_name.keyword"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "The last known state if each server farm.",
+  "settings": {}
+}
