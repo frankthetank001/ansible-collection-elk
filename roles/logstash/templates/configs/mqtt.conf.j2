@@ -7,7 +7,7 @@ input {
     topic => "{{ topic }}"
     qos => 1
     type => "mqtt"
-    clean_session => true
+    clean_session => false
     ssl => true
     certificate_path => "{{ logstash_certs_dir }}/{{ logstash_mqtt_client_cert }}"
     key_path => "{{ logstash_certs_dir }}/{{ logstash_mqtt_client_key }}"
