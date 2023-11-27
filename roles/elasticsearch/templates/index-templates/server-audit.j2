@@ -1,0 +1,25 @@
+{
+  "template": {
+    "settings": {
+      "index": {
+        "lifecycle": {
+          "name": "server-audit",
+          "rollover_alias": "alias-server-audit" 
+        },
+        "refresh_interval": "5s",
+        "number_of_shards": "{{ elasticsearch_hosts | length }}",
+        "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+      }
+    },
+    "aliases": {
+      "alias-server-audit": {
+        "is_write_index": true 
+      }
+    },
+    mappings : {}
+    },
+  "index_patterns": [
+    "server-audit-*"
+  ],
+  "composed_of": []
+}

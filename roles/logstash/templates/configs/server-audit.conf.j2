@@ -1,0 +1,21 @@
+input {
+  exec {
+    command => "/usr/bin/python3 {{ logstash_conf_dir }}/scripts/server-audit.py"
+    interval => 60  # Interval in Seconds
+    codec => json
+    add_field => { "source" => "server-audit" }
+  }
+}
+
+output {
+  if [source] == "server-audit" {
+    elasticsearch {
+      hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+      index => "server-audit"  # Index-Name (?)
+      ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+      user => "${ES_USER}"
+      password => "${ES_PWD}"
+      action => "create"
+    }
+  }
+}

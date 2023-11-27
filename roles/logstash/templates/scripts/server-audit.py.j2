@@ -1,0 +1,176 @@
+import requests
+from elasticsearch import Elasticsearch
+import urllib3
+import phpserialize
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def recursive_php_decode(item):
+    # If the item is bytes, decode it
+    if isinstance(item, bytes):
+        return item.decode('utf-8')
+    # If the item is a dictionary, decode its keys and values (recursively)
+    elif isinstance(item, dict):
+        return {recursive_php_decode(key): recursive_php_decode(value) for key, value in item.items()}
+    # If the item is a list, decode its elements (recursively)
+    elif isinstance(item, list):
+        return [recursive_php_decode(element) for element in item]
+    # Return the item as is if none of the above conditions are met
+    else:
+        return item
+
+class KongorAPIClient():
+    def __init__(self):
+        self.url = "http://api.kongor.online/client_requester.php?f=server_list"
+        self.data = {
+            "gametype" : "90",
+            "cookie" : "123"
+        }
+        self.server_dict = {}
+    
+    def get_server_list(self, auto_region=False):
+        data = self.data.copy()
+
+        if auto_region:
+            data["region"] = "AUTO"
+        response = requests.post(self.url, data = data)
+        if not response.status_code == 200:
+            print("Fail to access kongor API")
+            return
+        
+        return response
+
+class ServerList():
+    def __init__(self):
+        pass
+    
+    def parse_server_list(self, server_list):
+        parsed = phpserialize.loads(server_list.text.encode('utf-8'))
+        parsed = recursive_php_decode(parsed)
+
+        servers_by_ip = {}
+        server_list = parsed["server_list"]
+
+        for server in server_list.values():
+            ip = server["ip"]
+            if ip not in servers_by_ip:
+                servers_by_ip[ip] = server
+
+        return servers_by_ip
+
+def query_elastic(server_list=None):
+    # Your Elasticsearch credentials
+    ES_USERNAME = 'elastic'
+    ES_PASSWORD = '{{ elasticsearch_users['elastic']['password'] }}'
+
+    # Setup Elasticsearch connection
+    es = Elasticsearch(['https://elastic-node2.honfigurator.app:9200'], basic_auth=(ES_USERNAME, ES_PASSWORD))
+
+    # Query the 'last-svr-state' index
+    response = es.search(
+        index="last-svr-state-highlvl",
+        filter_path=["hits.hits._source"],
+        # query={
+        #     "match_all":{}
+        # }
+        query={
+            "bool": {
+                "must": {
+                    "exists": {
+                        "field": "svr_api_port"
+                    }
+                }
+            }
+        }
+    )
+
+    # Check for errors in the Elasticsearch response
+    if response.get('errors', False):
+        print("Errors found in Elasticsearch response.")
+        exit(1)
+    
+    server_list = {}
+    for hit in response['hits']['hits']:
+        server = hit['_source']
+        svr_ip = server['svr_ip']
+        svr_api_port = server['svr_api_port'] if 'svr_api_port' in server else 5000
+        server_list[svr_ip] = server
+    return server_list
+
+def query_honfig_api(server_list):
+    overall_data = {}
+    # For each document/server, construct the API URL and fetch data
+    for ip in server_list:
+        api_data = {}
+        api_port = server_list[ip]['svr_api_port'] if 'svr_api_port' in server_list[ip] else 5000
+
+        # Construct the API endpoint
+        api_endpoint = f"https://{ip}:{api_port}/api/public/check_filebeat_status"
+
+        try:
+            # Query the API endpoint and get the JSON response
+            api_response = requests.get(api_endpoint, verify=False)  # 'verify=False' is for self-signed certificates. Remove it if you've a valid SSL.
+            api_data = api_response.json()
+
+            api_data['autoping'] = True
+            api_data['api_online'] = True
+
+            if 'certificate_valid' in api_data:
+                # Print the data or handle it as required
+                if api_data['certificate_status'].startswith('valid'):
+                    api_data['certificate_valid'] = True
+                else:
+                    api_data['certificate_valid'] = False
+            if 'port' in server_list[ip]:
+                print(f"{ip} ({server_list[ip]['port']}): {api_data}")
+            else:
+                print(f"{ip} {server_list[ip]}: {api_data}")
+            
+        except requests.exceptions.RequestException as e:
+            # Handle errors here
+            api_data['api_online'] = False
+
+            if 'port' in server_list[ip]:
+                print(f"Error querying the API for server IP {ip} ({server_list[ip]['port']})")
+            else:
+                print(f"Error querying the API for server IP {ip}")
+        
+        overall_data[ip] = api_data
+        overall_data[ip]['in_elastic'] = server_list[ip]['in_elastic']
+        overall_data[ip]['port'] = server_list[ip]['port']
+        overall_data[ip]['name'] = server_list[ip]['location'] if ' 0' in server_list[ip]['location'] else ''
+
+    return overall_data
+
+def main():
+    kongor_api_client = KongorAPIClient()
+    server_list = ServerList()
+
+    kongor_server_list_autoping = server_list.parse_server_list(kongor_api_client.get_server_list(auto_region=True))
+    kongor_server_list_all = server_list.parse_server_list(kongor_api_client.get_server_list(auto_region=False))
+
+    kongor_server_list_all.update(kongor_server_list_autoping)
+
+    servers_not_running_autoping = {k: v for k, v in kongor_server_list_all.items() if k not in kongor_server_list_autoping}
+
+    server_list_elastic = query_elastic()
+    if not kongor_server_list_all:
+        return
+    
+    for key in kongor_server_list_all:
+        if key in server_list_elastic and 'svr_api_port' in server_list_elastic[key]:
+            kongor_server_list_all[key]['in_elastic'] = True
+            kongor_server_list_all[key]['svr_api_port'] = server_list_elastic[key]['svr_api_port']
+        elif key not in server_list_elastic:
+            kongor_server_list_all[key]['in_elastic'] = False
+    
+    status = query_honfig_api(kongor_server_list_all)
+
+    for server in servers_not_running_autoping:
+        status[server].update({'autoping': False})
+    
+    
+    return status
+    
+    
+if __name__ == "__main__":
+    main()
