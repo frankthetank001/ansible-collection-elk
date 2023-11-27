@@ -1,42 +1,23 @@
 {
-  "template": {
-    "settings": {
-      "index": {
-        "lifecycle": {
-          "name": "server-audit",
-          "rollover_alias": "alias-server-audit" 
-        },
-        "refresh_interval": "5s",
-        "number_of_shards": "{{ elasticsearch_hosts | length }}",
-        "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
-      }
-    },
-    "aliases": {
-      "alias-server-audit": {
-        "is_write_index": true 
-      }
-    },
-    "mappings": {
-      "_routing": {
-          "required": false
+    "template": {
+      "settings": {
+          "index": {
+              "lifecycle": {
+                  "name": "server-audit"
+              },
+              "refresh_interval": "5s",
+              "number_of_shards": "{{ elasticsearch_hosts | length }}",
+              "number_of_replicas": "{{ [elasticsearch_hosts | length - 1, 0] | max }}"
+          }
       },
-      "numeric_detection": false,
-      "dynamic_date_formats": [
-          "strict_date_optional_time",
-          "yyyy/MM/dd HH:mm:ss Z||yyyy/MM/dd Z"
-      ],
-      "_source": {
-          "excludes": [],
-          "includes": [],
-          "enabled": true
-      },
-      "dynamic": true,
-      "dynamic_templates": [],
-      "date_detection": true
+      "mappings": {}
+    },
+    "index_patterns": [
+        "server-audit*"
+    ],
+    "composed_of": [],
+    "data_stream": {
+        "hidden": false,
+        "allow_custom_routing": false
     }
-  },
-  "index_patterns": [
-    "server-audit-*"
-  ],
-  "composed_of": []
 }
