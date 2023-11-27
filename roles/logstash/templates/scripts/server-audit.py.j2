@@ -34,7 +34,7 @@ class KongorAPIClient():
             data["region"] = "AUTO"
         response = requests.post(self.url, data = data)
         if not response.status_code == 200:
-            print("Fail to access kongor API")
+            print("Failed to access kongor API")
             return
         
         return response
@@ -120,19 +120,19 @@ def query_honfig_api(server_list):
                     api_data['certificate_valid'] = True
                 else:
                     api_data['certificate_valid'] = False
-            if 'port' in server_list[ip]:
-                print(f"{ip} ({server_list[ip]['port']}): {api_data}")
-            else:
-                print(f"{ip} {server_list[ip]}: {api_data}")
+            #if 'port' in server_list[ip]:
+            #    print(f"{ip} ({server_list[ip]['port']}): {api_data}")
+            #else:
+            #    print(f"{ip} {server_list[ip]}: {api_data}")
             
         except requests.exceptions.RequestException as e:
             # Handle errors here
             api_data['api_online'] = False
 
-            if 'port' in server_list[ip]:
-                print(f"Error querying the API for server IP {ip} ({server_list[ip]['port']})")
-            else:
-                print(f"Error querying the API for server IP {ip}")
+            #if 'port' in server_list[ip]:
+            #    print(f"Error querying the API for server IP {ip} ({server_list[ip]['port']})")
+            #else:
+            #    print(f"Error querying the API for server IP {ip}")
         
         overall_data[ip] = api_data
         overall_data[ip]['in_elastic'] = server_list[ip]['in_elastic']
