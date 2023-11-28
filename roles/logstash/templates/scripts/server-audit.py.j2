@@ -62,15 +62,19 @@ class ServerList():
         parsed = phpserialize.loads(server_list.text.encode('utf-8'))
         parsed = recursive_php_decode(parsed)
 
-        servers_by_ip = {}
+        servers = {}
         server_list = parsed["server_list"]
 
         for server in server_list.values():
             ip = server["ip"]
-            if ip not in servers_by_ip:
-                servers_by_ip[ip] = server
+            new_name = server["location"].replace(' 0', '') if ' 0' in server["location"] else 'no_name'  # Remove the ' 0' suffix from the name (if present
+            # name = server.get("location", "no_name")  # Use a default if name is not available
+            # unique_key = (ip, name)  # Creating a tuple of IP and name
 
-        return servers_by_ip
+            servers[ip] = server
+            servers[ip]['name'] = new_name
+
+        return servers
 
 def query_elastic(server_list=None):
     # Your Elasticsearch credentials
@@ -96,19 +100,24 @@ def query_elastic(server_list=None):
         size=1000  # Adjust the number as needed
     )
 
-
     # Check for errors in the Elasticsearch response
     if response.get('errors', False):
-        print(json.dumps({"error":"Errors found in Elasticsearch response."}))
+        print(json.dumps({"error": "Errors found in Elasticsearch response."}))
         exit(1)
     
-    server_list = {}
+    elastic_server_list = {}
     for hit in response['hits']['hits']:
         server = hit['_source']
         svr_ip = server['svr_ip']
-        svr_api_port = server['svr_api_port'] if 'svr_api_port' in server else 5000
-        server_list[svr_ip] = server
-    return server_list
+        #svr_autoping_port = server['autoping_responder_port'] # future release
+        svr_name = server.get('svr_name', 'default_name')  # Use a default if name is not available
+        svr_name = svr_name.replace(' 0', '')  # Remove the ' 0' suffix from the name (if present
+        unique_key = (svr_ip, svr_name)  # Creating a tuple of IP and name
+
+        elastic_server_list[unique_key] = server
+
+    return elastic_server_list
+
 
 def query_honfig_api_parallel(server_list):
     overall_data = {}
@@ -152,28 +161,40 @@ def main():
     servers_not_running_autoping = {k: v for k, v in kongor_server_list_all.items() if k not in kongor_server_list_autoping}
 
     server_list_elastic = query_elastic()
+
     if not kongor_server_list_all:
         return
-    
-    for key in kongor_server_list_all:
-        if key in server_list_elastic and 'svr_api_port' in server_list_elastic[key]:
-            kongor_server_list_all[key]['in_elastic'] = True
-            kongor_server_list_all[key]['svr_api_port'] = server_list_elastic[key]['svr_api_port']
-        elif key not in server_list_elastic:
-            kongor_server_list_all[key]['in_elastic'] = False
-    
+
+    # Updated section to handle composite keys
+    for key, server_info in kongor_server_list_all.items():
+        # Adjust the key to match the composite key format
+        elastic_key = (server_info["ip"], server_info.get("name", "no_name"))
+
+        if elastic_key in server_list_elastic:
+            server_info['in_elastic'] = True
+            server_info['svr_api_port'] = server_list_elastic[elastic_key].get('svr_api_port', 5000)
+        else:
+            server_info['in_elastic'] = False
+
+    # Proceed with the rest of the function
     status = query_honfig_api_parallel(kongor_server_list_all)
 
-    for server in servers_not_running_autoping:
-        status[server].update({'autoping': False})
-    
-    for server, data in status.items():
+    for server_key in servers_not_running_autoping:
+        status[server_key].update({'autoping': False})
+
+    for server_key, data in status.items():
         server_data = {
-            "ip": server,
+            "ip": server_key[0],  # Extracting IP from the composite key
+            "name": server_key[1], # Extracting name from the composite key
             **data
         }
         print(json.dumps(server_data))
+
     return status
+
+if __name__ == "__main__":
+    main()
+
     
     
 if __name__ == "__main__":
