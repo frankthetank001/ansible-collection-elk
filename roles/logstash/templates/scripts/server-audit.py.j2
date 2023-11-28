@@ -167,7 +167,12 @@ def main():
     for server in servers_not_running_autoping:
         status[server].update({'autoping': False})
     
-    print(json.dumps(status))
+    for server, data in status.items():
+        server_data = {
+            "ip": server,
+            **data
+        }
+        print(json.dumps(server_data))
     return status
     
     
