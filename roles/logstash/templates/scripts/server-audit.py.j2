@@ -2,6 +2,9 @@ import requests
 from elasticsearch import Elasticsearch
 import urllib3
 import phpserialize
+import concurrent.futures
+import json
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def recursive_php_decode(item):
@@ -17,6 +20,18 @@ def recursive_php_decode(item):
     # Return the item as is if none of the above conditions are met
     else:
         return item
+
+def fetch_api_data(api_endpoint):
+    try:
+        response = requests.get(api_endpoint, verify=False)
+        if response.status_code == 200:
+            api_data = response.json()
+            api_data['api_online'] = True  # API call was successful
+            return api_data
+        else:
+            return {"api_online": False, "error": f"Non-200 status code: {response.status_code}"}
+    except requests.exceptions.RequestException as e:
+        return {"api_online": False, "error": str(e)}
 
 class KongorAPIClient():
     def __init__(self):
@@ -34,8 +49,8 @@ class KongorAPIClient():
             data["region"] = "AUTO"
         response = requests.post(self.url, data = data)
         if not response.status_code == 200:
-            print("Failed to access kongor API")
-            return
+            print(json.dumps({"error":"Failed to access kongor API"}))
+            exit(1)
         
         return response
 
@@ -69,9 +84,6 @@ def query_elastic(server_list=None):
     response = es.search(
         index="last-svr-state-highlvl",
         filter_path=["hits.hits._source"],
-        # query={
-        #     "match_all":{}
-        # }
         query={
             "bool": {
                 "must": {
@@ -80,12 +92,14 @@ def query_elastic(server_list=None):
                     }
                 }
             }
-        }
+        },
+        size=1000  # Adjust the number as needed
     )
+
 
     # Check for errors in the Elasticsearch response
     if response.get('errors', False):
-        print("Errors found in Elasticsearch response.")
+        print(json.dumps({"error":"Errors found in Elasticsearch response."}))
         exit(1)
     
     server_list = {}
@@ -96,49 +110,34 @@ def query_elastic(server_list=None):
         server_list[svr_ip] = server
     return server_list
 
-def query_honfig_api(server_list):
+def query_honfig_api_parallel(server_list):
     overall_data = {}
-    # For each document/server, construct the API URL and fetch data
-    for ip in server_list:
-        api_data = {}
-        api_port = server_list[ip]['svr_api_port'] if 'svr_api_port' in server_list[ip] else 5000
-
-        # Construct the API endpoint
-        api_endpoint = f"https://{ip}:{api_port}/api/public/check_filebeat_status"
-
-        try:
-            # Query the API endpoint and get the JSON response
-            api_response = requests.get(api_endpoint, verify=False)  # 'verify=False' is for self-signed certificates. Remove it if you've a valid SSL.
-            api_data = api_response.json()
-
-            api_data['autoping'] = True
-            api_data['api_online'] = True
-
-            if 'certificate_valid' in api_data:
-                # Print the data or handle it as required
-                if api_data['certificate_status'].startswith('valid'):
-                    api_data['certificate_valid'] = True
-                else:
-                    api_data['certificate_valid'] = False
-            #if 'port' in server_list[ip]:
-            #    print(f"{ip} ({server_list[ip]['port']}): {api_data}")
-            #else:
-            #    print(f"{ip} {server_list[ip]}: {api_data}")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # Create a dictionary to map futures to IPs
+        future_to_ip = {}
+        for ip, data in server_list.items():
+            if 'svr_api_port' not in data:
+                data['svr_api_port'] = 5000 # A GUESS, as this is the default API port
             
-        except requests.exceptions.RequestException as e:
-            # Handle errors here
-            api_data['api_online'] = False
+            api_endpoint = f"https://{ip}:{data['svr_api_port']}/api/public/check_filebeat_status"
+            future = executor.submit(fetch_api_data, api_endpoint)
+            future_to_ip[future] = ip
 
-            #if 'port' in server_list[ip]:
-            #    print(f"Error querying the API for server IP {ip} ({server_list[ip]['port']})")
-            #else:
-            #    print(f"Error querying the API for server IP {ip}")
-        
-        overall_data[ip] = api_data
-        overall_data[ip]['in_elastic'] = server_list[ip]['in_elastic']
-        overall_data[ip]['port'] = server_list[ip]['port']
-        overall_data[ip]['name'] = server_list[ip]['location'] if ' 0' in server_list[ip]['location'] else ''
-
+        for future in concurrent.futures.as_completed(future_to_ip):
+            ip = future_to_ip[future]
+            api_data = future.result()
+            
+            if 'certificate_valid' in api_data and api_data['certificate_status'].startswith('valid'):
+                api_data['certificate_valid'] = True
+            else:
+                api_data['certificate_valid'] = False
+                
+            api_data['autoping'] = True
+            overall_data[ip] = api_data
+            overall_data[ip]['in_elastic'] = server_list[ip]['in_elastic']
+            overall_data[ip]['port'] = server_list[ip]['port']
+            overall_data[ip]['name'] = server_list[ip]['location'] if ' 0' in server_list[ip]['location'] else ''
+    
     return overall_data
 
 def main():
@@ -163,12 +162,12 @@ def main():
         elif key not in server_list_elastic:
             kongor_server_list_all[key]['in_elastic'] = False
     
-    status = query_honfig_api(kongor_server_list_all)
+    status = query_honfig_api_parallel(kongor_server_list_all)
 
     for server in servers_not_running_autoping:
         status[server].update({'autoping': False})
     
-    
+    print(json.dumps(status))
     return status
     
     
