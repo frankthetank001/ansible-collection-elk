@@ -24,6 +24,13 @@ filter {
         "api_online_value" => "%{api_online}"
       }
     }
+
+    mutate {
+      gsub => [
+        "[Server][Name]", " 0]", ""
+      ]
+    }
+
     if [autoping] {
       mutate {
         replace => {
@@ -52,6 +59,14 @@ filter {
           "api_online_description" => "Offline"
           "api_online_value" => "0"
         }
+      }
+    }
+
+    if [certificate_expiry] {
+      date {
+        match => ["certificate_expiry", "YYYY-MM-dd HH:mm:ssZ"]
+        target => "certificate_expiry"
+        timezone => "UTC"
       }
     }
   }
