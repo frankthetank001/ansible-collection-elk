@@ -17,5 +17,6 @@ output {
       password => "${ES_PWD}"
       action => "create"
     }
+    stdout { codec => rubydebug }
   }
 }
