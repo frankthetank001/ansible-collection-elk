@@ -13,8 +13,45 @@ filter {
       source => "message"
     }
     mutate {
-      rename => {
+      rename => { # meet the critera of my documents templating
         "ip" => "[Server][Public_IP]"
+        "name" => "[Server][Name]"
+      }
+      add_field => {
+        "autoping_description" => "%{autoping}"
+        "autoping_value" => "%{autoping}"
+        "api_online_description" => "%{api_online}"
+        "api_online_value" => "%{api_online}"
+      }
+    }
+    if [autoping] == true {
+      mutate {
+        replace => {
+          "autoping_description" => "Online"
+          "autoping_value" => "1"
+        }
+      }
+    } else if [autoping] == false {
+      mutate {
+        replace => {
+          "autoping_description" => "Offline"
+          "autoping_value" => "0"
+        }
+      }
+    }
+    if [api_online] == true {
+      mutate {
+        replace => {
+          "api_online_description" => "Online"
+          "api_online_value" => "1"
+        }
+      }
+    } else if [api_online] == false {
+      mutate {
+        replace => {
+          "api_online_description" => "Offline"
+          "api_online_value" => "0"
+        }
       }
     }
   }
