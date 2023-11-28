@@ -1,0 +1,28 @@
+{
+  "id": "last-server-audit",
+  "source": {
+    "index": [
+      "server-audit*"
+    ],
+    "query": {
+      "match_all": {}
+    }
+  },
+  "dest": {
+    "index": "last-server-audit"
+  },
+  "sync": {
+    "time": {
+      "field": "@timestamp",
+      "delay": "60s"
+    }
+  },
+  "latest": {
+    "unique_key": [
+      "Server.Public_IP"
+    ],
+    "sort": "@timestamp"
+  },
+  "description": "last-server-audit",
+  "settings": {}
+}
