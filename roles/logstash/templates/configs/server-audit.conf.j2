@@ -12,6 +12,11 @@ filter {
     json {
       source => "message"
     }
+    mutate {
+      rename => {
+        "ip" => "[Server][Public][IP]"
+      }
+    }
   }
 }
 
@@ -25,6 +30,5 @@ output {
       password => "${ES_PWD}"
       action => "create"
     }
-    stdout { codec => rubydebug }
   }
 }
