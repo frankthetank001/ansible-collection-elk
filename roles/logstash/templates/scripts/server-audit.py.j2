@@ -145,7 +145,7 @@ def query_honfig_api_parallel(server_list):
             overall_data[ip] = api_data
             overall_data[ip]['in_elastic'] = server_list[ip]['in_elastic']
             overall_data[ip]['port'] = server_list[ip]['port']
-            overall_data[ip]['name'] = server_list[ip]['location'] if ' 0' in server_list[ip]['location'] else ''
+            overall_data[ip]['name'] = server_list[ip]['name']
     
     return overall_data
 
@@ -182,20 +182,21 @@ def main():
     for server_key in servers_not_running_autoping:
         status[server_key].update({'autoping': False})
 
-    for server_key, data in status.items():
+    # for server_key, data in status.items():
+    #     server_data = {
+    #         "ip": server_key[0],  # Extracting IP from the composite key
+    #         "name": server_key[1], # Extracting name from the composite key
+    #         **data
+    #     }
+    #     print(json.dumps(server_data))
+    for server_ip, data in status.items():
         server_data = {
-            "ip": server_key[0],  # Extracting IP from the composite key
-            "name": server_key[1], # Extracting name from the composite key
+            "ip": server_ip,  # Extracting IP from the composite key
             **data
         }
         print(json.dumps(server_data))
 
     return status
 
-if __name__ == "__main__":
-    main()
-
-    
-    
 if __name__ == "__main__":
     main()
