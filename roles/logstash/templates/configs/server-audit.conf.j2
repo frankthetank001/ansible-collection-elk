@@ -1,9 +1,17 @@
 input {
   exec {
     command => "/usr/bin/python3 {{ logstash_conf_dir }}/scripts/server-audit.py"
-    interval => 3600  # 1 hour in Seconds
-    codec => json
+    interval => 3600
+    codec => line
     add_field => { "source" => "server-audit" }
+  }
+}
+
+filter {
+  if [source] == "server-audit" {
+    json {
+      source => "message"
+    }
   }
 }
 
