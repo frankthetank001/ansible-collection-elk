@@ -45,5 +45,9 @@ SendSIGKILL=no
 # When a JVM receives a SIGTERM signal it exits with code 143
 SuccessExitStatus=143
 
+# Restart the process if it crashes
+Restart=on-failure
+RestartSec=30
+
 [Install]
 WantedBy=multi-user.target
