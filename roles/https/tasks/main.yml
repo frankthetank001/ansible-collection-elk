@@ -303,13 +303,16 @@
         -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
 
       # Copy the PKCS12 file to Elasticsearch certs directory
-      cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}.p12
+      echo "Copying certificate to Elasticsearch"
+      cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/{{ elasticsearch_cert_filename }}
       cp /tmp/$DOMAIN.p12 {{ elasticsearch_certs_dir }}/http.p12
 
       if [[ -f "/etc/logstash/certs" ]]; then
+        echo "Copying certificate to Logstash"
         cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/logstash/certs/{{ elasticsearch_ca_chain_name }}
       fi
       if [[ -f "/etc/kibana/certs" ]]; then
+        echo "Copying certificate to Kibana"
         cp /etc/letsencrypt/live/$DOMAIN/cert.pem /etc/kibana/certs/{{ elasticsearch_ca_chain_name }}
       fi
 
