@@ -131,7 +131,7 @@
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     flat: yes
-  when: not ca_file_stat.stat.exists or ca_file_stat.stat.checksum != (lookup('file', {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}) | hash('sha256'))
+  when: not ca_file_stat.stat.exists or ca_file_stat.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/ca/" + elasticsearch_ca_chain_name) | hash('sha256'))
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
