@@ -121,11 +121,17 @@
   ansible.builtin.debug:
     msg: "elasticsearch_local_certs_dir value is: {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
 
+- name: Check if the CA file already exists
+  ansible.builtin.stat:
+    path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+  register: ca_file_stat
+
 - name: Copy remote letsencrypt CA to local files
   fetch:
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     flat: yes
+  when: not ca_file_stat.stat.exists or ca_file_stat.stat.checksum != ansible.builtin.stat(path=src).stat.checksum
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
