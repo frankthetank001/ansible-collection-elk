@@ -46,4 +46,4 @@ logstash_local_tar_path: ''
 elasticsearch_hosts: []
 
 # Logstash config settings
-logstash_validate_after_inactivity: 10000
+logstash_main_pipeline_workers: 6

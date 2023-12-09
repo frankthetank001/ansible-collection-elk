@@ -4,6 +4,7 @@
 
 - pipeline.id: main
   path.config: "{{ logstash_conf_dir }}/conf.d/*.conf"
+  pipeline.workers: {{ logstash_main_pipeline_workers }}
 
 - pipeline.id: single_threaded
   pipeline.workers: 1
