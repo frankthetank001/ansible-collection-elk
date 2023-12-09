@@ -266,6 +266,7 @@ path.data: {{ logstash_data_dir }}
 #
 # path.dead_letter_queue:
 #
+validate_after_inactivity: {{ logstash_validate_after_inactivity || default('10000', true) }}
 # ------------ Debugging Settings --------------
 #
 # Options for log.level:

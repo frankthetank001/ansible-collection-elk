@@ -44,3 +44,6 @@ logstash_install_mode: http # local
 logstash_local_tar_path: ''
 
 elasticsearch_hosts: []
+
+# Logstash config settings
+logstash_validate_after_inactivity: 10000
