@@ -75,7 +75,7 @@ filter {
 output {
   if [source] == "server-audit" {
     elasticsearch {
-      hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+      hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}elasticsearch_http_port"{% if not loop.last %}, {% endif %}{% endfor %}]
       index => "server-audit"  # Index-Name (?)
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"

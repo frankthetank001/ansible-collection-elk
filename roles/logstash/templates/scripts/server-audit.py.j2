@@ -82,7 +82,7 @@ def query_elastic(server_list=None):
     ES_PASSWORD = '{{ elasticsearch_users['elastic']['password'] }}'
 
     # Setup Elasticsearch connection
-    es = Elasticsearch(['https://elastic-node2.honfigurator.app:9200'], basic_auth=(ES_USERNAME, ES_PASSWORD))
+    es = Elasticsearch(['https://elastic-node2.honfigurator.appelasticsearch_http_port'], basic_auth=(ES_USERNAME, ES_PASSWORD))
 
     # Query the 'last-svr-state' index
     response = es.search(

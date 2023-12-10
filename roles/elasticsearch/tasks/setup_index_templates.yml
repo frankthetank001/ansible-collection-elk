@@ -1,6 +1,6 @@
 - name: Execute index templates
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_index_template/{{ index_template_item | basename | regex_replace('\\.json\\.j2$', '') }}"
+    url: "{{ virtual_proto }}://localhostelasticsearch_http_port/_index_template/{{ index_template_item | basename | regex_replace('\\.json\\.j2$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT

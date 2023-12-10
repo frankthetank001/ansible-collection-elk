@@ -30,7 +30,7 @@
 
 - name: "Check elasticsearch availability"
   uri:
-    url: "{{ elastic_virtual_proto }}://localhost:9200"
+    url: "{{ elastic_virtual_proto }}://localhostelasticsearch_http_port"
     status_code: 401
     validate_certs: no
   register: elk_http_result

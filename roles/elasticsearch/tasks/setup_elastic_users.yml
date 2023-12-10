@@ -5,7 +5,7 @@
 
 - name: Create logstash_writer role
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_security/role/logstash_writer"
+    url: "{{ virtual_proto }}://localhostelasticsearch_http_port/_security/role/logstash_writer"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
@@ -22,7 +22,7 @@
 
 - name: Create and assign logstash_writer role to logstash_user
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_security/user/logstash_user"
+    url: "{{ virtual_proto }}://localhostelasticsearch_http_port/_security/user/logstash_user"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST
@@ -38,7 +38,7 @@
 
 - name: Setup ELK users
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200/_security/user/{{ item.key }}/_password"
+    url: "{{ virtual_proto }}://localhostelasticsearch_http_port/_security/user/{{ item.key }}/_password"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST
