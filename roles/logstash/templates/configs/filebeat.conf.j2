@@ -214,10 +214,13 @@ filter {
                     if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
                         if ![Match][Player][Name] {
                             elasticsearch {
-                                merge(elasticsearch_common_config, {
-                                    query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
-                                    fields => { "player_name" => "[Match][Player][Name]" }
-                                })
+                                hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                                user => "${ES_USER}"
+                                password => "${ES_PWD}"
+                                index => "alias-match-info"
+                                query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
+                                fields => { "player_name" => "[Match][Player][Name]" }
                             }
                         } else {
                             mutate {
@@ -227,11 +230,13 @@ filter {
                                 gsub => ["[sanitized_client_name]", "-", "\\-"]
                             }
                             elasticsearch {
-                                merge(elasticsearch_common_config, {
-                                    index => "player-ips"
-                                    query => "Match.Player.Name:%{[sanitized_client_name]}"
-                                    fields => { "player_ip" => "[Match][Player][IP]" }
-                                })
+                                hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                                user => "${ES_USER}"
+                                password => "${ES_PWD}"
+                                index => "player-ips"
+                                query => "Match.Player.Name:%{[sanitized_client_name]}"
+                                fields => { "player_ip" => "[Match][Player][IP]" }
                             }
                         }
                     }
@@ -244,20 +249,24 @@ filter {
                             }
                         }
                         elasticsearch {
-                            merge(elasticsearch_common_config, {
-                                query => "%{match_query}"
-                                fields => {
-                                    "match_map" => "[Match][Map]",
-                                    "match_name" => "[Match][Name]",
-                                    "match_mode" => "[Match][Mode]",
-                                    "match_options" => "[Match][Options]",
-                                    "player_team" => "[Match][Player][Team]",
-                                    "player_hero" => "[Match][Player][Hero]"
-                                }
-                            })
+                            hosts => [{% for host in elasticsearch_hosts %}"https://{{ host }}:9200"{% if not loop.last %}, {% endif %}{% endfor %}]
+                            ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                            user => "${ES_USER}"
+                            password => "${ES_PWD}"
+                            index => "alias-match-info"
+                            query => "%{match_query}"
+                            fields => {
+                                "match_map" => "[Match][Map]",
+                                "match_name" => "[Match][Name]",
+                                "match_mode" => "[Match][Mode]",
+                                "match_options" => "[Match][Options]",
+                                "player_team" => "[Match][Player][Team]",
+                                "player_hero" => "[Match][Player][Hero]"
+                            }
                         }
                     }
-                    # index specific tagging
+
+                    # Index specific tagging
                     if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM","PLAYER_TEAM_CHANGE"] {
                         mutate {
                             add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}-Player-%{[Match][Player][ID]}" }
