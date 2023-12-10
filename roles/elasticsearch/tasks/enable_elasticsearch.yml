@@ -18,7 +18,7 @@
 
 - name: wait elasticsearh to be ready
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost:9200"
+    url: "{{ virtual_proto }}://localhost:{{ hostvars[inventory_hostname].elasticsearch_http_port | default('9200') }}"
     status_code: 200
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
