@@ -259,7 +259,7 @@
       -inkey /etc/letsencrypt/live/{{ inventory_hostname|lower }}/privkey.pem
       -out /tmp/{{ inventory_hostname|lower }}.p12
       -name elasticsearch -passout pass:{{ elasticsearch_cert_password }}
-  when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists
+  when: https_cert_issued_by_local_ca or cert_requested.changed or not https_file.stat.exists or not elastic_keystore_file.stat.exists
 
 - name: Copy new PKCS12 files to Elasticsearch certs directory (node https)
   ansible.builtin.copy:
