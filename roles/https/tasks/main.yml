@@ -46,16 +46,20 @@
 - set_fact:
     existing_san_list: "{{ existing_sans.stdout_lines }}"
     desired_san_list: "{{ [inventory_hostname|lower] + certbot_additional_sans }}"
+  when: cert_exists.stat.exists
 
 - debug:
     var: existing_san_list
+  when: cert_exists.stat.exists
 
 - debug:
     var: desired_san_list
+  when: cert_exists.stat.exists
 
 - name: Compare existing and desired SANs
   set_fact:
     need_new_cert: "{{ desired_san_list | difference(existing_san_list) | length > 0 }}"
+  when: cert_exists.stat.exists
 
 - name: Create dns credentials
   ansible.builtin.template:
