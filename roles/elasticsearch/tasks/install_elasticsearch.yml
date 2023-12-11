@@ -30,7 +30,7 @@
 
 - name: "Check elasticsearch availability"
   uri:
-    url: "{{ elastic_virtual_proto }}://{{ inventory_hostname }}{{ elasticsearch_http_port }}"
+    url: "{{ elastic_virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}"
     status_code: 401
     validate_certs: no
   register: elk_http_result
