@@ -122,7 +122,7 @@ output.elasticsearch:
   # Array of hosts to connect to.
   hosts:
   {% for host in elasticsearch_hosts -%}
-    - "{{ elastic_virtual_proto }}://{{ host }}:{{ elasticsearch_http_port }}"
+    - "{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"
   {% endfor %}
 
   # Protocol - either `http` (default) or `https`.

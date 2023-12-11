@@ -54,7 +54,7 @@ server.ssl.enabled: false
 # The URLs of the Elasticsearch instances to use for all your queries.
 elasticsearch.hosts:
 {% for host in elasticsearch_hosts %}
-  - "{{ elastic_virtual_proto }}://{{ host }}:{{ elasticsearch_http_port }}"
+  - "{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"
 {% endfor %}
 
 # If your Elasticsearch is protected with basic authentication, these settings provide
