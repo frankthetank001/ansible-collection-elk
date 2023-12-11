@@ -130,16 +130,31 @@
     path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
   register: ca_file_stat
 
+- name: Debug ca_file_stat
+  debug:
+    var: ca_file_stat
+
+- name: Debug SHA256 checksum of local CA file
+  debug:
+    msg: "{{ lookup('file', elasticsearch_local_certs_dir + '/ca/' + elasticsearch_ca_chain_name) | hash('sha256') }}"
+  when: ca_file_stat.stat.exists
+
 - name: Copy remote letsencrypt CA to local files
   fetch:
     src: /etc/letsencrypt/live/{{ inventory_hostname|lower }}/chain.pem
     dest: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
     flat: yes
-  when: not ca_file_stat.stat.exists or ca_file_stat.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + "/ca/" + elasticsearch_ca_chain_name) | hash('sha256'))
+  when: not ca_file_stat.stat.exists or ca_file_stat.stat.checksum != (lookup('file', elasticsearch_local_certs_dir + '/ca/' + elasticsearch_ca_chain_name) | hash('sha256'))
   notify:
     - check if elasticsearch is active
     - restart elasticsearch
     - wait elasticsearch to be ready
+  register: fetch_result
+
+- name: Debug fetch result
+  debug:
+    var: fetch_result
+  when: fetch_result is changed
 
 - name: Local | Slurp the chain.pem content
   slurp:
