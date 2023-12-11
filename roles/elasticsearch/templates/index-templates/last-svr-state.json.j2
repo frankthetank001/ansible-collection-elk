@@ -4,7 +4,7 @@
             "index": {
                 "refresh_interval": "5s",
                 "number_of_shards": "{{ elasticsearch_hosts | length }}",
-                "index.auto_expand_replicas": "0-all"
+                "auto_expand_replicas": "0-all"
             }
         },
         "mappings": {
