@@ -1,6 +1,6 @@
 - name: Check if transform exists
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost{{ elasticsearch_http_port }}/_transform/{{ transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
+    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}/_transform/{{ transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: GET
@@ -16,7 +16,7 @@
 
 - name: Create transforms
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost{{ elasticsearch_http_port }}/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
+    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
@@ -32,7 +32,7 @@
 
 - name: Start transforms
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://localhost{{ elasticsearch_http_port }}/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}/_start"
+    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}/_transform/{{ transform_result.transform_item | basename | regex_replace('\\.json\\.j2$', '') }}/_start"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: POST

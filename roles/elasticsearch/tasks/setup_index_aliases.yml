@@ -1,6 +1,6 @@
 - name: Check if index exists for alias template {{ alias_template_item }}
   uri:
-    url: "{{ virtual_proto }}://localhost{{ elasticsearch_http_port }}/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
+    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: GET
@@ -17,7 +17,7 @@
 
 - name: Create index for alias template {{ alias_template_item }} if it does not exist
   uri:
-    url: "{{ virtual_proto }}://localhost{{ elasticsearch_http_port }}/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
+    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}/{{ alias_template_item | basename | regex_replace('\\.json\\.j2$', '') }}-000001"
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"
     method: PUT
