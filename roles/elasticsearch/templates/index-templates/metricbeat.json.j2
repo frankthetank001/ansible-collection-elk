@@ -14,7 +14,7 @@
         },
         "refresh_interval": "5s",
         "number_of_shards": "{{ elasticsearch_hosts | length }}",
-        "number_of_replicas": "0-all"
+        "index.auto_expand_replicas": "0-all"
         "max_docvalue_fields_search": "200",
         "query": {
           "default_field": [
