@@ -85,7 +85,7 @@ discovery.type: "multi-node"
 discovery.seed_hosts:
 {% for host in groups['elasticsearch'] %}
 {% if host == inventory_hostname %}
-  - "{{ hostvars[host].ansible_host | default(host) }}:{{ hostvars[host].elasticsearch_transport_port | default(elasticsearch_transport_port) }}"
+  - "{{ hostvars[host].ansible_host | default(host) }}:{{ hostvars[host].elasticsearch_transport_port | default('9300') }}"
 {% else %}
   - "{{ hostvars[host].ansible_host | default(host) }}:{{ hostvars[host].elasticsearch_transport_port | default('9300') }}"
 {% endif %}
