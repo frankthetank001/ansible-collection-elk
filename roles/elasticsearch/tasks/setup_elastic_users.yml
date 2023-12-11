@@ -19,6 +19,7 @@
     status_code: 200
     body_format: json
   run_once: true
+  delegate_to: localhost
 
 - name: Create and assign logstash_writer role to logstash_user
   ansible.builtin.uri:
@@ -35,6 +36,7 @@
     status_code: 200
     body_format: json
   run_once: true
+  delegate_to: localhost
 
 - name: Setup ELK users
   ansible.builtin.uri:
@@ -50,3 +52,4 @@
   with_dict: "{{ elasticsearch_users }}"
   when: item.key != "elastic"
   run_once: true
+  delegate_to: localhost

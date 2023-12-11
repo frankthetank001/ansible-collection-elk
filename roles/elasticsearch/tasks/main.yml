@@ -38,3 +38,4 @@
     - setup_index_lifecycles.yml
     - setup_index_aliases.yml
   tags: elkindexes,elasticsearch
+  when: inventory_hostname in groups['primary_http_host']
