@@ -47,13 +47,13 @@ heartbeat.config.monitors:
 
 # Configure monitors inline
 heartbeat.monitors:
-- type: http
+- type: tcp
   # Set enabled to true (or delete the following line) to enable this example monitor
-  enabled: false
+  enabled: true
   # ID used to uniquely identify this monitor in elasticsearch even if the config changes
-  id: my-monitor
+  id: elastic-cluster
   # Human readable display name for this service in Uptime UI and elsewhere
-  name: My Monitor
+  name: Elastic Cluster
   # List or urls to query
   urls:
   {% for host in elasticsearch_hosts %}
@@ -65,6 +65,13 @@ heartbeat.monitors:
   #timeout: 16s
   # Name of corresponding APM service, if Elastic APM is in use for the monitored service.
   #service.name: my-apm-service-name
+- type: tcp
+  enabled: true
+  id: honfigurator-management
+  name: Honfigurator Management
+  urls:
+    - "https://management.honfigurator.app"
+  schedule: '@every 10s'
 
 # Experimental: Set this to true to run heartbeat monitors exactly once at startup
 #heartbeat.run_once: true
