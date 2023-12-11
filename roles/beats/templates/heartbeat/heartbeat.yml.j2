@@ -55,7 +55,10 @@ heartbeat.monitors:
   # Human readable display name for this service in Uptime UI and elsewhere
   name: My Monitor
   # List or urls to query
-  urls: ["http:{{ elasticsearch_http_port }}"]
+  urls:
+  {% for host in elasticsearch_hosts %}
+  - "{{ elastic_virtual_proto }}://{{ host }}:{{ elasticsearch_http_port }}"
+  {% endfor %}
   # Configure task schedule
   schedule: '@every 10s'
   # Total test connection and data exchange timeout
@@ -130,7 +133,7 @@ output.elasticsearch:
   # Array of hosts to connect to.
   hosts:
   {% for host in elasticsearch_hosts -%}
-    - "{{ elastic_virtual_proto }}://{{ host }}elasticsearch_http_port"
+    - "{{ elastic_virtual_proto }}://{{ host }}:{{ elasticsearch_http_port }}"
   {% endfor %}
 
   # Protocol - either `http` (default) or `https`.

@@ -15,7 +15,7 @@
   period: 10s
   hosts:
   {% for host in elasticsearch_hosts -%}
-    - "{{ elastic_virtual_proto }}://{{ host }}elasticsearch_http_port"
+    - "{{ elastic_virtual_proto }}://{{ host }}:{{ elasticsearch_http_port }}"
   {% endfor -%}
   
   username: "{{ beats_elasticsearch_username }}"
