@@ -49,7 +49,7 @@ heartbeat.config.monitors:
 heartbeat.monitors:
 - type: tcp
   # Set enabled to true (or delete the following line) to enable this example monitor
-  enabled: true
+  enabled: false
   # ID used to uniquely identify this monitor in elasticsearch even if the config changes
   id: elastic-cluster
   # Human readable display name for this service in Uptime UI and elsewhere
@@ -66,7 +66,7 @@ heartbeat.monitors:
   # Name of corresponding APM service, if Elastic APM is in use for the monitored service.
   #service.name: my-apm-service-name
 - type: tcp
-  enabled: true
+  enabled: false
   id: honfigurator-management
   name: Honfigurator Management
   urls:
