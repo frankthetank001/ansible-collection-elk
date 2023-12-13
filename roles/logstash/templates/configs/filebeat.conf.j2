@@ -213,8 +213,10 @@ filter {
                     # Combining conditions to reduce the number of Elasticsearch filters
                     if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
                         if ![Match][Player][Name] {
-                            add_field => {
-                                "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
+                            mutate {
+                                add_field => {
+                                    "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
+                                }
                             }
                             elasticsearch {
                                 hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
@@ -227,8 +229,8 @@ filter {
                             }
                         } else {
                             mutate {
-                                add_field => { "sanitized_client_name" => "%{[Match][Player][Name]}" }
                                 add_field => {
+                                    "sanitized_client_name" => "%{[Match][Player][Name]}" }
                                     "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                                 }
                             }
@@ -439,13 +441,18 @@ filter {
                     }
                 }
                 if [Match][Player][ID] and ![Match][Player][Name] {
+                    mutate {
+                        add_field => {
+                            "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Player.Name:*"
+                        }
+                    }
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Player.Name:*"
+                        query => "%{match_query}"
                         fields => { 
                             "player_name" => "[Match][Player][Name]"
                         }
@@ -471,6 +478,7 @@ filter {
                     mutate {
                         add_field => {
                             "sanitized_client_name" => "%{[Diagnostics][client_name]}"
+                            "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                         }
                     }
                     mutate {
@@ -484,7 +492,7 @@ filter {
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "player-ips"
-                        query => "Match.Player.Name:%{[sanitized_client_name]}"
+                        query => "%{match_query}"
                         fields => { 
                             "player_ip" => "[Match][Player][IP]"
                         }
