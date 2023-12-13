@@ -214,7 +214,7 @@ filter {
                     if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
                         if ![Match][Player][Name] {
                             mutate {
-                                add_field => {
+                                replace => {
                                     "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
                                 }
                             }
@@ -232,7 +232,7 @@ filter {
                                 add_field => {
                                     "sanitized_client_name" => "%{[Match][Player][Name]}"
                                 }
-                                add_field => {
+                                replace => {
                                     "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                                 }
                             }
@@ -254,7 +254,7 @@ filter {
                     # Handling multiple event types in a more streamlined fashion
                     if [Match][Event][Type] not in ["INFO_MAP", "INFO_MATCH", "INFO_SETTINGS", "PLAYER_TEAM_CHANGE"] {
                         mutate {
-                            add_field => {
+                            replace => {
                                 "match_query" => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'%{[Match][Event][Type]}'"
                             }
                         }
@@ -312,7 +312,9 @@ filter {
                 
                 # Default status
                 mutate {
-                    add_field => { "[Server][Event][Severity]" => "OK" }
+                    add_field => {
+                        "[Server][Event][Severity]" => "OK"
+                        "match_query" => ""
                 }
 
                 if "skipped" in [message] {
@@ -444,7 +446,7 @@ filter {
                 }
                 if [Match][Player][ID] and ![Match][Player][Name] {
                     mutate {
-                        add_field => {
+                        replace => {
                             "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Player.Name:*"
                         }
                     }
@@ -470,6 +472,14 @@ filter {
                     ]
                     tag_on_failure => ["_diagnostic_grok_failure"]
                 }
+
+                # default values
+                mutate {
+                    add_field => {
+                        "match_query" => ""
+                    }
+                }
+                
                 if [Diagnostics][client_name] {
                     mutate {
                         copy => {
@@ -481,7 +491,7 @@ filter {
                         add_field => {
                             "sanitized_client_name" => "%{[Diagnostics][client_name]}"
                         }
-                        add_field => {
+                        replace => {
                             "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                         }
                     }
