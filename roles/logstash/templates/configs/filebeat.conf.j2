@@ -212,17 +212,22 @@ filter {
                 if [Match][ID] {
                     # Base query setup
                     mutate {
-                        add_field => { "base_query" => "Match.ID:%{[Match][ID]}" }
+                        add_field => {
+                            "base_query" => "Match.ID:%{[Match][ID]}"
+                            "event_type_query" => ""
+                            "player_id_query" => ""
+                            "player_name_query" => ""
+                        }
                     }
 
                     # Conditionally extend the base query
                     if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
                         mutate {
-                            add_field => { "player_id_query" => "AND Match.Player.ID:%{[Match][Player][ID]}" }
+                            replace => { "player_id_query" => " AND Match.Player.ID:%{[Match][Player][ID]}" }
                         }
                         if ![Match][Player][Name] {
                             mutate {
-                                add_field => { "event_type_query" => "AND Match.Event.Type:'PLAYER_CONNECT'" }
+                                replace => { "event_type_query" => " AND Match.Event.Type:'PLAYER_CONNECT'" }
                             }
                         } else {
                             mutate {
@@ -232,7 +237,7 @@ filter {
                                 gsub => ["[sanitized_client_name]", "-", "\\-"]
                             }
                             mutate {
-                                add_field => { "player_name_query" => "AND Match.Player.Name:%{[sanitized_client_name]}" }
+                                replace => { "player_name_query" => " AND Match.Player.Name:%{[sanitized_client_name]}" }
                             }
                         }
                     }
@@ -240,7 +245,7 @@ filter {
                     # Combine the base query with additional conditions
                     mutate {
                         add_field => {
-                            "combined_query" => "%{base_query} %{player_id_query} %{event_type_query} %{player_name_query}"
+                            "combined_query" => "%{base_query}%{player_id_query}%{event_type_query}%{player_name_query}"
                         }
                         # remove_field => ["base_query", "player_id_query", "event_type_query", "player_name_query"]
                     }
