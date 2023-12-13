@@ -502,16 +502,17 @@ filter {
             }
 
             # Translate team IDs to human-readable names
-            translate {
-                source => "[Match][Player][Team]"
-                target => "[Match][Player][Team]"
-                dictionary => {
-                    "0" => "No_team"
-                    "1" => "Legion"
-                    "2" => "Hellbourne"
+            if [Match][Player][Team] {
+                translate {
+                    source => "[Match][Player][Team]"
+                    target => "[Match][Player][Team]"
+                    dictionary => {
+                        "0" => "No_team"
+                        "1" => "Legion"
+                        "2" => "Hellbourne"
+                    }
+                    override => true
                 }
-                fallback => "No_team"
-                override => true
             }
         }
 
