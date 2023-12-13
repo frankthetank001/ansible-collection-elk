@@ -231,6 +231,8 @@ filter {
                             mutate {
                                 add_field => {
                                     "sanitized_client_name" => "%{[Match][Player][Name]}"
+                                }
+                                add_field => {
                                     "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                                 }
                             }
@@ -478,6 +480,8 @@ filter {
                     mutate {
                         add_field => {
                             "sanitized_client_name" => "%{[Diagnostics][client_name]}"
+                        }
+                        add_field => {
                             "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                         }
                     }
