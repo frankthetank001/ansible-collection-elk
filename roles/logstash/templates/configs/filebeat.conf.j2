@@ -234,12 +234,12 @@ filter {
                                 }
                             }
                             mutate {
+                                gsub => ["[sanitized_client_name]", "-", "\\-"]
+                            }
+                            mutate {
                                 replace => {
                                     "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                                 }
-                            }
-                            mutate {
-                                gsub => ["[sanitized_client_name]", "-", "\\-"]
                             }
                             elasticsearch {
                                 hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
@@ -496,14 +496,14 @@ filter {
                         }
                     }
                     mutate {
-                        replace => {
-                            "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
-                        }
-                    }
-                    mutate {
                         gsub => [
                             "[sanitized_client_name]", "-", "\\-"
                         ]
+                    }
+                    mutate {
+                        replace => {
+                            "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
+                        }
                     }
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
