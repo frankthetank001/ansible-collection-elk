@@ -480,26 +480,14 @@ filter {
                     "[Match][Options]", "Option_", ""
                 ]
             }
-            mutate {
-                copy => {
-                    "[Match][Player][ID]" => "player_id"
-                    "[Match][Player][Name]" => "player_name"
-                    "[Match][Player][Hero]" => "player_hero"
-                    "[Match][Player][Team]" => "player_team"
-                    "[Match][Name]" => "match_name"
-                    "[Match][Map]" => "match_map"
-                    "[Match][Mode]" => "match_mode"
-                    "[Match][Options]" => "match_options"
-                }
-                lowercase => [
-                    "[Match][Mode]",
-                    "[Match][Options]",
-                    "[Match][Map]",
-                    "match_mode",
-                    "match_options",
-                    "match_map"
-                ]
-            }
+            mutate { if [Match][Player][Name] { mutate { copy => { "[Match][Player][Name]" => "[player_name]" } } }
+            mutate { if [Match][Player][IP] { mutate { copy => { "[Match][Player][IP]" => "[player_ip]" } } }
+            mutate { if [Match][Player][Team] { mutate { copy => { "[Match][Player][Team]" => "[player_team]" } } }
+            mutate { if [Match][Player][Hero] { mutate { copy => { "[Match][Player][Hero]" => "[player_hero]" } } }
+            mutate { if [Match][Name] { mutate { copy => { "[Match][Name]" => "[match_name]" } } }
+            mutate { if [Match][Map] { mutate { copy => { "[Match][Map]" => "[match_map]" } lowercase => ["[match_map]","match_map"] } }
+            mutate { if [Match][Mode] { mutate { copy => { "[Match][Mode]" => "[match_mode]" } lowercase => ["[match_mode]","match_mode"] } }
+            mutate { if [Match][Options] { mutate { copy => { "[Match][Options]" => "[match_options]" } lowercase => ["[match_options]","match_options"] } }
 
             # Translate team IDs to human-readable names
             if [Match][Player][Team] {
