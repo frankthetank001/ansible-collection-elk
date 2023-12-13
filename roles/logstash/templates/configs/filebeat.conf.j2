@@ -315,6 +315,7 @@ filter {
                     add_field => {
                         "[Server][Event][Severity]" => "OK"
                         "match_query" => ""
+                    }
                 }
 
                 if "skipped" in [message] {
@@ -479,7 +480,7 @@ filter {
                         "match_query" => ""
                     }
                 }
-                
+
                 if [Diagnostics][client_name] {
                     mutate {
                         copy => {
