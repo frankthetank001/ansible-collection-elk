@@ -256,22 +256,22 @@ filter {
                                 "match_query" => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'%{[Match][Event][Type]}'"
                             }
                         }
-                        elasticsearch {
-                            hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                            ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                            user => "${ES_USER}"
-                            password => "${ES_PWD}"
-                            index => "alias-match-info"
-                            query => "%{match_query}"
-                            fields => {
-                                "match_map" => "[Match][Map]"
-                                "match_name" => "[Match][Name]"
-                                "match_mode" => "[Match][Mode]"
-                                "match_options" => "[Match][Options]"
-                                "player_team" => "[Match][Player][Team]"
-                                "player_hero" => "[Match][Player][Hero]"
-                            }
-                        }
+                        # elasticsearch {
+                        #     hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        #     ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        #     user => "${ES_USER}"
+                        #     password => "${ES_PWD}"
+                        #     index => "alias-match-info"
+                        #     query => "%{match_query}"
+                        #     fields => {
+                        #         "match_map" => "[Match][Map]"
+                        #         "match_name" => "[Match][Name]"
+                        #         "match_mode" => "[Match][Mode]"
+                        #         "match_options" => "[Match][Options]"
+                        #         "player_team" => "[Match][Player][Team]"
+                        #         "player_hero" => "[Match][Player][Hero]"
+                        #     }
+                        # }
                     }
 
                     # Index specific tagging
