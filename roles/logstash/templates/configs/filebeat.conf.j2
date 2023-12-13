@@ -210,72 +210,59 @@ filter {
                 }
 
                 if [Match][ID] {
-                    # Combining conditions to reduce the number of Elasticsearch filters
+                    # Base query setup
+                    mutate {
+                        add_field => { "base_query" => "Match.ID:%{[Match][ID]}" }
+                    }
+
+                    # Conditionally extend the base query
                     if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
+                        mutate {
+                            add_field => { "player_id_query" => "AND Match.Player.ID:%{[Match][Player][ID]}" }
+                        }
                         if ![Match][Player][Name] {
                             mutate {
-                                replace => {
-                                    "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Event.Type:'PLAYER_CONNECT'"
-                                }
-                            }
-                            elasticsearch {
-                                hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                                user => "${ES_USER}"
-                                password => "${ES_PWD}"
-                                index => "alias-match-info"
-                                query => "%{match_query}"
-                                fields => { "player_name" => "[Match][Player][Name]" }
+                                add_field => { "event_type_query" => "AND Match.Event.Type:'PLAYER_CONNECT'" }
                             }
                         } else {
                             mutate {
-                                add_field => {
-                                    "sanitized_client_name" => "%{[Match][Player][Name]}"
-                                }
+                                add_field => { "sanitized_client_name" => "%{[Match][Player][Name]}" }
                             }
                             mutate {
                                 gsub => ["[sanitized_client_name]", "-", "\\-"]
                             }
                             mutate {
-                                replace => {
-                                    "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
-                                }
-                            }
-                            elasticsearch {
-                                hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                                ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                                user => "${ES_USER}"
-                                password => "${ES_PWD}"
-                                index => "player-ips"
-                                query => "%{match_query}"
-                                fields => { "player_ip" => "[Match][Player][IP]" }
+                                add_field => { "player_name_query" => "AND Match.Player.Name:%{[sanitized_client_name]}" }
                             }
                         }
                     }
 
-                    # Handling multiple event types in a more streamlined fashion
-                    if [Match][Event][Type] not in ["INFO_MAP", "INFO_MATCH", "INFO_SETTINGS", "PLAYER_TEAM_CHANGE"] {
-                        mutate {
-                            replace => {
-                                "match_query" => "Match.ID:%{[Match][ID]} AND Match.Event.Type:'%{[Match][Event][Type]}'"
-                            }
+                    # Combine the base query with additional conditions
+                    mutate {
+                        add_field => {
+                            "combined_query" => "%{base_query} %{player_id_query} %{event_type_query} %{player_name_query}"
                         }
-                        # elasticsearch {
-                        #     hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                        #     ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                        #     user => "${ES_USER}"
-                        #     password => "${ES_PWD}"
-                        #     index => "alias-match-info"
-                        #     query => "%{match_query}"
-                        #     fields => {
-                        #         "match_map" => "[Match][Map]"
-                        #         "match_name" => "[Match][Name]"
-                        #         "match_mode" => "[Match][Mode]"
-                        #         "match_options" => "[Match][Options]"
-                        #         "player_team" => "[Match][Player][Team]"
-                        #         "player_hero" => "[Match][Player][Hero]"
-                        #     }
-                        # }
+                        # remove_field => ["base_query", "player_id_query", "event_type_query", "player_name_query"]
+                    }
+
+                    # Execute Elasticsearch query with combined conditions
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "alias-match-info"
+                        query => "%{combined_query}"
+                        fields => {
+                            "player_name" => "[Match][Player][Name]",
+                            "player_ip" => "[Match][Player][IP]",
+                            "match_map" => "[Match][Map]",
+                            "match_name" => "[Match][Name]",
+                            "match_mode" => "[Match][Mode]",
+                            "match_options" => "[Match][Options]",
+                            "player_team" => "[Match][Player][Team]",
+                            "player_hero" => "[Match][Player][Hero]"
+                        }
                     }
 
                     # Index specific tagging
