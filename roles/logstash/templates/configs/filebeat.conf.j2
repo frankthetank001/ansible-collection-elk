@@ -591,6 +591,7 @@ output {
                 index => "alias-match-info"
                 pipeline => "geoip-info"
                 document_id => "%{doc_id_schema}"
+                action => update
                 doc_as_upsert => true
             }
         }
