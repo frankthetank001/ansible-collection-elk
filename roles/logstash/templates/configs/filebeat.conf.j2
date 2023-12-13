@@ -140,12 +140,6 @@ filter {
                         match => { "message" => "^%{GREEDYDATA}mode:\"%{WORD:[Match][Mode]}\"%{GREEDYDATA}options:\"%{WORD:[Match][Options]}\"$" }
                         tag_on_failure => ["_match_info_settings_grok_failure"]
                     }
-                    # Error Handling: Tagging event if extracted field is null
-                    if ![Match][Mode] {
-                        mutate {
-                            add_tag => ["_info_settings_extraction_failure"]
-                        }
-                    }
                 } else if [Match][Event][Type] == "INFO_MAP" {
                     grok {
                         match => { "message" => "^%{GREEDYDATA}name:\"%{WORD:[Match][Map]}\"%{GREEDYDATA}$" }
@@ -212,76 +206,47 @@ filter {
                     drop { }
                 }
 
-                if [Match][ID] {
-                    # Base query setup
+                if [Match][ID] and [Match][Player][ID] {
+                    # tag to be indexed with static IDs, we'll keep updating this same document which correlates to a player for that match. Eventually it will have all the relevant information
                     mutate {
-                        add_field => {
-                            "base_query" => "Match.ID:%{[Match][ID]}"
-                            "event_type_query" => ""
-                            "player_id_query" => ""
-                            "player_name_query" => ""
-                        }
+                        add_field => "doc_id_schema" => "%{[Match][ID]}-Player%{[Match][Player][ID]}"
                     }
 
-                    # Conditionally extend the base query
-                    if [Match][Event][Type] != "PLAYER_CONNECT" and [Match][Player][ID] {
-                        mutate {
-                            replace => { "player_id_query" => " AND Match.Player.ID:%{[Match][Player][ID]}" }
-                        }
-                        if ![Match][Player][Name] {
-                            mutate {
-                                replace => { "event_type_query" => " AND Match.Event.Type:'PLAYER_CONNECT'" }
-                            }
-                        } else {
-                            mutate {
-                                add_field => { "sanitized_client_name" => "%{[Match][Player][Name]}" }
-                            }
-                            mutate {
-                                gsub => ["[sanitized_client_name]", "-", "\\-"]
-                            }
-                            mutate {
-                                replace => { "player_name_query" => " AND Match.Player.Name:%{[sanitized_client_name]}" }
-                            }
-                        }
-                    }
-
-                    # Combine the base query with additional conditions
-                    mutate {
-                        add_field => {
-                            "combined_query" => "%{base_query}%{player_id_query}%{event_type_query}%{player_name_query}"
-                        }
-                        # remove_field => ["base_query", "player_id_query", "event_type_query", "player_name_query"]
-                    }
-
-                    # Execute Elasticsearch query with combined conditions
+                    # Enrich with player specific stored information
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "%{combined_query}"
+                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
                         fields => {
                             "player_name" => "[Match][Player][Name]"
                             "player_ip" => "[Match][Player][IP]"
-                            "match_map" => "[Match][Map]"
-                            "match_name" => "[Match][Name]"
-                            "match_mode" => "[Match][Mode]"
-                            "match_options" => "[Match][Options]"
                             "player_team" => "[Match][Player][Team]"
                             "player_hero" => "[Match][Player][Hero]"
                         }
                     }
 
-                    # Index specific tagging
-                    if [Match][Event][Type] in ["PLAYER_CONNECT","PLAYER_SELECT","PLAYER_RANDOM","PLAYER_TEAM_CHANGE"] {
-                        mutate {
-                            add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}-Player-%{[Match][Player][ID]}" }
+                    # Enrich with lobby specific stored information
+                    elasticsearch {
+                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+                        user => "${ES_USER}"
+                        password => "${ES_PWD}"
+                        index => "alias-match-info"
+                        query => "_id:%{[Match][ID]}-Lobby"
+                        fields => {
+                            "match_map" => "[Match][Map]"
+                            "match_name" => "[Match][Name]"
+                            "match_mode" => "[Match][Mode]"
+                            "match_options" => "[Match][Options]"
                         }
-                    } else if [Match][Event][Type] in ["INFO_SETTINGS", "INFO_MAP", "INFO_MATCH"] {
-                        mutate {
-                            add_field => { "doc_id_schema" => "%{[Match][ID]}-%{[Match][Event][Type]}-%{[Match][Event][Type]}" }
-                        }
+                    }
+                } else if [Match][Mode] or [Match][Name] or [Match][Map] or [Match][Options] {
+                    # Tag as a lobby even, we'll keep updating this document in elastic with the latest lobby info
+                    mutate {
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-Lobby" }
                     }
                 }
                 
@@ -442,19 +407,14 @@ filter {
                         add_tag => "match_ended"
                     }
                 }
-                if [Match][Player][ID] and ![Match][Player][Name] {
-                    mutate {
-                        replace => {
-                            "match_query" => "Match.ID:%{[Match][ID]} AND Match.Player.ID:%{[Match][Player][ID]} AND Match.Player.Name:*"
-                        }
-                    }
+                if [Match][Player][ID] and [Match][ID] and ![Match][Player][Name] {
                     elasticsearch {
                         hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
                         ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
                         user => "${ES_USER}"
                         password => "${ES_PWD}"
                         index => "alias-match-info"
-                        query => "%{match_query}"
+                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
                         fields => { 
                             "player_name" => "[Match][Player][Name]"
                         }
@@ -514,23 +474,6 @@ filter {
                 }
             }
             
-            # Retrieving mapped values
-            # aggregate {
-            #     task_id => "%{[Match][ID]}"
-            #     # Safeguarding field retrieval with conditional checks to avoid null pointer issues
-            #     code => "
-            #         player_id = event.get('[Match][Player][ID]')
-            #         player_info = map['player'][player_id] if map['player']
-
-            #         event.set('[Match][Player][Name]', player_info['name']) if player_info && player_info['name']
-            #         event.set('[Match][Player][Clan]', player_info['clan']) if player_info && player_info['clan']
-            #         event.set('[Match][Player][Team]', player_info['team']) if player_info && player_info['team']
-            #         event.set('[Match][Player][Hero]', player_info['hero']) if player_info && player_info['hero']
-            #         event.set('[Match][Mode]', map['match_mode']) if map['match_mode']
-            #         event.set('[Match][Options]', map['match_options']) if map['match_options']
-            #         event.set('[Match][Map]', map['match_map']) if map['match_map']
-            #     "
-            # }
             mutate {
                 gsub => [
                     "[Match][Mode]", "Mode_", "",
