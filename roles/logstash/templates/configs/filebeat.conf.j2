@@ -172,6 +172,9 @@ filter {
                         match => [ "message","^%{GREEDYDATA}hero:\"%{DATA}_%{DATA:[Match][Player][Hero]}\"$"]
                         tag_on_failure => ["_match_player_select_grok_failure"]
                     }
+                    mutate {
+                        add_field => { "player_hero" => "%{[Match][Player][Hero]}" }
+                    }
                 } else if [Match][Event][Type] == "PLAYER_SWAP" {
                     grok {
                         match => [ "message","^%{GREEDYDATA}newhero:\"%{DATA}_%{DATA}:[Match][Player][Hero]}\"$"]
