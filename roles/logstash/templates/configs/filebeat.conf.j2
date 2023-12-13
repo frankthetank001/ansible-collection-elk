@@ -230,7 +230,7 @@ filter {
                         } else {
                             mutate {
                                 add_field => {
-                                    "sanitized_client_name" => "%{[Match][Player][Name]}" }
+                                    "sanitized_client_name" => "%{[Match][Player][Name]}"
                                     "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                                 }
                             }
