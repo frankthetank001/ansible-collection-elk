@@ -209,7 +209,7 @@ filter {
                 if [Match][ID] and [Match][Player][ID] {
                     # tag to be indexed with static IDs, we'll keep updating this same document which correlates to a player for that match. Eventually it will have all the relevant information
                     mutate {
-                        add_field => "doc_id_schema" => "%{[Match][ID]}-Player%{[Match][Player][ID]}"
+                        add_field => { "doc_id_schema" => "%{[Match][ID]}-Player%{[Match][Player][ID]}" }
                     }
 
                     # Enrich with player specific stored information
@@ -473,7 +473,7 @@ filter {
                     }
                 }
             }
-            
+
             mutate {
                 gsub => [
                     "[Match][Mode]", "Mode_", "",
