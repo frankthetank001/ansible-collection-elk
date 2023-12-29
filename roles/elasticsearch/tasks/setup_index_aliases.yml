@@ -17,6 +17,9 @@
     loop_var: alias_template_item
   delegate_to: localhost
 
+- set_fact:
+    indexes_exist: false
+
 - name: Determine if any indexes exist behind the alias
   set_fact:
     indexes_exist: "{{ (alias_check.content | from_json).keys() | list | length > 0 }}"
