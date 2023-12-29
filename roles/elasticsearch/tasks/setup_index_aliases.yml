@@ -17,6 +17,9 @@
     loop_var: alias_template_item
   delegate_to: localhost
 
+- debug:
+    var: alias_check
+
 - set_fact:
     indexes_exist: false
 
