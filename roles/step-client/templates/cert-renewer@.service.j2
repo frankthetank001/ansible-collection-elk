@@ -15,7 +15,7 @@ Environment=STEPPATH=/root/.step \
 ; (In systemd <242, you can use ExecStartPre= here.)
 ExecCondition=/usr/bin/step certificate needs-renewal ${CERT_LOCATION}
 ; ExecStart renews the certificate, if ExecStartPre was successful.
-ExecStart=/usr/bin/step ca renew --ca-url https://hon-elk.honfigurator.app --force ${CERT_LOCATION} ${KEY_LOCATION}
+ExecStart=/usr/bin/step ca renew --ca-url https://step-ca.honfigurator.app --force ${CERT_LOCATION} ${KEY_LOCATION}
 ; Try to reload or restart the systemd service that relies on this cert-renewer
 ; If the relying service doesn't exist, forge ahead.
 ; (In systemd <229, use \`reload-or-try-restart\` instead of \`try-reload-or-restart\`)
