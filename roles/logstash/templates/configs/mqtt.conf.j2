@@ -111,7 +111,7 @@ filter {
     }
     mutate {
         lowercase => [
-          "[server][name][lc]"
+          "[server][name][lc]",
           "[server][admin][lc]"
         ]
     }
