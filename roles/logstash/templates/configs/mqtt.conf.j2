@@ -107,13 +107,16 @@ filter {
     }
     mutate {
         add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
+        add_field => {"[server][admin][lc]" => "%{[Server][Name]}"}
     }
     mutate {
         lowercase => ["[server][name][lc]"]
+        lowercase => ["[server][admin][lc]"]
     }
     mutate {
       gsub => [
         "[server][name][lc]", "[\"\ .]", "-"
+        "[server][admin][lc]", "[\"\ .]", "-"
       ]
     }
   }
@@ -123,7 +126,7 @@ output {
   if [type] == "mqtt" {
     elasticsearch {
       hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-      index => "mqtt-%{[server][name][lc]}"
+      index => "mqtt-%{[server][admin][lc]}"
       pipeline => "geoip-info"
       ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
       user => "${ES_USER}"

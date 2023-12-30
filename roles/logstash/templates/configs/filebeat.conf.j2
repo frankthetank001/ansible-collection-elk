@@ -523,6 +523,7 @@ filter {
             mutate {
                 copy => {
                     "[Server][Name]" => "[server][name][lc]"
+                    "[Server][Admin]" => "[server][admin][lc]"
                 }
             }
         } else if [Server][0][Name] {
@@ -535,12 +536,13 @@ filter {
         mutate {
             rename => {"[@metadata][message]" => "[message]"}
             lowercase => ["[server][name][lc]"]
+            lowercase => ["[server][admin][lc]"]
             uppercase => ["[Match][Chat][Type]"]
         }
         mutate {
             gsub => [
                 "[server][name][lc]", "[\"\ .]", "-",
-                "[Server][Admin]","#","-"
+                "[server][admin][lc]", "[\"\ .]", "-"
             ]
         }
     }
@@ -550,7 +552,7 @@ output {
     if [type] == "beats" and [@metadata][beat] == "filebeat" {
         elasticsearch {
             pipeline => "geoip-info"
-            index => "%{[@metadata][beat]}-%{[server][name][lc]}-%{[Log_Type]}"
+            index => "%{[@metadata][beat]}-%{[server][admin][lc]}-%{[Log_Type]}"
             hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
             ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
             user => "${ES_USER}"
