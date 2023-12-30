@@ -535,8 +535,10 @@ filter {
         }
         mutate {
             rename => {"[@metadata][message]" => "[message]"}
-            lowercase => ["[server][name][lc]"]
-            lowercase => ["[server][admin][lc]"]
+            lowercase => [
+                "[server][name][lc]"
+                "[server][admin][lc]"
+            ]
             uppercase => ["[Match][Chat][Type]"]
         }
         mutate {

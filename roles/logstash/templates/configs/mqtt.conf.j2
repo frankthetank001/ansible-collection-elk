@@ -110,12 +110,14 @@ filter {
         add_field => {"[server][admin][lc]" => "%{[Server][Name]}"}
     }
     mutate {
-        lowercase => ["[server][name][lc]"]
-        lowercase => ["[server][admin][lc]"]
+        lowercase => [
+          "[server][name][lc]"
+          "[server][admin][lc]"
+        ]
     }
     mutate {
       gsub => [
-        "[server][name][lc]", "[\"\ .]", "-"
+        "[server][name][lc]", "[\"\ .]", "-",
         "[server][admin][lc]", "[\"\ .]", "-"
       ]
     }
