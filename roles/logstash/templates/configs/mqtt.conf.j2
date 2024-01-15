@@ -107,7 +107,7 @@ filter {
     }
     mutate {
         add_field => {"[server][name][lc]" => "%{[Server][Name]}"}
-        add_field => {"[server][admin][lc]" => "%{[Server][Name]}"}
+        add_field => {"[server][admin][lc]" => "%{[Server][Admin]}"}
     }
     mutate {
         lowercase => [
