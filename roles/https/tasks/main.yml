@@ -92,14 +92,14 @@
     - check if metricbeat is active
     - reload metricbeat
 
-- name: Remove dns credentials
-  ansible.builtin.file:
-    path: "/tmp/{{ certbot_dns_provider }}.ini"
-    state: absent
-  changed_when: false
-  when:
-    - certbot_enrollment_type == 'dns_01'
-    - certbot_dns_provider is defined
+#- name: Remove dns credentials
+#  ansible.builtin.file:
+#    path: "/tmp/{{ certbot_dns_provider }}.ini"
+#    state: absent
+#  changed_when: false
+#  when:
+#    - certbot_enrollment_type == 'dns_01'
+#    - certbot_dns_provider is defined
 
 - name: HTTP_01 | Request HTTPS certificate if not present
   ansible.builtin.command:
@@ -165,10 +165,12 @@
 - name: Local | Decode the chain content
   set_fact:
     chain_content: "{{ slurped_chain['content'] | b64decode | regex_replace('\r\n', '\n') }}"
+  delegate_to: localhost
 
 - name: Local | Split the chain content into individual certificates
   set_fact:
     certificates: "{{ chain_content.split('-----END CERTIFICATE-----') | select('search', 'CERTIFICATE') | list }}"
+  delegate_to: localhost
 
 - name: Local | Write the intermediate certificate to its own file
   copy:
@@ -185,6 +187,8 @@
     - not elastic_intermediate_ca_file.stat.exists or elastic_intermediate_ca_file.stat.checksum != (lookup('file', "/tmp/" + elasticsearch_ca_intermediate) | hash('sha256'))
     - not elasticsearch_ca_intermediate_manually_provided
   delegate_to: localhost
+
+- debug: var=certificates
 
 - name: Local | Write the root certificate to its own file
   copy:

@@ -27,15 +27,11 @@
 #
 path.data: {{ logstash_data_dir }}
 
------------- Dead-Letter Queue Settings --------------
-# Enable Dead Letter Queue
-dead_letter_queue.enable: true
-
-# Optional: Set maximum size for each dead letter queue
-dead_letter_queue.max_bytes: 8196mb
-
-# Optional: Set flush interval for the dead letter queue
-dead_letter_queue.flush_interval: 5000
+#------------ Persistent Queue Settings --------------
+queue.type: persisted
+queue.max_bytes: 4gb  # Adjust size as needed
+queue.checkpoint.writes: 1024
+path.queue: /etc/logstash/queue
 #
 # ------------ Pipeline Settings --------------
 #
