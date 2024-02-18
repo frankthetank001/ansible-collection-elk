@@ -68,3 +68,67 @@
     elastic_iface: "{{ hostvars[inventory_hostname]['ansible_' + item ]['device'] }}"
   when: "hostvars[inventory_hostname]['ansible_' + item ].ipv4 is defined and hostvars[inventory_hostname]['ansible_' + item ]['ipv4']['address'] | ansible.utils.ipaddr( elasticsearch_subnet )"
   with_items: "{{ ansible_interfaces }}"
+
+- name: Configure VM for Elasticsearch
+  become: yes
+  vars:
+    es_user: "elk"
+
+  tasks:
+    - name: Set vm.max_map_count
+      sysctl:
+        name: vm.max_map_count
+        value: '262144'
+        state: present
+        reload: yes
+
+    - name: Set file descriptor limits
+      blockinfile:
+        path: /etc/security/limits.conf
+        block: |
+          {{ es_user }} soft nofile 65536
+          {{ es_user }} hard nofile 65536
+          {{ es_user }} soft nproc 4096
+          {{ es_user }} hard nproc 4096
+          {{ es_user }} soft memlock unlimited
+          {{ es_user }} hard memlock unlimited
+        create: yes
+        state: present
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+
+    - name: Ensure Elasticsearch can lock memory (Debian/Ubuntu)
+      pam_limits:
+        domain: "{{ es_user }}"
+        limit_type: soft
+        limit_item: memlock
+        value: unlimited
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure Elasticsearch can lock memory (Debian/Ubuntu)
+      pam_limits:
+        domain: "{{ es_user }}"
+        limit_type: hard
+        limit_item: memlock
+        value: unlimited
+      when: ansible_os_family == "Debian"
+
+    # - name: Set LimitMEMLOCK for Elasticsearch systemd service (RHEL/CentOS 7+ and Debian/Ubuntu)
+    #   blockinfile:
+    #     path: "/etc/systemd/system/elasticsearch.service.d/override.conf"
+    #     create: yes
+    #     block: |
+    #       [Service]
+    #       LimitMEMLOCK=infinity
+    #   when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+
+    # - name: Reload systemd daemon to apply changes
+    #   systemd:
+    #     daemon_reload: yes
+    #   when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+
+    # - name: Ensure Elasticsearch service is enabled and restarted to apply changes
+    #   service:
+    #     name: elasticsearch
+    #     enabled: yes
+    #     state: restarted
+    #   when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
