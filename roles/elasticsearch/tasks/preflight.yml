@@ -73,8 +73,7 @@
   become: yes
   vars:
     es_user: "elk"
-
-  tasks:
+  block:
     - name: Set vm.max_map_count
       sysctl:
         name: vm.max_map_count
