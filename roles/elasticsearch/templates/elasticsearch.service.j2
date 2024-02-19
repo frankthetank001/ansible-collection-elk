@@ -15,6 +15,10 @@ Group={{ elasticsearch_user }}
 
 ExecStart={{ elasticsearch_extract_dir }}/elasticsearch/bin/elasticsearch -p ${PID_DIR}/elasticsearch.pid --quiet
 
+# Restart the process if it crashes
+Restart=on-failure
+RestartSec=30
+
 # StandardOutput is configured to redirect to journalctl since
 # some error messages may be logged in standard output before
 # elasticsearch logging system is initialized. Elasticsearch

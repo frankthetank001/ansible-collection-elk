@@ -16,9 +16,12 @@
     enabled: yes
   register: elastic_service
 
-- name: wait elasticsearh to be ready
+- debug: var=inventory_hostname
+- debug: var=ansible_host
+
+- name: wait elasticsearch to be ready
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}"
+    url: "{{ virtual_proto }}://{{ ansible_host | default(inventory_hostname) }}:{{ elasticsearch_http_port }}"
     status_code: 200
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"

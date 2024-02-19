@@ -52,9 +52,12 @@
     state: restarted
   when: elasticsearch_check.rc == 0 and elastic_service is defined and not elastic_service.changed # rc (return code) is 0 when the service is active
 
+- debug: var=inventory_hostname
+- debug: var=ansible_host
+
 - name: wait elasticsearch to be ready
   ansible.builtin.uri:
-    url: "{{ virtual_proto }}://{{ inventory_hostname }}:{{ elasticsearch_http_port }}"
+    url: "{{ virtual_proto }}://{{ ansible_host | default(inventory_hostname) }}:{{ elasticsearch_http_port }}"
     status_code: 200
     user: elastic
     password: "{{ elasticsearch_users['elastic']['password'] }}"

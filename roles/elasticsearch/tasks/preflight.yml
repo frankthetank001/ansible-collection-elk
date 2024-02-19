@@ -56,7 +56,7 @@
 
 - name: Set Elasticsearch HTTP host
   set_fact:
-    elasticsearch_http_host: "{{ inventory_hostname }}"
+    elasticsearch_http_host: "{{ ansible_host | default(inventory_hostname) }}"
   when: inventory_hostname in groups['primary_http_host']
   
 - set_fact:
