@@ -35,10 +35,6 @@
     intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace('\\.j2$', '')) + (dest_extension | default('')): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
-- name: Transform current_structure keys to relative paths
-  set_fact:
-    current_structure_relative: "{{ dict(current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_structure.values())) }}"
-
 - name: Compare structures and identify changes (Revised for Generalization)
   set_fact:
     files_to_remove: "{{ (current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list) | difference(intended_structure.keys()) }}"
@@ -46,14 +42,13 @@
 
 - debug: var=files_to_remove
 - debug: var=files_to_add_or_modify
-- debug: var=current_structure_relative.keys()
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
     path: "{{ dest_conf_dir }}/{{ item | regex_replace('/[^/]+$', '') }}"
     state: directory
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: '0755'
   loop: "{{ files_to_add_or_modify }}"
 
@@ -61,9 +56,9 @@
 - name: Add or modify files
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('\\.j2$', dest_extension | default('')) }}"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace(src_extension ~ '$', dest_extension | default('')) }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
     mode: 0666
   loop: "{{ files_to_add_or_modify }}"
 
