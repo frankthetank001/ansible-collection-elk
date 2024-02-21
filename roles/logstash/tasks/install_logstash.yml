@@ -264,7 +264,7 @@
     dest_conf_dir: "{{ logstash_conf_dir }}/conf.d"
     src_extension: ".conf.j2"
     dest_extension: ".conf"
-    user: "{{ logstash_user }}"
+    owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
@@ -279,7 +279,7 @@
     dest_conf_dir: "{{ logstash_conf_dir }}/patterns"
     src_extension: ".txt.j2"
     dest_extension: ".txt"
-    user: "{{ logstash_user }}"
+    owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
@@ -292,7 +292,7 @@
   vars:
     src_conf_dir: "/{{ this_role_path }}/templates/scripts/"
     dest_conf_dir: "{{ logstash_conf_dir }}/scripts"
-    user: "{{ logstash_user }}"
+    owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
