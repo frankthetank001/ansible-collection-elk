@@ -260,46 +260,55 @@
     - check if logstash is active
     - restart logstash
 
-- name: Find all pipeline .conf.j2 files
-  ansible.builtin.find:
-    paths: "{{ role_path }}/templates/configs/pipelines"
-    patterns: "*.conf.j2"
-    recurse: yes
-  register: found_files
+- name: Create logstash pipelines
+  block:
+    - name: Get list of pipeline folders
+      shell: ls -d {{ logstash_conf_dir }}/conf.d/pipelines/*
+      register: pipeline_folders
+    
+    - name: Create pipeline folders
+      file:
+        path: "/tmp/logstash_pipelines/{{ item }}"
+        state: directory
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: 0766
+      loop: "{{ pipeline_folders.stdout_lines }}"
 
-- debug: var=found_files
+    - name: Copy all Logstash .conf files from pipelines dir
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: "/tmp/logstash_pipelines/{{ item | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/') }}"
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: 0666
+      with_fileglob:
+        - "{{ role_path }}/templates/configs/pipelines/*/*.conf.j2"
+      loop_control:
+        loop_var: item
 
-- name: Copy pipeline configs to remote tmp directory
-  copy:
-    src: "{{ role_path }}/templates/configs/pipelines"
-    dest: "/tmp/logstash_pipelines/"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-    recurse: yes
+    - name: Synchronize templated pipeline files to the user's home directory
+      ansible.builtin.synchronize:
+        src: "/tmp/logstash_pipelines/"
+        dest: "{{ logstash_conf_dir }}/conf.d/pipelines/"
+        delete: yes
+        recursive: yes
+      become: no  # No need for privilege escalation here
 
-- name: Synchronize templated pipeline files to the user's home directory
-  ansible.builtin.synchronize:
-    src: "/tmp/logstash_pipelines/"
-    dest: "/tmp/logstash_pipelines/"
-    delete: yes
-    recursive: yes
-  become: no  # No need for privilege escalation here
+    - name: Ensure correct permissions on Logstash pipeline files
+      ansible.builtin.file:
+        path: "{{ logstash_conf_dir }}/conf.d/pipelines/"
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: '0644'
+        recurse: yes
+      become: yes
 
-- name: Ensure correct permissions on Logstash pipeline files
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/conf.d/pipelines/"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: '0644'
-    recurse: yes
-  become: yes
-
-- name: Remove temporary directory for pipeline configurations
-  ansible.builtin.file:
-    path: "/tmp/logstash_pipelines"
-    state: absent
-  become: yes  # Use 'become' if necessary to remove the directory
+    - name: Remove temporary directory for pipeline configurations
+      ansible.builtin.file:
+        path: "/tmp/logstash_pipelines"
+        state: absent
+      become: yes  # Use 'become' if necessary to remove the directory
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
@@ -366,10 +375,6 @@
 
 - name: Generate Logstash pipelines.yml
   block:
-    - name: Get list of pipeline folders
-      shell: ls -d {{ logstash_conf_dir }}/*/
-      register: pipeline_folders
-
     - name: Generate pipelines.yml
       template:
         src: pipelines.yml.j2
