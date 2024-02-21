@@ -35,6 +35,7 @@
 
 - debug: var=files_to_remove
 - debug: var=files_to_add_or_modify
+- debug: var=current_structure_relative.keys()
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
