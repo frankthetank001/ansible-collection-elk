@@ -277,6 +277,7 @@
     - name: Gather intended .conf.j2 files from role templates
       set_fact:
         template_files: "{{ lookup('fileglob', role_path + '/templates/configs/pipelines/*/*.conf.j2', wantlist=True) }}"
+      delegate_to: localhost
 
     - name: Determine intended directory structure
       set_fact:
