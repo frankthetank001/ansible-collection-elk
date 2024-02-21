@@ -24,6 +24,10 @@
     intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace('\\.j2$', '')) + (dest_extension | default('')): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
+- name: Transform current_structure keys to relative paths
+  set_fact:
+    current_structure_relative: "{{ dict(current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_structure.values())) }}"
+
 - name: Compare structures and identify changes
   set_fact:
     files_to_remove: "{{ current_structure_relative.keys() | difference(intended_structure.keys()) | list }}"
