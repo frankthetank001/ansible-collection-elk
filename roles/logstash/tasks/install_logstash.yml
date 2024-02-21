@@ -267,21 +267,14 @@
     recurse: yes
   register: found_files
 
-- name: Ensure temporary directories exist for each found file
-  ansible.builtin.file:
-    path: "/tmp/logstash_pipelines/{{ item.path | regex_replace('^' + role_path + '/templates/configs/pipelines/', '') | regex_replace('/[^/]+\\.conf\\.j2$', '') }}"
-    state: directory
-  loop: "{{ found_files.files }}"
-  loop_control:
-    loop_var: item
-
-- name: Template .conf.j2 files to the corresponding temporary directory
-  ansible.builtin.template:
-    src: "{{ item.path }}"
-    dest: "/tmp/logstash_pipelines/{{ item.path | regex_replace('^' + role_path + '/templates/configs/pipelines/', '') | regex_replace('\\.j2$', '.conf') }}"
-  loop: "{{ found_files.files }}"
-  loop_control:
-    loop_var: item
+- name: Copy pipeline configs to remote tmp directory
+  copy:
+    src: "{{ role_path }}/templates/configs/pipelines"
+    dest: "/tmp/logstash_pipelines/"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0644
+    recurse: yes
 
 - name: Synchronize templated pipeline files to the user's home directory
   ansible.builtin.synchronize:
