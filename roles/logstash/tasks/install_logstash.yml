@@ -264,6 +264,8 @@
     dest_conf_dir: "{{ logstash_conf_dir }}/conf.d"
     src_extension: ".conf.j2"
     dest_extension: ".conf"
+    user: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
     - restart logstash
@@ -277,17 +279,21 @@
     dest_conf_dir: "{{ logstash_conf_dir }}/patterns"
     src_extension: ".txt.j2"
     dest_extension: ".txt"
+    user: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
     - restart logstash
 
-- name: Sync logstash script files to the final destination
+- name: Synchronize logstash script files to the final destination
   import_role:
     name: utils
     tasks_from: sync_directories.yml
   vars:
     src_conf_dir: "/{{ this_role_path }}/templates/scripts/"
     dest_conf_dir: "{{ logstash_conf_dir }}/scripts"
+    user: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
   notify:
     - check if logstash is active
     - restart logstash
