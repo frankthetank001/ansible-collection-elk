@@ -258,7 +258,7 @@
 - name: Generate Logstash pipelines.yml
   block:
     - name: Get list of pipeline folders
-      shell: ls -d {{ logstash_conf_dir }}/pipelines/*
+      shell: ls -d {{ logstash_conf_dir }}/conf.d/pipelines/*
       register: pipeline_folders
 
     - name: Generate pipelines.yml
