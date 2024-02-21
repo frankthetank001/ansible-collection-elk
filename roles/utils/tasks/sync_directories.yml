@@ -21,7 +21,7 @@
 
 - name: Determine intended directory structure
   set_fact:
-    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', '') | regex_replace('(.*)(\\.conf)$', '\\1' + (dest_extension | default('')))): 'modified' }) }}"
+    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', dest_extension | default(''))): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
 - name: Compare structures and identify changes
@@ -34,24 +34,22 @@
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
-    path: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('/[^/]+\\.j2$', '') }}"
+    path: "{{ dest_conf_dir }}/{{ item | regex_replace('/[^/]+$', '') }}"
     state: directory
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: '0755'
-  loop: "{{ template_files.files | map(attribute='path') }}"
-  loop_control:
-    label: "{{ item }}"
+  loop: "{{ files_to_add_or_modify }}"
 
 # Add or modify files as necessary
 - name: Add or modify files
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', (dest_extension | default(''))) }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('\\.j2$', dest_extension | default('')) }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0666
-  loop: "{{ template_files.files | map(attribute='path') }}"
+  loop: "{{ files_to_add_or_modify }}"
 
 # Remove files no longer needed
 - name: Remove files no longer present in intended structure
