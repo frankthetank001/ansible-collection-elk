@@ -21,7 +21,7 @@
   set_fact:
     current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_state.files)) }}"
 
-- debug: current_structure
+- debug: var=current_structure
 
 # Assuming src_extension and dest_extension might not be provided
 - name: Gather intended {{ src_extension |default('') }} files from source templates
