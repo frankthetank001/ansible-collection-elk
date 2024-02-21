@@ -8,7 +8,7 @@
 
 - name: Build dictionary representing current state
   set_fact:
-    current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/', '') | list | zip(current_state.files)) }}"
+    current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_state.files)) }}"
 
 # Assuming src_extension and dest_extension might not be provided
 - name: Gather intended {{ src_extension |default('') }} files from source templates
@@ -21,7 +21,7 @@
 
 - name: Determine intended directory structure
   set_fact:
-    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', dest_extension | default(''))): 'modified' }) }}"
+    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace('\\.j2$', '')) + (dest_extension | default('')): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
 - name: Compare structures and identify changes
