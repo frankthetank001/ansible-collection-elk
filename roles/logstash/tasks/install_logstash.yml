@@ -289,7 +289,7 @@
     dest: "{{ logstash_conf_dir }}/conf.d/pipelines/"
     delete: yes  # Ensures files not present in source are deleted from the destination
     recursive: yes
-  become: yes
+  become: no
   notify:
     - check if logstash is active
     - restart logstash
