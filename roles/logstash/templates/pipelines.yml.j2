@@ -4,7 +4,7 @@
 
 {% for folder in pipeline_folders.stdout_lines -%}
 - pipeline.id: {{ folder | basename }}
-  path.config: "{{ folder }}*.conf"
+  path.config: "{{ folder }}/*.conf"
 {% if folder | basename == 'single-threaded' -%}
   pipeline.workers: 1
 {% endif -%}
