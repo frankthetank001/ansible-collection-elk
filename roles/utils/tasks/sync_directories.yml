@@ -1,4 +1,15 @@
 ---
+- name: Debug multiple variables using a loop
+  debug:
+    msg: "{{ item }}: {{ lookup('vars', item) }}"
+  loop:
+    - src_conf_dir
+    - dest_conf_dir
+    - src_extension
+    - dest_extension
+    - owner
+    - group
+
 # logstash_pipeline_tasks.yml
 - name: Gather current state of the destination directory
   ansible.builtin.find:
