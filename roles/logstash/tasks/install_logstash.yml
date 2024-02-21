@@ -262,53 +262,50 @@
 
 - name: Create logstash pipelines
   block:
-    - name: Get list of pipeline folders
-      shell: ls -d {{ logstash_conf_dir }}/conf.d/pipelines/*
-      register: pipeline_folders
-    
-    - name: Create pipeline folders
-      file:
-        path: "/tmp/logstash_pipelines/{{ item }}"
-        state: directory
-        owner: "{{ logstash_user }}"
-        group: "{{ logstash_group }}"
-        mode: 0766
-      loop: "{{ pipeline_folders.stdout_lines }}"
-
-    - name: Copy all Logstash .conf files from pipelines dir
-      ansible.builtin.template:
-        src: "{{ item }}"
-        dest: "/tmp/logstash_pipelines/{{ item | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/') }}"
-        owner: "{{ logstash_user }}"
-        group: "{{ logstash_group }}"
-        mode: 0666
-      with_fileglob:
-        - "{{ role_path }}/templates/configs/pipelines/*/*.conf.j2"
-      loop_control:
-        loop_var: item
-
-    - name: Synchronize templated pipeline files to the user's home directory
-      ansible.builtin.synchronize:
-        src: "/tmp/logstash_pipelines/"
-        dest: "{{ logstash_conf_dir }}/conf.d/pipelines/"
-        delete: yes
-        recursive: yes
-      become: no  # No need for privilege escalation here
-
-    - name: Ensure correct permissions on Logstash pipeline files
-      ansible.builtin.file:
-        path: "{{ logstash_conf_dir }}/conf.d/pipelines/"
-        owner: "{{ logstash_user }}"
-        group: "{{ logstash_group }}"
-        mode: '0644'
+  tasks:
+    - name: Gather current state of the destination directory
+      ansible.builtin.find:
+        paths: "{{ logstash_conf_dir }}/conf.d/pipelines/"
         recurse: yes
-      become: yes
+      register: current_state
 
-    - name: Remove temporary directory for pipeline configurations
-      ansible.builtin.file:
-        path: "/tmp/logstash_pipelines"
-        state: absent
-      become: yes  # Use 'become' if necessary to remove the directory
+    - name: Build dictionary representing current state
+      set_fact:
+        current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + logstash_conf_dir + '/conf.d/pipelines/', '') | list | zip(current_state.files)) }}"
+
+    - name: Determine intended directory structure
+      # This task depends on your specific setup. It might involve listing files from a directory, 
+      # processing template files to understand their intended destination, or similar.
+      # This example assumes you're processing templates to determine their destinations.
+      ansible.builtin.set_fact:
+        intended_structure: "{{ intended_structure | default({}) | combine({item | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/'): 'modified'}) }}"
+      loop: "{{ lookup('fileglob', '{{ role_path }}/templates/configs/pipelines/*/*.conf.j2', wantlist=True) }}"
+      delegate_to: localhost
+
+    - name: Compare structures and identify changes
+      ansible.builtin.set_fact:
+        files_to_remove: "{{ current_structure.keys() | difference(intended_structure.keys()) | list }}"
+        files_to_add_or_modify: "{{ intended_structure.keys() | list }}"
+    
+    - debug: var=files_to_remove
+    - debug: var=files_to_add_or_modify
+
+    # Add or modify files as necessary
+    # - name: Add or modify files
+    #   ansible.builtin.template:
+    #     src: "{{ item + '.j2' }}"
+    #     dest: "{{ logstash_conf_dir }}/conf.d/pipelines/{{ item }}"
+    #     owner: "{{ logstash_user }}"
+    #     group: "{{ logstash_group }}"
+    #     mode: 0666
+    #   loop: "{{ files_to_add_or_modify }}"
+
+    # # Remove files no longer needed
+    # - name: Remove files no longer present in intended structure
+    #   ansible.builtin.file:
+    #     path: "{{ logstash_conf_dir }}/conf.d/pipelines/{{ item }}"
+    #     state: absent
+    #   loop: "{{ files_to_remove }}"
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
