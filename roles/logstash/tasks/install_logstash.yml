@@ -334,6 +334,23 @@
     - check if logstash is active
     - restart logstash
 
+- name: Generate Logstash pipelines.yml
+  block:
+    - name: Get list of pipeline folders
+      shell: ls -d {{ logstash_conf_dir }}/*/
+      register: pipeline_folders
+
+    - name: Generate pipelines.yml
+      template:
+        src: pipelines.yml.j2
+        dest: "{{ logstash_conf_dir }}/pipelines.yml"
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+
 - name: Include step-client role
   include_role:
     name: step-client

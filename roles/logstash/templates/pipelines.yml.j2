@@ -2,10 +2,10 @@
 # For more information on multiple pipelines, see the documentation:
 #   https://www.elastic.co/guide/en/logstash/current/multiple-pipelines.html
 
-- pipeline.id: main
-  path.config: "{{ logstash_conf_dir }}/conf.d/*.conf"
-  pipeline.workers: {{ logstash_main_pipeline_workers }}
-
-- pipeline.id: single_threaded
+{% for folder in pipeline_folders.stdout_lines -%}
+- pipeline.id: {{ folder | basename }}
+  path.config: "{{ folder }}*.conf"
+{% if folder | basename == 'single-threaded' -%}
   pipeline.workers: 1
-  path.config: "{{ logstash_conf_dir }}/conf.d/single-threaded/*.conf"
+{% endif -%}
+{% endfor -%}
