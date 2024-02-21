@@ -122,6 +122,12 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
 
+- name: Ensure pipeline directory exists
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/conf.d/pipelines"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+
 - name: Ensure scripts directory exists
   ansible.builtin.file:
     path: "{{ logstash_conf_dir }}/scripts"
@@ -252,42 +258,20 @@
     - check if logstash is active
     - restart logstash
 
-- name: Ensure that single-threaded conf folder exists
-  ansible.builtin.file:
-    path: "{{ logstash_conf_dir }}/conf.d/single-threaded"
-    state: directory
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-
-- name: Copy all multi-threaded logstash .conf files from templates to destination
+- name: Copy all Logstash .conf files from pipelines dir
   ansible.builtin.template:
-    src: "{{ config_item }}"
-    dest: "{{ logstash_conf_dir }}/conf.d/{{ config_item | basename | regex_replace('\\.j2$', '') }}"
+    src: "{{ item }}"
+    dest: "{{ logstash_conf_dir }}/conf.d/pipelines/{{ item | basename | dirname | basename }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
     mode: 0644
   with_fileglob:
-    - "{{ role_path }}/templates/configs/*.conf.j2"
+    - "{{ role_path }}/templates/configs/pipelines/*/*.conf.j2"
   loop_control:
-    loop_var: config_item
+    loop_var: item
   notify:
-    - check if logstash is active
-    - restart logstash
-
-- name: Copy all single threaded logstash .conf files from templates to destination
-  ansible.builtin.template:
-    src: "{{ config_item }}"
-    dest: "{{ logstash_conf_dir }}/conf.d/single-threaded/{{ config_item | basename | regex_replace('\\.j2$', '') }}"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  with_fileglob:
-    - "{{ role_path }}/templates/configs/single-threaded/*.conf.j2"
-  loop_control:
-    loop_var: config_item
-  notify:
-    - check if logstash is active
-    - restart logstash
+    - check if Logstash is active
+    - restart Logstash
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
