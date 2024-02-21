@@ -283,21 +283,15 @@
   loop_control:
     loop_var: item
 
-- name: Synchronize templated pipeline files to the final destination
+- name: Synchronize templated pipeline files to the user's home directory
   ansible.builtin.synchronize:
     src: "/tmp/logstash_pipelines/"
-    dest: "{{ logstash_conf_dir }}/conf.d/pipelines/"
-    delete: yes  # Ensures files not present in source are deleted from the destination
+    delete: yes
     recursive: yes
-  become: no
+  remote_src: yes  # No need for privilege escalation here
   notify:
     - check if logstash is active
     - restart logstash
-
-- name: Remove temporary directory for pipeline configurations
-  ansible.builtin.file:
-    path: "/tmp/logstash_pipelines"
-    state: absent
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
