@@ -275,12 +275,9 @@
         current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + logstash_conf_dir + '/conf.d/pipelines/', '') | list | zip(current_state.files)) }}"
 
     - name: Determine intended directory structure
-      # This task depends on your specific setup. It might involve listing files from a directory, 
-      # processing template files to understand their intended destination, or similar.
-      # This example assumes you're processing templates to determine their destinations.
-      ansible.builtin.set_fact:
+      set_fact:
         intended_structure: "{{ intended_structure | default({}) | combine({item | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/'): 'modified'}) }}"
-      loop: "{{ lookup('fileglob', '{{ role_path }}/templates/configs/pipelines/*/*.conf.j2', wantlist=True) }}"
+      loop: "{{ template_files }}"
       delegate_to: localhost
 
     - name: Compare structures and identify changes
