@@ -267,6 +267,8 @@
     recurse: yes
   register: found_files
 
+- debug: var=found_files
+
 - name: Copy pipeline configs to remote tmp directory
   copy:
     src: "{{ role_path }}/templates/configs/pipelines"
