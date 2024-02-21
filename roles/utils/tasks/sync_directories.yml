@@ -21,7 +21,7 @@
 
 - name: Determine intended directory structure
   set_fact:
-    intended_structure: "{{ intended_structure | default({}) | combine({(item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', dest_extension | default(''))): 'modified'}) }}"
+    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', '') | regex_replace('(.*)(\\.conf)$', '\\1' + (dest_extension | default('')))): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
 - name: Compare structures and identify changes
@@ -47,9 +47,9 @@
 - name: Add or modify files
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', '') | regex_replace('(.*)$', '\\1' + (dest_extension | default(''))) }}"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', '') | regex_replace('(.*)(\\.conf)$', '\\1' + (dest_extension | default(''))) }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
     mode: 0644
   loop: "{{ template_files.files | map(attribute='path') }}"
 
