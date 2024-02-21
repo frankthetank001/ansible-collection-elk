@@ -29,8 +29,8 @@
     files_to_remove: "{{ current_structure.keys() | difference(intended_structure.keys()) | list }}"
     files_to_add_or_modify: "{{ intended_structure.keys() | list }}"
 
-- debug: var=files_to_remove
-- debug: var=files_to_add_or_modify
+- debug: var=files_to_remove.keys()
+- debug: var=files_to_add_or_modify.keys()
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
