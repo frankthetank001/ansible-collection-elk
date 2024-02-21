@@ -1,0 +1,50 @@
+---
+# logstash_pipeline_tasks.yml
+- name: Gather current state of the destination directory
+  ansible.builtin.find:
+    paths: "{{ dest_conf_dir }}"
+    recurse: yes
+  register: current_state
+
+- name: Build dictionary representing current state
+  set_fact:
+    current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/', '') | list | zip(current_state.files)) }}"
+
+# Assuming src_extension and dest_extension might not be provided
+- name: Gather intended .conf.j2 files from source templates
+  ansible.builtin.find:
+    paths: "{{ src_conf_dir }}"
+    patterns: "*{{ src_extension | default('') }}"
+    recurse: yes
+  register: template_files
+  delegate_to: localhost
+
+- name: Determine intended directory structure
+  set_fact:
+    intended_structure: "{{ intended_structure | default({}) | combine({(item.path | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', dest_extension | default(''))): 'modified'}) }}"
+  loop: "{{ template_files.files }}"
+
+- name: Compare structures and identify changes
+  set_fact:
+    files_to_remove: "{{ current_structure.keys() | difference(intended_structure.keys()) | list }}"
+    files_to_add_or_modify: "{{ intended_structure.keys() | list }}"
+
+- debug: var=files_to_remove
+- debug: var=files_to_add_or_modify
+
+# Add or modify files as necessary
+- name: Add or modify files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', '') | regex_replace('(.*)$', '\\1' + (dest_extension | default(''))) }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: 0666
+  loop: "{{ template_files.files | map(attribute='path') }}"
+
+# Remove files no longer needed
+- name: Remove files no longer present in intended structure
+  ansible.builtin.file:
+    path: "{{ dest_conf_dir }}/{{ item }}"
+    state: absent
+  loop: "{{ files_to_remove }}"
