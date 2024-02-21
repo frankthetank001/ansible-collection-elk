@@ -164,6 +164,7 @@
     patterns: "*"
   register: intermediate_files
   when: elasticsearch_https_enabled
+  delegate_to: localhost
 
 - name: Intermediate files
   debug:
@@ -188,6 +189,7 @@
     patterns: "*"
   register: root_files
   when: elasticsearch_https_enabled
+  delegate_to: localhost
 
 - name: Root files
   debug:
@@ -262,7 +264,6 @@
 
 - name: Create logstash pipelines
   block:
-  tasks:
     - name: Gather current state of the destination directory
       ansible.builtin.find:
         paths: "{{ logstash_conf_dir }}/conf.d/pipelines/"
