@@ -252,12 +252,15 @@
     - check if logstash is active
     - restart logstash
 
+- set_fact:
+  this_role_path: "{{ role_path }}"
+
 - name: Synchronize templated configuration files to the final destination
   ansible.builtin.import_role:
     name: utils
     tasks_from: sync_directories.yml
   vars:
-    src_conf_dir: "{{ role_path }}/templates/configs/pipelines/"
+    src_conf_dir: "{{ this_role_path }}/templates/configs/pipelines/"
     dest_conf_dir: "{{ logstash_conf_dir }}/conf.d"
     src_extension: ".conf.j2"
     dest_extension: ".conf"
@@ -270,7 +273,7 @@
     name: utils
     tasks_from: sync_directories.yml
   vars:
-    src_conf_dir: "{{ role_path }}/templates/patterns/"
+    src_conf_dir: "{{ this_role_path }}/templates/patterns/"
     dest_conf_dir: "{{ logstash_conf_dir }}/patterns"
     src_extension: ".txt.j2"
     dest_extension: ".txt"
@@ -283,7 +286,7 @@
     name: utils
     tasks_from: sync_directories.yml
   vars:
-    src_conf_dir: "/{{ role_path }}/templates/scripts/"
+    src_conf_dir: "/{{ this_role_path }}/templates/scripts/"
     dest_conf_dir: "{{ logstash_conf_dir }}/scripts"
   notify:
     - check if logstash is active
