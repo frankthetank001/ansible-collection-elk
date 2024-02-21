@@ -119,12 +119,14 @@
 - name: Ensure conf.d directory exists
   ansible.builtin.file:
     path: "{{ logstash_conf_dir }}/conf.d"
+    state: directory
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
 
 - name: Ensure pipeline directory exists
   ansible.builtin.file:
     path: "{{ logstash_conf_dir }}/conf.d/pipelines"
+    state: directory
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
 
