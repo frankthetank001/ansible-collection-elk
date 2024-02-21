@@ -213,36 +213,36 @@ filter {
                     }
 
                     # Enrich with player specific stored information
-                    elasticsearch {
-                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                        user => "${ES_USER}"
-                        password => "${ES_PWD}"
-                        index => "alias-match-info"
-                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
-                        fields => {
-                            "player_name" => "[Match][Player][Name]"
-                            "player_ip" => "[Match][Player][IP]"
-                            "player_team" => "[Match][Player][Team]"
-                            "player_hero" => "[Match][Player][Hero]"
-                        }
-                    }
+#                    elasticsearch {
+#                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+#                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+#                        user => "${ES_USER}"
+#                        password => "${ES_PWD}"
+#                        index => "alias-match-info"
+#                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
+#                        fields => {
+#                            "player_name" => "[Match][Player][Name]"
+#                            "player_ip" => "[Match][Player][IP]"
+#                            "player_team" => "[Match][Player][Team]"
+#                            "player_hero" => "[Match][Player][Hero]"
+#                        }
+#                    }
 
                     # Enrich with lobby specific stored information
-                    elasticsearch {
-                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                        user => "${ES_USER}"
-                        password => "${ES_PWD}"
-                        index => "alias-match-info"
-                        query => "_id:%{[Match][ID]}-Lobby"
-                        fields => {
-                            "match_map" => "[Match][Map]"
-                            "match_name" => "[Match][Name]"
-                            "match_mode" => "[Match][Mode]"
-                            "match_options" => "[Match][Options]"
-                        }
-                    }
+#                    elasticsearch {
+#                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+#                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+#                        user => "${ES_USER}"
+#                        password => "${ES_PWD}"
+#                        index => "alias-match-info"
+#                        query => "_id:%{[Match][ID]}-Lobby"
+#                        fields => {
+#                            "match_map" => "[Match][Map]"
+#                            "match_name" => "[Match][Name]"
+#                            "match_mode" => "[Match][Mode]"
+#                            "match_options" => "[Match][Options]"
+#                        }
+#                    }
                 } else if [Match][Mode] or [Match][Name] or [Match][Map] or [Match][Options] {
                     # Tag as a lobby even, we'll keep updating this document in elastic with the latest lobby info
                     mutate {
@@ -408,18 +408,18 @@ filter {
                     }
                 }
                 if [Match][Player][ID] and [Match][ID] and ![Match][Player][Name] {
-                    elasticsearch {
-                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                        user => "${ES_USER}"
-                        password => "${ES_PWD}"
-                        index => "alias-match-info"
-                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
-                        fields => { 
-                            "player_name" => "[Match][Player][Name]"
-                        }
-                    }
-                }
+#                    elasticsearch {
+#                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+#                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+#                        user => "${ES_USER}"
+#                        password => "${ES_PWD}"
+#                        index => "alias-match-info"
+#                        query => "_id:%{[Match][ID]}-Player%{[Match][Player][ID]}"
+#                        fields => { 
+#                            "player_name" => "[Match][Player][Name]"
+#                        }
+#                    }
+#                }
             } else if [Log_Type] == "diagnostic" {
                 grok {
                     patterns_dir => ["/etc/logstash/patterns"]
@@ -460,17 +460,17 @@ filter {
                             "match_query" => "Match.Player.Name:%{[sanitized_client_name]}"
                         }
                     }
-                    elasticsearch {
-                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
-                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
-                        user => "${ES_USER}"
-                        password => "${ES_PWD}"
-                        index => "player-ips"
-                        query => "%{match_query}"
-                        fields => { 
-                            "player_ip" => "[Match][Player][IP]"
-                        }
-                    }
+#                    elasticsearch {
+#                        hosts => [{% for host in elasticsearch_hosts %}"{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+#                        ssl_certificate_authorities => "{{ logstash_certs_dir }}/ca/{{ elasticsearch_ca_chain_name }}"
+#                        user => "${ES_USER}"
+#                        password => "${ES_PWD}"
+#                        index => "player-ips"
+#                        query => "%{match_query}"
+#                        fields => { 
+#                            "player_ip" => "[Match][Player][IP]"
+#                        }
+#                    }
                 }
             }
 
