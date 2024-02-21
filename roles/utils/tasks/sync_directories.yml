@@ -28,10 +28,10 @@
   set_fact:
     current_structure_relative: "{{ dict(current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_structure.values())) }}"
 
-- name: Compare structures and identify changes
+- name: Compare structures and identify changes (Revised for Generalization)
   set_fact:
-    files_to_remove: "{{ current_structure_relative.keys() | difference(intended_structure.keys()) | list }}"
-    files_to_add_or_modify: "{{ intended_structure.keys() | list }}"
+    files_to_remove: "{{ (current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list) | difference(intended_structure.keys()) }}"
+    files_to_add_or_modify: "{{ intended_structure.keys() }}"
 
 - debug: var=files_to_remove
 - debug: var=files_to_add_or_modify
