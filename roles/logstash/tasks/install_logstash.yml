@@ -284,16 +284,27 @@
     loop_var: item
 
 - name: Synchronize templated pipeline files to the user's home directory
-  ansible.posix.synchronize:
+  ansible.builtin.synchronize:
     src: "/tmp/logstash_pipelines/"
+    dest: "/tmp/logstash_pipelines/"
     delete: yes
     recursive: yes
-    owner: yes
-    group: yes
-  remote_src: yes  # No need for privilege escalation here
-  notify:
-    - check if logstash is active
-    - restart logstash
+  become: no  # No need for privilege escalation here
+
+- name: Ensure correct permissions on Logstash pipeline files
+  ansible.builtin.file:
+    path: "{{ logstash_conf_dir }}/conf.d/pipelines/"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: '0644'
+    recurse: yes
+  become: yes
+
+- name: Remove temporary directory for pipeline configurations
+  ansible.builtin.file:
+    path: "/tmp/logstash_pipelines"
+    state: absent
+  become: yes  # Use 'become' if necessary to remove the directory
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
