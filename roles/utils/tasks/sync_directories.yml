@@ -42,6 +42,17 @@
     mode: 0666
   loop: "{{ template_files.files | map(attribute='path') }}"
 
+- name: Ensure destination directories exist
+  ansible.builtin.file:
+    path: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('/[^/]*$', '') }}"
+    state: directory
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
+    mode: '0755'
+  loop: "{{ template_files.files | map(attribute='path') }}"
+  loop_control:
+    label: "{{ item }}"
+    
 # Remove files no longer needed
 - name: Remove files no longer present in intended structure
   ansible.builtin.file:
