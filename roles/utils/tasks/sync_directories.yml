@@ -55,7 +55,7 @@
 # Add or modify files as necessary
 - name: Add or modify files
   ansible.builtin.template:
-    src: "{{ item }}"
+    src: "{{ src_conf_dir }}/{{ item }}"
     dest: "{{ dest_conf_dir }}/{{ item | regex_replace(src_extension ~ '$', dest_extension | default('')) }}"
     owner: "{{ owner }}"
     group: "{{ group }}"
