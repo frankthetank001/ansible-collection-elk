@@ -32,7 +32,7 @@
   register: template_files
   delegate_to: localhost
 
-- debug: var=template_files
+# - debug: var=template_files
 
 - name: Determine intended directory structure
   set_fact:
@@ -44,8 +44,8 @@
     files_to_remove: "{{ (current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list) | difference(intended_structure.keys()) }}"
     files_to_add_or_modify: "{{ intended_structure.keys() }}"
 
-- debug: var=files_to_remove
-- debug: var=files_to_add_or_modify
+# - debug: var=files_to_remove
+# - debug: var=files_to_add_or_modify
 
 - name: Ensure destination directories exist
   ansible.builtin.file:

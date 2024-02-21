@@ -255,6 +255,23 @@
 - set_fact:
     this_role_path: "{{ role_path }}"
 
+- name: Generate Logstash pipelines.yml
+  block:
+    - name: Get list of pipeline folders
+      shell: ls -d {{ logstash_conf_dir }}/pipelines/*
+      register: pipeline_folders
+
+    - name: Generate pipelines.yml
+      template:
+        src: pipelines.yml.j2
+        dest: "{{ logstash_conf_dir }}/pipelines.yml"
+        owner: "{{ logstash_user }}"
+        group: "{{ logstash_group }}"
+        mode: 0644
+  notify:
+    - check if logstash is active
+    - restart logstash
+
 - name: Synchronize templated configuration files to the final destination
   import_role:
     name: utils
@@ -294,17 +311,6 @@
     dest_conf_dir: "{{ logstash_conf_dir }}/scripts/"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
-  notify:
-    - check if logstash is active
-    - restart logstash
-
-- name: Generate Logstash pipelines.yml
-  template:
-    src: pipelines.yml.j2
-    dest: "{{ logstash_conf_dir }}/pipelines.yml"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
   notify:
     - check if logstash is active
     - restart logstash
