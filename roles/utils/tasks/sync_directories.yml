@@ -34,10 +34,10 @@
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
-    path: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('/[^/]*$', '') }}"
+    path: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('/[^/]+\\.j2$', '') }}"
     state: directory
-    owner: "{{ owner }}"
-    group: "{{ group }}"
+    owner: "{{ logstash_user }}"
+    group: "{{ logstash_group }}"
     mode: '0755'
   loop: "{{ template_files.files | map(attribute='path') }}"
   loop_control:
@@ -47,10 +47,10 @@
 - name: Add or modify files
   ansible.builtin.template:
     src: "{{ item }}"
-    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', '') | regex_replace('(.*)(\\.conf)$', '\\1' + (dest_extension | default(''))) }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('\\.j2$', (dest_extension | default(''))) }}"
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
-    mode: 0644
+    mode: 0666
   loop: "{{ template_files.files | map(attribute='path') }}"
 
 # Remove files no longer needed
