@@ -11,7 +11,7 @@
     current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/', '') | list | zip(current_state.files)) }}"
 
 # Assuming src_extension and dest_extension might not be provided
-- name: Gather intended .conf.j2 files from source templates
+- name: Gather intended {{ src_extension |default('') }} files from source templates
   ansible.builtin.find:
     paths: "{{ src_conf_dir }}"
     patterns: "*{{ src_extension | default('') }}"
