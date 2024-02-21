@@ -26,7 +26,7 @@
 
 - name: Compare structures and identify changes
   set_fact:
-    files_to_remove: "{{ current_structure.keys() | difference(intended_structure.keys()) | list }}"
+    files_to_remove: "{{ (current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list) | difference(intended_structure.keys()) | list }}"
     files_to_add_or_modify: "{{ intended_structure.keys() | list }}"
 
 - debug: var=files_to_remove
