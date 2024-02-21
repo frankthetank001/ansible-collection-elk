@@ -284,10 +284,12 @@
     loop_var: item
 
 - name: Synchronize templated pipeline files to the user's home directory
-  ansible.builtin.synchronize:
+  ansible.posix.synchronize:
     src: "/tmp/logstash_pipelines/"
     delete: yes
     recursive: yes
+    owner: yes
+    group: yes
   remote_src: yes  # No need for privilege escalation here
   notify:
     - check if logstash is active
