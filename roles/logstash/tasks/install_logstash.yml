@@ -275,15 +275,17 @@
         current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + logstash_conf_dir + '/conf.d/pipelines/', '') | list | zip(current_state.files)) }}"
 
     - name: Gather intended .conf.j2 files from role templates
-      set_fact:
-        template_files: "{{ lookup('fileglob', role_path + '/templates/configs/pipelines/*/*.conf.j2', wantlist=True) }}"
+      ansible.builtin.find:
+        paths: "{{ role_path }}/templates/configs/pipelines"
+        patterns: "*.conf.j2"
+        recurse: yes
+      register: template_files
       delegate_to: localhost
 
     - name: Determine intended directory structure
       set_fact:
-        intended_structure: "{{ intended_structure | default({}) | combine({item | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/'): 'modified'}) }}"
-      loop: "{{ template_files }}"
-      delegate_to: localhost
+        intended_structure: "{{ intended_structure | default({}) | combine({item.path | regex_search('.+/pipelines/(.+)/([^/]+\\.conf)\\.j2$') | join('/'): 'modified'}) }}"
+      loop: "{{ template_files.files }}"
 
     - name: Compare structures and identify changes
       ansible.builtin.set_fact:
