@@ -260,20 +260,43 @@
     - check if logstash is active
     - restart logstash
 
-- name: Copy all Logstash .conf files from pipelines dir
-  ansible.builtin.template:
-    src: "{{ item }}"
-    dest: "{{ logstash_conf_dir }}/conf.d/pipelines/{{ item | basename | dirname | basename }}"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  with_fileglob:
-    - "{{ role_path }}/templates/configs/pipelines/*/*.conf.j2"
+- name: Find all pipeline .conf.j2 files
+  ansible.builtin.find:
+    paths: "{{ role_path }}/templates/configs/pipelines"
+    patterns: "*.conf.j2"
+    recurse: yes
+  register: found_files
+
+- name: Ensure temporary directories exist for each found file
+  ansible.builtin.file:
+    path: "/tmp/logstash_pipelines/{{ item.path | regex_replace('^' + role_path + '/templates/configs/pipelines/', '') | regex_replace('/[^/]+\\.conf\\.j2$', '') }}"
+    state: directory
+  loop: "{{ found_files.files }}"
   loop_control:
     loop_var: item
+
+- name: Template .conf.j2 files to the corresponding temporary directory
+  ansible.builtin.template:
+    src: "{{ item.path }}"
+    dest: "/tmp/logstash_pipelines/{{ item.path | regex_replace('^' + role_path + '/templates/configs/pipelines/', '') | regex_replace('\\.j2$', '.conf') }}"
+  loop: "{{ found_files.files }}"
+  loop_control:
+    loop_var: item
+
+- name: Synchronize templated pipeline files to the final destination
+  ansible.builtin.synchronize:
+    src: "/tmp/logstash_pipelines/"
+    dest: "{{ logstash_conf_dir }}/conf.d/pipelines/"
+    delete: yes  # Ensures files not present in source are deleted from the destination
+    recursive: yes
   notify:
-    - check if Logstash is active
-    - restart Logstash
+    - check if logstash is active
+    - restart logstash
+
+- name: Remove temporary directory for pipeline configurations
+  ansible.builtin.file:
+    path: "/tmp/logstash_pipelines"
+    state: absent
 
 - name: Ensure patterns directory exists
   ansible.builtin.file:
@@ -282,32 +305,61 @@
     owner: "{{ logstash_user }}"
     group: "{{ logstash_group }}"
 
-- name: Copy all logstash custom regex pattern files to destination
+- name: Ensure temporary directory for patterns exists
+  ansible.builtin.file:
+    path: "/tmp/logstash_patterns"
+    state: directory
+
+- name: Template logstash custom regex pattern files to temp directory
   ansible.builtin.template:
-    src: "{{ patterns_item }}"
-    dest: "{{ logstash_conf_dir }}/patterns/{{ patterns_item | basename | regex_replace('\\.j2$', '') }}"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  with_fileglob:
-    - "{{ role_path }}/templates/patterns/*.txt.j2"
+    src: "{{ item }}"
+    dest: "/tmp/logstash_patterns/{{ item | basename | regex_replace('\\.j2$', '') }}"
+  loop: "{{ query('ansible.builtin.fileglob', '{{ role_path }}/templates/patterns/*.txt.j2') }}"
   loop_control:
-    loop_var: patterns_item
+    loop_var: item
+
+- name: Synchronize templated pattern files to the final destination
+  ansible.builtin.synchronize:
+    src: "/tmp/logstash_patterns/"
+    dest: "{{ logstash_conf_dir }}/patterns/"
+    delete: yes  # Ensures files not present in source are deleted from the destination
+    recursive: yes
   notify:
     - check if logstash is active
     - restart logstash
 
-- name: Copy all logstash script files from templates to destination
+- name: Remove temporary directory for patterns
+  ansible.builtin.file:
+    path: "/tmp/logstash_patterns"
+    state: absent
+
+- name: Ensure temporary directory for scripts exists
+  ansible.builtin.file:
+    path: "/tmp/logstash_scripts"
+    state: directory
+
+- name: Template logstash script files to temporary directory
   ansible.builtin.template:
-    src: "{{ script_item }}"
-    dest: "{{ logstash_conf_dir }}/scripts/{{ script_item | basename | regex_replace('\\.j2$', '') }}"
-    owner: "{{ logstash_user }}"
-    group: "{{ logstash_group }}"
-    mode: 0644
-  with_fileglob:
-    - "{{ role_path }}/templates/scripts/*.*.j2"
+    src: "{{ item }}"
+    dest: "/tmp/logstash_scripts/{{ item | basename | regex_replace('\\.j2$', '') }}"
+  loop: "{{ query('ansible.builtin.fileglob', '{{ role_path }}/templates/scripts/*.*.j2') }}"
   loop_control:
-    loop_var: script_item
+    loop_var: item
+
+- name: Synchronize templated script files to the final destination
+  ansible.builtin.synchronize:
+    src: "/tmp/logstash_scripts/"
+    dest: "{{ logstash_conf_dir }}/scripts/"
+    delete: yes  # Ensures files not present in source are deleted from the destination
+    recursive: yes
+  notify:
+    - check if logstash is active
+    - restart logstash
+
+- name: Remove temporary directory for scripts
+  ansible.builtin.file:
+    path: "/tmp/logstash_scripts"
+    state: absent
 
 - name: Generate Logstash pipelines.yml
   block:
