@@ -32,16 +32,6 @@
 - debug: var=files_to_remove
 - debug: var=files_to_add_or_modify
 
-# Add or modify files as necessary
-- name: Add or modify files
-  ansible.builtin.template:
-    src: "{{ item }}"
-    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', '') | regex_replace('(.*)$', '\\1' + (dest_extension | default(''))) }}"
-    owner: "{{ owner }}"
-    group: "{{ group }}"
-    mode: 0644
-  loop: "{{ template_files.files | map(attribute='path') }}"
-
 - name: Ensure destination directories exist
   ansible.builtin.file:
     path: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('/[^/]*$', '') }}"
@@ -52,6 +42,16 @@
   loop: "{{ template_files.files | map(attribute='path') }}"
   loop_control:
     label: "{{ item }}"
+
+# Add or modify files as necessary
+- name: Add or modify files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('^' + src_conf_dir + '/', '') | regex_replace('.j2$', '') | regex_replace('(.*)$', '\\1' + (dest_extension | default(''))) }}"
+    owner: "{{ owner }}"
+    group: "{{ group }}"
+    mode: 0644
+  loop: "{{ template_files.files | map(attribute='path') }}"
 
 # Remove files no longer needed
 - name: Remove files no longer present in intended structure
