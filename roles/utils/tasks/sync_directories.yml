@@ -1,9 +1,9 @@
 ---
-set_fact:
-  files_to_remove: {}
-  files_to_add_or_modify: {}
-  intended_structure: {}
-  current_structure: {}
+- set_fact:
+    files_to_remove: {}
+    files_to_add_or_modify: {}
+    intended_structure: {}
+    current_structure: {}
   
 - name: Debug multiple variables using a loop
   debug:
