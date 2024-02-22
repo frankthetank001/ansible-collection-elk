@@ -64,8 +64,8 @@
 # Add or modify files as necessary
 - name: Add or modify files
   ansible.builtin.template:
-    src: "{{ src_conf_dir }}/{{ item | regex_replace('^(.*?)\\..*$', '\\1') + src_extension | default('') }}"
-    dest: "{{ dest_conf_dir }}/{{ item }}"
+    src: "{{ src_conf_dir }}/{{ item }}"
+    dest: "{{ dest_conf_dir }}/{{ item | regex_replace('\\.j2$', '') }}"
     owner: "{{ owner }}"
     group: "{{ group }}"
     mode: 0644
