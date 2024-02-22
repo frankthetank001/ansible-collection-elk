@@ -11,8 +11,8 @@
   loop:
     - src_conf_dir
     - dest_conf_dir
-    - src_extension
-    - dest_extension
+    - src_extension | default('')
+    - dest_extension | default('')
     - owner
     - group
 
