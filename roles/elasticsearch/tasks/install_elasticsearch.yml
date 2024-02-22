@@ -69,7 +69,7 @@
         owner: "{{ elasticsearch_user }}"
         group: "{{ elasticsearch_group }}"
         recurse: yes
-        mode: u=rwX,g=rX,o=r
+        mode: u=rwX,g=rX,o=rX
       loop:
         - "{{ elasticsearch_extract_dir }}/elasticsearch-{{ elasticsearch_version }}"
         - "{{ elasticsearch_data_dir }}"
