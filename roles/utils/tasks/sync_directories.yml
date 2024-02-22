@@ -40,7 +40,7 @@
 
 - name: Determine intended directory structure
   set_fact:
-    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace( src_extension | default('') ~ '$', dest_extension | default(''))): 'modified' }) }}"
+    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '')): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
 - name: Compare structures and identify changes (Revised for Generalization)
@@ -64,7 +64,7 @@
 # Add or modify files as necessary
 - name: Add or modify files
   ansible.builtin.template:
-    src: "{{ src_conf_dir }}/{{ item + (src_extension | default('.j2', true)) }}"
+    src: "{{ src_conf_dir }}/{{ item }}"
     dest: "{{ dest_conf_dir }}/{{ item | regex_replace('\\.j2$', '') }}"
     owner: "{{ owner }}"
     group: "{{ group }}"

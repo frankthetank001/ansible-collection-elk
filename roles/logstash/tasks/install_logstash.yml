@@ -84,7 +84,6 @@
     - "{{ logstash_certs_dir }}"
     - "{{ logstash_certs_dir }}/ca"
     - "{{ logstash_conf_dir }}/patterns"
-    - "{{ logstash_conf_dir }}/conf.d"
     - "{{ logstash_conf_dir }}/conf.d/pipelines"
     - "{{ logstash_conf_dir }}/scripts"
 
@@ -258,7 +257,7 @@
 - name: Generate Logstash pipelines.yml
   block:
     - name: Get list of pipeline folders
-      shell: ls -d {{ logstash_conf_dir }}/conf.d/pipelines/*
+      shell: ls -d {{ logstash_conf_dir }}/conf.d/pipelines/
       register: pipeline_folders
 
     - name: Generate pipelines.yml

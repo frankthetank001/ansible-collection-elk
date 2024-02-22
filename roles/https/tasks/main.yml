@@ -108,10 +108,10 @@
     - not cert_exists.stat.exists
     - certbot_enrollment_type == 'http_01'
   register: cert_requested
-
+  
 - name: Local | intermediate exists
   stat:
-    path: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+    path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_intermediate }}"
   register: elastic_intermediate_ca_file
   delegate_to: localhost
 
@@ -119,6 +119,27 @@
   stat:
     path: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
   register: elastic_root_ca_file
+  delegate_to: localhost
+
+- debug:
+    msg: "Expected path: {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_intermediate }}"
+
+- debug: var=elastic_intermediate_ca_file
+
+- name: Assert intermediate exists
+  assert:
+    that:
+      - elastic_intermediate_ca_file.stat.exists
+    fail_msg: "Despite 'elasticsearch_ca_intermediate_manually_provided' being set, intermediate certificate does not exist at {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_intermediate }}"
+  when: elasticsearch_ca_intermediate_manually_provided
+  delegate_to: localhost
+
+- name: Assert root exists
+  assert:
+    that:
+      - elastic_root_ca_file.stat.exists
+    fail_msg: "Despite 'elasticsearch_ca_root_manually_provided' being set, root certificate does not exist at {{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_root }}"
+  when: elasticsearch_ca_root_manually_provided
   delegate_to: localhost
 
 - name: Debug elasticsearch_local_certs_dir

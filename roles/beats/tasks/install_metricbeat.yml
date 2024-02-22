@@ -35,6 +35,14 @@
     owner: "{{ beats_user }}"
     group: "{{ beats_group }}"
 
+
+- name: Copy modules.d directory
+  ansible.posix.synchronize:
+    src: "{{ beats_extract_dir }}/metricbeat/modules.d"
+    dest: "{{ metricbeat_conf_dir }}/"
+    owner: yes
+    group: yes
+  delegate_to: "{{ inventory_hostname }}"
 - name: Fix directory permission
   ansible.builtin.file:
     path: "{{ item }}"
@@ -48,14 +56,6 @@
     - "{{ metricbeat_data_dir }}"
     - "{{ metricbeat_log_dir }}"
     - "{{ metricbeat_certs_dir }}"
-
-- name: Copy modules.d directory
-  ansible.posix.synchronize:
-    src: "{{ beats_extract_dir }}/metricbeat/modules.d"
-    dest: "{{ metricbeat_conf_dir }}/"
-    owner: yes
-    group: yes
-  delegate_to: "{{ inventory_hostname }}"
 
 - set_fact:
     elastic_virtual_proto: "{{ 'https' if elasticsearch_https_enabled else 'http' }}"
@@ -141,6 +141,8 @@
   ansible.builtin.template:
     src: metricbeat/metricbeat.service.j2
     dest: /etc/systemd/system/metricbeat.service
+    owner: "{{ beats_user }}"
+    group: "{{ beats_group }}"
     mode: 0644
   notify:
     - reload systemd
