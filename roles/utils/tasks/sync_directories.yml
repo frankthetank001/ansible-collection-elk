@@ -57,7 +57,7 @@
     state: directory
     owner: "{{ owner }}"
     group: "{{ group }}"
-    mode: '0755'
+    mode: '0754'
   loop: "{{ files_to_add_or_modify }}"
   when: item | regex_search('/')
 
