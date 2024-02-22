@@ -61,6 +61,7 @@
     group: "{{ group }}"
     mode: '0755'
   loop: "{{ files_to_add_or_modify }}"
+  when: item | regex_search('/')
 
 # Add or modify files as necessary
 - name: Add or modify files
