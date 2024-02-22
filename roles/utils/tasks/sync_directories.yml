@@ -7,12 +7,12 @@
   
 - name: Debug multiple variables using a loop
   debug:
-    msg: "{{ item }}: {{ lookup('vars', item) }}"
+    msg: "{{ item }}: {{ vars[item] | default('') }}"
   loop:
     - src_conf_dir
     - dest_conf_dir
-    - src_extension | default('')
-    - dest_extension | default('')
+    - src_extension
+    - dest_extension
     - owner
     - group
 
