@@ -123,7 +123,7 @@
 
 - name: Copy the intermediate CA
   ansible.builtin.copy:
-    src: "{{ elasticsearch_local_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
+    src: "{{ elasticsearch_local_certs_dir }}/ca/{{ elasticsearch_ca_intermediate }}"
     dest: "{{ kibana_certs_dir }}/{{ elasticsearch_ca_intermediate }}"
     owner: "{{ kibana_user }}"
     group: "{{ kibana_group }}"

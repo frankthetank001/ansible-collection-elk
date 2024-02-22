@@ -57,7 +57,7 @@ heartbeat.monitors:
   # List or urls to query
   urls:
   {% for host in elasticsearch_hosts %}
-    - "{{ elastic_virtual_proto }}://{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"
+    - "{{ host }}:{{ hostvars[host].elasticsearch_http_port | default('9200') }}"
   {% endfor %}
   # Configure task schedule
   schedule: '@every 10s'
