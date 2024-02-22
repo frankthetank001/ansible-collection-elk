@@ -42,7 +42,7 @@
 
 - name: Determine intended directory structure
   set_fact:
-    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace( src_extension ~ '$', dest_extension | default(''))): 'modified' }) }}"
+    intended_structure: "{{ intended_structure | default({}) | combine({ (item.path | regex_replace('^' + src_conf_dir + '/?', '') | regex_replace( src_extension | default('') ~ '$', dest_extension | default(''))): 'modified' }) }}"
   loop: "{{ template_files.files }}"
 
 - name: Compare structures and identify changes (Revised for Generalization)
