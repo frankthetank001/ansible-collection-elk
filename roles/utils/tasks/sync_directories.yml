@@ -27,8 +27,6 @@
   set_fact:
     current_structure: "{{ dict(current_state.files | map(attribute='path') | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list | zip(current_state.files)) }}"
 
-- debug: var=current_structure
-
 # Assuming src_extension and dest_extension might not be provided
 - name: Gather intended {{ src_extension |default('') }} files from source templates
   ansible.builtin.find:
@@ -50,8 +48,8 @@
     files_to_remove: "{{ (current_structure.keys() | map('regex_replace', '^' + dest_conf_dir + '/?', '') | list) | difference(intended_structure.keys()) }}"
     files_to_add_or_modify: "{{ intended_structure.keys() }}"
 
-# - debug: var=files_to_remove
-# - debug: var=files_to_add_or_modify
+- debug: var=files_to_remove
+- debug: var=files_to_add_or_modify
 
 - name: Ensure destination directories exist
   ansible.builtin.file:
