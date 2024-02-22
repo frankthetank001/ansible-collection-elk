@@ -68,7 +68,7 @@
     dest: "{{ dest_conf_dir }}/{{ item }}"
     owner: "{{ owner }}"
     group: "{{ group }}"
-    mode: 0666
+    mode: 0644
   loop: "{{ files_to_add_or_modify }}"
 
 # Remove files no longer needed
